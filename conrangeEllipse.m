@@ -89,7 +89,7 @@ switch isothermModel
         % Generate objective function for global optimiser with the 95%
         % confidence level given by the chi-squared distribution with
         % (Nt-6) degrees of freedom
-        optfunc = @(dP) abs(transpose(delP(dP))*hessianMatrix*delP(dP)-chi2inv(0.95,length(x)-6));
+        optfunc = @(dP) abs(transpose(delP(dP))*hessianMatrix*delP(dP)-2*chi2inv(0.95,length(x)-6));
         % Initial conditions, lower bounds, and upper bounds for confidence
         % ranges in DSL isotherm model
         x0 = [0.1,0.1,0.5*b01,0.5*b02,200,200];
@@ -144,14 +144,15 @@ switch isothermModel
         % Vector containing the variables for confidence ranges
         delP = @(dP) [dP(1);dP(2);dP(3);dP(4);dP(5);dP(6);dP(7)];
         % Hessian Matrix for the data set (Non-linear parameter estimation
-        % by Yonathan Bard (1974) pg. 178
+        % by Yonathan Bard (1974) pg. 178)
         hessianMatrix = 2*transpose(sensitivityMatrix)*sensitivityMatrix;
         % Create gs, a GlobalSearch solver with its properties set to the defaults.
         gs = GlobalSearch;
         % Generate objective function for global optimiser with the 95%
         % confidence level given by the chi-squared distribution with
-        % (Nt-6) degrees of freedom
-        optfunc = @(dP) abs(transpose(delP(dP))*hessianMatrix*delP(dP)-chi2inv(0.95,length(x)-7));
+        % (Nt-6) degrees of freedom based on section 7-21 Non-linear parameter estimation
+        % by Yonathan Bard (1974)
+        optfunc = @(dP) abs(transpose(delP(dP))*hessianMatrix*delP(dP)-2*chi2inv(0.95,length(x)-7));
         % Initial conditions, lower bounds, and upper bounds for confidence
         % ranges in DSS isotherm model
         x0 = [0.1,0.1,0.5*b01,0.5*b02,200,200];
