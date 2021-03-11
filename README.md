@@ -1,5 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 Imperial College London, United Kingdom
 Multifunctional Nanomaterials Laboratory / Complex Porous Media
 Laboratory
@@ -14,8 +12,3 @@ Purpose:
 Fits input experimental adsorption isotherm data to either dual-site
 Langmuir or dual-site Sips adsorption model, and outputs isotherm
 parameters and ellipsoidal confidence bounds
-
-Last modified:
-- 2021-03-11, HA: Initial creation
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
