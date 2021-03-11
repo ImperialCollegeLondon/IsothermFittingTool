@@ -85,7 +85,7 @@ switch isothermModel
         % by Yonathan Bard (1974) pg. 178
         hessianMatrix = 2*transpose(sensitivityMatrix)*sensitivityMatrix;
         % Create gs, a GlobalSearch solver with its properties set to the defaults.
-        gs = GlobalSearch;
+        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200);
         % Generate objective function for global optimiser with the 95%
         % confidence level given by the chi-squared distribution with
         % (Nt-6) degrees of freedom
@@ -147,7 +147,7 @@ switch isothermModel
         % by Yonathan Bard (1974) pg. 178)
         hessianMatrix = 2*transpose(sensitivityMatrix)*sensitivityMatrix;
         % Create gs, a GlobalSearch solver with its properties set to the defaults.
-        gs = GlobalSearch;
+        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200);
         % Generate objective function for global optimiser with the 95%
         % confidence level given by the chi-squared distribution with
         % (Nt-6) degrees of freedom based on section 7-21 Non-linear parameter estimation
@@ -155,9 +155,9 @@ switch isothermModel
         optfunc = @(dP) abs(transpose(delP(dP))*hessianMatrix*delP(dP)-2*chi2inv(0.95,length(x)-7));
         % Initial conditions, lower bounds, and upper bounds for confidence
         % ranges in DSS isotherm model
-        x0 = [0.1,0.1,0.5*b01,0.5*b02,200,200];
+        x0 = [0.1,0.1,0.5*b01,0.5*b02,0.5*delU1,0.5*delU2,1];
         lb = [0,0,0,0,0,0,0];
-        ub = [1,1,1,1,delU1,delU2,10];
+        ub = [1,1,1,1,delU1,delU2,5];
         % Create global optimisation problem with solver 'fmincon' and
         % other bounds
         problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);

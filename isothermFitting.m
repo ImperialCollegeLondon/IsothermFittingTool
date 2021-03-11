@@ -24,22 +24,22 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% INITIALISATION
 % Clear command window and workspace
-clc
+% clc
 clear
 % Load input experimental data from *.mat or *.csv file in a 3 column
 % format with Pressure (bar), adsorbed amount (-), temperature (K) in the 3
 % columns respectively
-load expData
-fitData = expData;
+load zif8Data
+fitData = zif8Data;
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range
-nbins = 8;
+nbins = 3;
 % Pressure (x), adsorbed amount (z), Temperature (y) data from input
 x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Select isotherm model for fitting
-isothermModel = 'DSL'; % DSL = Dual site Langmuir. DSS = Dual site Sips
+isothermModel = 'DSS'; % DSL = Dual site Langmuir. DSS = Dual site Sips
 % Select fitting method
 fittingMethod = 'WSS'; % WSS = weighted sum of squares, MLE = max log likelihood estimator
 
@@ -49,7 +49,7 @@ switch isothermModel
     case 'DSL'
         rng default % For reproducibility
         % Create gs, a GlobalSearch solver with its properties set to the defaults.
-        gs = GlobalSearch;
+        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200);
         % Set objective function based on fitting method
         switch fittingMethod
             case 'MLE'
@@ -68,7 +68,7 @@ switch isothermModel
         % in DSL isotherm model
         x0 = [3,3,0.001,0.001,2e4,2e4];
         lb = [0,0,0,0,0,0];
-        ub = [10,10,1,1,+inf,+inf];
+        ub = [20,20,1,1,8e4,8e4];
         % Create global optimisation problem with solver 'fmincon' and
         % other bounds
         problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -95,7 +95,7 @@ switch isothermModel
     case 'DSS'
         rng default % For reproducibility
         % Create gs, a GlobalSearch solver with its properties set to the defaults.
-        gs = GlobalSearch;
+        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200);
         % Set objective function based on fitting method
         switch fittingMethod
             case 'MLE'
@@ -114,7 +114,7 @@ switch isothermModel
         % in DSL isotherm model
         x0 = [3,3,0.001,0.001,2e4,2e4,1];
         lb = [0,0,0,0,0,0,0];
-        ub = [10,10,1,1,+inf,+inf,2];
+        ub = [20,20,1,1,+inf,+inf,2];
         % Create global optimisation problem with solver 'fmincon' and
         % other bounds
         problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -144,9 +144,9 @@ end
 figure(2)
 % plot of experimental data and fitted data (q vs P)
 subplot(1,3,1)
-plot(x,z,'ok');
+semilogx(x,z,'ok');
 hold on
-plot(x,qfit,'ob');
+semilogx(x,qfit,'ob');
 xlabel('Pressure [bar]');
 ylabel('q [mol/kg]');
 % quantile-quantile plot of experimental data vs normal distribution
