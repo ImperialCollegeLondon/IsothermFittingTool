@@ -1,0 +1,16 @@
+# Graphic files
+*.eps
+*.pdf
+*.png
+*.tif
+*.jpg
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+*.bib
+*.xlsx
+*.txt
+*.mat
+*.asv
