@@ -2,7 +2,7 @@ Imperial College London, United Kingdom
 
 Multifunctional Nanomaterials Laboratory / Complex Porous Media Laboratory
 
-MainFile: isothermFitting.m
+Main file: isothermFitting.m
 
 Project:  PhD
 
