@@ -141,7 +141,7 @@ switch isothermModel
 end
 
 %% PLOT RESULTING DATA
-figure(2)
+figure
 % plot of experimental data and fitted data (q vs P)
 subplot(1,3,1)
 semilogx(x,z,'ok');
@@ -166,5 +166,4 @@ histogram(z-qfit,15);
 xlabel('error [exp - model]');
 ylabel('Number of points, N_t [-]');
 
-% Complete data set of exp and fitted q
-compData = [x y z qfit];
+Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parVals);
