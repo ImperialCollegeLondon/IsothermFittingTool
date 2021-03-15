@@ -14,6 +14,8 @@
 % or WSS for a data set assumed to follow a normal distribution
 %
 % Last modified:
+% - 2021-03-15, HA: Updated method to obtain confidence intervals and made
+% corrections to the code
 % - 2021-03-11, HA: Initial creation
 %
 % Input arguments:
