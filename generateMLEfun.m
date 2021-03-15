@@ -21,7 +21,7 @@
 %                        (z) data from experiments
 %
 % - nbins:               Number of groups data is binned to based on
-%                        pressure (x) range
+%                        pressure (x) range (1 for MLE)
 %
 % - isothermModel:       Isotherm model for which the data needs to be
 %                        fitted ('DSL' or 'DSS')

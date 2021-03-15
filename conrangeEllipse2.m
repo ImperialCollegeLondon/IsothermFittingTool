@@ -37,7 +37,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [conRange95] = conrangeEllipse(x,y,z,  qfit, isothermModel, varargin)
+function [conRange95] = conrangeEllipse2(x,y,z,  qfit, isothermModel, varargin)
 % Calculate standard deviation of the data (not needed)
 stDevData = 1/length(x) * sum((z-qfit).^2);
 % Generate and solve global optimisation problem for confidence regions
@@ -79,12 +79,33 @@ switch isothermModel
                 end
             end
         end
+        % Vector containing the variables for confidence ranges
+        fancyV = eye(6)*stDevData;
+        fancyW = sensitivityMatrix;
+        %         delP = @(dP) [dP(1);dP(2);dP(3);dP(4);dP(5);dP(6)];
         % estimated Hessian Matrix for the data set (Non-linear parameter estimation
         % by Yonathan Bard (1974) pg. 178
+        
         hessianMatrix = 1/stDevData*transpose(sensitivityMatrix)*sensitivityMatrix;
-        % Confidence range given by chi squared distribution at Np degrees
-        % of freedom
-        conRange95 = sqrt(chi2inv(0.95,6)./diag(hessianMatrix));
+        % Create gs, a GlobalSearch solver with its properties set to the defaults.
+        %         gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200);
+        %         % Generate objective function for global optimiser with the 95%
+        %         % confidence level given by the chi-squared distribution with
+        %         % (Nt-6) degrees of freedom
+        %         optfunc = @(dP) abs(transpose(delP(dP))*hessianMatrix*delP(dP)-2*chi2inv(0.95,length(x)-6));
+        %         % Initial conditions, lower bounds, and upper bounds for confidence
+        %         % ranges in DSL isotherm model
+        %         x0 = [0.1,0.1,0.5*b01,0.5*b02,1000,1000];
+        %         lb = [0,0,0,0,0,0];
+        %         ub = [1,1,1,1,delU1,delU2];
+        %         % Create global optimisation problem with solver 'fmincon' and
+        %         % other bounds
+        %         problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+        %         % Solve global optimisation problem
+        %         [conRange95, fval]= run(gs,problem);
+        
+        
+        conRange95 = sqrt(tinv(0.95,length(x)-6)./diag(hessianMatrix));
         
         % for DSS model
     case 'DSS'
@@ -126,11 +147,29 @@ switch isothermModel
                 end
             end
         end
+        % Vector containing the variables for confidence ranges
+        %         delP = @(dP) [dP(1);dP(2);dP(3);dP(4);dP(5);dP(6);dP(7)];
         % Hessian Matrix for the data set (Non-linear parameter estimation
         % by Yonathan Bard (1974) pg. 178)
         hessianMatrix = 1/stDevData*transpose(sensitivityMatrix)*sensitivityMatrix;
-        % Confidence range given by chi squared distribution at Np degrees
-        % of freedom
-        conRange95 = sqrt(chi2inv(0.95,7)./diag(hessianMatrix));
+        %         % Create gs, a GlobalSearch solver with its properties set to the defaults.
+        %         gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200);
+        %         % Generate objective function for global optimiser with the 95%
+        %         % confidence level given by the chi-squared distribution with
+        %         % (Nt-6) degrees of freedom based on section 7-21 Non-linear parameter estimation
+        %         % by Yonathan Bard (1974)
+        %         optfunc = @(dP) abs(transpose(delP(dP))*hessianMatrix*delP(dP)-2*chi2inv(0.95,length(x)-7));
+        %         % Initial conditions, lower bounds, and upper bounds for confidence
+        %         % ranges in DSS isotherm model
+        %         x0 = [0.1,0.1,0.5*b01,0.5*b02,0.5*delU1,0.5*delU2,1];
+        %         lb = [0,0,0,0,0,0,0];
+        %         ub = [1,1,1,1,delU1,delU2,5];
+        %         % Create global optimisation problem with solver 'fmincon' and
+        %         % other bounds
+        %         problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+        %         % Solve global optimisation problem
+        %         [conRange95, fval]= run(gs,problem);
+        
+        conRange95 = sqrt(tinv(0.95,length(x)-6)./diag(hessianMatrix));
 end
 end

@@ -38,7 +38,7 @@ function objfun = generateWSSfun(x,y,z, nbins,  isothermModel, varargin)
 % Discretize the data range into 'nbins' evenly spaced bins of pressure
 % ranges ('nbins can be any integer value s.t. no bins are empty' for WSS')
 [bins] = discretize(x,nbins);
-%
+% Create vector for weights
 weights = zeros(nbins,1);
 % Create vector for storing sum of error for each bin
 err = zeros(nbins,1);
