@@ -1,7 +1,7 @@
 function [outScatter]=generateUncertaintySpread(x,y,isothermModel,parVals,conRange95)
 clc
-nPoints = 20;
-Pvals=linspace(0,max(x),1000);
+nPoints = 15;
+Pvals=linspace(0,max(x),300);
 Tvals=unique(y);
 
 switch isothermModel
@@ -44,7 +44,7 @@ switch isothermModel
             end
         end
         
-        outScatter=[qeqUnc(1,:);qeqUnc(2,:); qeqUnc(3,:)];
+        outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
         outScatter=outScatter';
         
     case 'DSS'
@@ -88,7 +88,7 @@ switch isothermModel
             end
         end
         
-        outScatter=[qeqUnc(1,:);qeqUnc(2,:); qeqUnc(3,:)];
+        outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
         outScatter=outScatter';
 end
 end

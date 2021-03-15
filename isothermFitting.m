@@ -58,17 +58,17 @@ switch isothermModel
                 nbins =1;
                 % Generate objective function for MLE method
                 optfunc = @(par) generateMLEfun(x, y, z, nbins, isothermModel, par(1), par(2), par(3), ...
-                          par(4), par(5), par(6));
+                    par(4), par(5), par(6));
             case 'WSS'
                 % Generate objective function for WSS method
                 optfunc = @(par) generateWSSfun(x, y, z, nbins, isothermModel, par(1), par(2), par(3), ...
-                          par(4), par(5), par(6));
+                    par(4), par(5), par(6));
         end
         % Initial conditions, lower bounds, and upper bounds for parameters
         % in DSL isotherm model
         x0 = [3,3,1e-5,1e-5,2e4,2e4];
         lb = [0,0,0,0,0,0];
-        ub = [20,20,1,1,8e4,8e4];
+        ub = [10,10,1,1,8e4,8e4];
         % Create global optimisation problem with solver 'fmincon' and
         % other bounds
         problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -104,11 +104,11 @@ switch isothermModel
                 nbins =1;
                 % Generate objective function for MLE method
                 optfunc = @(par) generateMLEfun(x, y, z, nbins, isothermModel, par(1), par(2), par(3), ...
-                          par(4), par(5), par(6), par(7));
+                    par(4), par(5), par(6), par(7));
             case 'WSS'
                 % Generate objective function for WSS method
                 optfunc = @(par) generateWSSfun(x, y, z, nbins, isothermModel, par(1), par(2), par(3), ...
-                          par(4), par(5), par(6), par(7));
+                    par(4), par(5), par(6), par(7));
         end
         % Initial conditions, lower bounds, and upper bounds for parameters
         % in DSL isotherm model
@@ -147,9 +147,29 @@ end
 figure
 % plot of experimental data and fitted data (q vs P)
 subplot(1,3,1)
-scatter(outScatter(:,1),outScatter(:,3),'sg','MarkerEdgeAlpha',0.1)
+scatter(outScatter(:,1),outScatter(:,2),'sg','MarkerEdgeAlpha',0.1)
 hold on
-plot(x,qfit,'ob');
+Pvals = linspace(0,max(x),200);
+Tvals = unique(y);
+qvals = zeros(length(Pvals),length(Tvals));
+for jj = 1:length(Pvals)
+    for kk = 1:length(Tvals)
+        P = Pvals(jj);
+        T = Tvals(kk);
+        switch isothermModel
+            case 'DSL'
+                qvals(jj,kk) = qs1.*(b01.*P.*exp(delU1./(8.314.*T)))./(1+(b01.*P.*exp(delU1./(8.314.*T)))) ...
+                    + qs2.*(b02.*P.*exp(delU2./(8.314.*T)))./(1+(b02.*P.*exp(delU2./(8.314.*T))));
+            case 'DSS'
+                qvals(jj,kk) = qs1.*((b01.*P.*exp(delU1./(8.314.*T)))^gamma)./(1+(b01.*P.*exp(delU1./(8.314.*T)))^gamma) ...
+                    + qs2.*((b02.*P.*exp(delU2./(8.314.*T)))^gamma)./(1+(b02.*P.*exp(delU2./(8.314.*T)))^gamma);
+        end
+    end
+end
+for kk = 1:length(Tvals)
+    plot(Pvals,qvals(:,kk),'-b','LineWidth',1.5);
+end
+outFit = [Pvals' qvals];
 plot(x,z,'ok');
 xlabel('Pressure [bar]');
 ylabel('q [mol/kg]');
