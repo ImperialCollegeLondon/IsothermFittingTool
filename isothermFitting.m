@@ -33,7 +33,7 @@ load zif8Data
 fitData = zif8Data;
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range
-nbins = 3;
+nbins = 8;
 % Pressure (x), adsorbed amount (z), Temperature (y) data from input
 x = fitData(:,1);
 z = fitData(:,2);
@@ -41,7 +41,7 @@ y = fitData(:,3);
 % Select isotherm model for fitting
 isothermModel = 'DSS'; % DSL = Dual site Langmuir. DSS = Dual site Sips
 % Select fitting method
-fittingMethod = 'WSS'; % WSS = weighted sum of squares, MLE = max log likelihood estimator
+fittingMethod = 'MLE'; % WSS = weighted sum of squares, MLE = max log likelihood estimator
 
 %% GENERATING AND SOLVING OPTIMISATION PROBLEM
 % Set fitting procedure based on isotherm model
@@ -66,7 +66,7 @@ switch isothermModel
         end
         % Initial conditions, lower bounds, and upper bounds for parameters
         % in DSL isotherm model
-        x0 = [3,3,0.001,0.001,2e4,2e4];
+        x0 = [3,3,1e-5,1e-5,2e4,2e4];
         lb = [0,0,0,0,0,0];
         ub = [20,20,1,1,8e4,8e4];
         % Create global optimisation problem with solver 'fmincon' and
@@ -86,11 +86,11 @@ switch isothermModel
         % corresponding to experimental data
         qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y)))./(1+(b01.*x.*exp(delU1./(8.314.*y)))) ...
             + qs2.*(b02.*x.*exp(delU2./(8.314.*y)))./(1+(b02.*x.*exp(delU2./(8.314.*y))));
-        % Calculate ellipsoidal confidence regions (delta parameter) for
+        % Calculate ellipsoidal confidence intervals (delta parameter) for
         % fitted parameters
-        [conRange95, fvalConf] = conrangeEllipse(x, y, z, qfit, isothermModel, qs1, qs2, b01, b02, delU1, delU2);
-        % Convert confidence regions to percentage error
-        percentageError = conRange95./parVals *100
+        [conRange95] = conrangeEllipse(x, y, z, qfit, isothermModel, qs1, qs2, b01, b02, delU1, delU2);
+        % Convert confidence intervals to percentage error
+        percentageError = conRange95./parVals' *100;
         
     case 'DSS'
         rng default % For reproducibility
@@ -112,9 +112,9 @@ switch isothermModel
         end
         % Initial conditions, lower bounds, and upper bounds for parameters
         % in DSL isotherm model
-        x0 = [3,3,0.001,0.001,2e4,2e4,1];
+        x0 = [3,3,1e-5,1e-5,2e4,2e4,1];
         lb = [0,0,0,0,0,0,0];
-        ub = [20,20,1,1,+inf,+inf,2];
+        ub = [20,20,1,1,8e4,8e4,2];
         % Create global optimisation problem with solver 'fmincon' and
         % other bounds
         problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -133,20 +133,24 @@ switch isothermModel
         % corresponding to experimental data
         qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y))).^gamma./(1+(b01.*x.*exp(delU1./(8.314.*y))).^gamma) ...
             + qs2.*(b02.*x.*exp(delU2./(8.314.*y))).^gamma./(1+(b02.*x.*exp(delU2./(8.314.*y))).^gamma);
-        % Calculate ellipsoidal confidence regions (delta parameter) for
+        
+        % Calculate ellipsoidal confidence intervals (delta parameter) for
         % fitted parameters
-        [conRange95, fvalConf] = conrangeEllipse(x, y, z, qfit, isothermModel, qs1, qs2, b01, b02, delU1, delU2, gamma);
-        % Convert confidence regions to percentage error
-        percentageError = conRange95./parVals *100
+        [conRange95] = conrangeEllipse(x, y, z, qfit, isothermModel, qs1, qs2, b01, b02, delU1, delU2, gamma);
+        % Convert confidence intervals to percentage error
+        percentageError = conRange95./parVals' *100;
+        
 end
 
 %% PLOT RESULTING DATA
+[outScatter]=generateUncertaintySpread(x,y,isothermModel,parVals,conRange95);
 figure
 % plot of experimental data and fitted data (q vs P)
 subplot(1,3,1)
-semilogx(x,z,'ok');
+scatter(outScatter(:,1),outScatter(:,3),'sg','MarkerEdgeAlpha',0.1)
 hold on
-semilogx(x,qfit,'ob');
+plot(x,qfit,'ob');
+plot(x,z,'ok');
 xlabel('Pressure [bar]');
 ylabel('q [mol/kg]');
 % quantile-quantile plot of experimental data vs normal distribution
@@ -166,4 +170,4 @@ histogram(z-qfit,15);
 xlabel('error [exp - model]');
 ylabel('Number of points, N_t [-]');
 
-Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parVals);
+% Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parVals);
