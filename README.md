@@ -8,6 +8,7 @@ Fits input experimental adsorption isotherm data to either dual-site Langmuir or
 - Isotherm fitting can be done using either maximum log-likelihood estimation (MLE) or weight least sum of squares (WSS)
 - Determines ellipsoidal confidence regions based on the covariance of the data to fitted parameters
 - Generates contour plots for combinations of parameter pairs to identify correlation between parameters
+- Generates plot of uncertainty in isotherm (solid loading) with respect to pressure based on uncertainty in fitted parameters
 
 ### Other details
 - Institution: Imperial College London, United Kingdom
