@@ -7,6 +7,7 @@ Fits input experimental adsorption isotherm data to either dual-site Langmuir or
 - Fit adsorption isotherms to dual-site Langmuir (DSL) and dual-site Sips (DSS) isotherms
 - Isotherm fitting can be done using either maximum log-likelihood estimation (MLE) or weight least sum of squares (WSS)
 - Determines ellipsoidal confidence regions based on the covariance of the data to fitted parameters
+- Generates contour plots for combinations of parameter pairs to identify correlation between parameters
 
 ### Other details
 - Institution: Imperial College London, United Kingdom
@@ -17,3 +18,5 @@ Fits input experimental adsorption isotherm data to either dual-site Langmuir or
 - MATLAB version: R2020a
 - Authors: Hassan Azzan (HA)
 - email: hassan.azzan15@imperial.ac.uk
+
+Last updated: 12/03/2021
