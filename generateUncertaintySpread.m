@@ -1,7 +1,39 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Imperial College London, United Kingdom
+% Multifunctional Nanomaterials Laboratory / Complex Porous Media
+% Laboratory
+%
+% Project:  PhD
+% Year:     2021
+% MATLAB:   R2020a
+% Authors:  Hassan Azzan (HA)
+%
+% Purpose:
+% Obtain the uncertainty bounds for the isotherm using the isotherm
+% parameter confidence intervals
+%
+% Last modified:
+% - 2021-03-15, HA: Initial creation
+%
+% Input arguments:
+% - x, y:                Pressure (x), and Temperature (y) from experiments
+%
+% - isothermModel:       Isotherm model for which the data needs to be
+%                        fitted ('DSL' or 'DSS')
+%
+% - parVals:             Optimal fitting parameter values for the isotherms
+%
+% - conRange95:          Confidence intervals for the parameters
+%
+% Output arguments:
+% - outScatter:          Matrix of points for uncertainty bound plots
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [outScatter]=generateUncertaintySpread(x,y,isothermModel,parVals,conRange95)
 clc
-nPoints = 15;
-Pvals=linspace(0,max(x),300);
+nPoints = 50;
+Pvals=linspace(0,max(x),200);
 Tvals=unique(y);
 
 switch isothermModel

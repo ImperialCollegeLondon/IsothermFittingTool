@@ -147,7 +147,7 @@ end
 figure
 % plot of experimental data and fitted data (q vs P)
 subplot(1,3,1)
-scatter(outScatter(:,1),outScatter(:,2),'sg','MarkerEdgeAlpha',0.1)
+scatter(outScatter(:,1),outScatter(:,2),5,'sg','MarkerEdgeAlpha',0.2)
 hold on
 Pvals = linspace(0,max(x),200);
 Tvals = unique(y);
@@ -167,7 +167,7 @@ for jj = 1:length(Pvals)
     end
 end
 for kk = 1:length(Tvals)
-    plot(Pvals,qvals(:,kk),'-b','LineWidth',1.5);
+    semilogx(Pvals,qvals(:,kk),'-b','LineWidth',1.5);
 end
 outFit = [Pvals' qvals];
 plot(x,z,'ok');
