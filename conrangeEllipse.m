@@ -85,7 +85,7 @@ switch isothermModel
         % by Yonathan Bard (1974) pg. 178
         hessianMatrix = 1/stDevData*transpose(sensitivityMatrix)*sensitivityMatrix;
         % Confidence range given by chi squared distribution at Np degrees
-        % of freedom
+        % of freedom (independent parameter conf intervals)
         conRange95 = sqrt(chi2inv(0.95,6)./diag(hessianMatrix));
         
         % for DSS model
@@ -132,7 +132,7 @@ switch isothermModel
         % by Yonathan Bard (1974) pg. 178)
         hessianMatrix = 1/stDevData*transpose(sensitivityMatrix)*sensitivityMatrix;
         % Confidence range given by chi squared distribution at Np degrees
-        % of freedom
+        % of freedom (independent parameter conf intervals)
         conRange95 = sqrt(chi2inv(0.95,7)./diag(hessianMatrix));
 end
 end

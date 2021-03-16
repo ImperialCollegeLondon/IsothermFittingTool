@@ -24,7 +24,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% INITIALISATION
 % Clear command window and workspace
-% clc
+clc
 clear
 % Load input experimental data from *.mat or *.csv file in a 3 column
 % format with Pressure (bar), adsorbed amount (-), temperature (K) in the 3
@@ -33,7 +33,7 @@ load zif8Data
 fitData = zif8Data;
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range
-nbins = 8;
+nbins = 3;
 % Pressure (x), adsorbed amount (z), Temperature (y) data from input
 x = fitData(:,1);
 z = fitData(:,2);
@@ -147,7 +147,7 @@ end
 figure
 % plot of experimental data and fitted data (q vs P)
 subplot(1,3,1)
-scatter(outScatter(:,1),outScatter(:,2),5,'sg','MarkerEdgeAlpha',0.2)
+scatter(outScatter(:,1),outScatter(:,2),5,'sc','MarkerEdgeAlpha',0.2)
 hold on
 Pvals = linspace(0,max(x),200);
 Tvals = unique(y);
@@ -190,4 +190,4 @@ histogram(z-qfit,15);
 xlabel('error [exp - model]');
 ylabel('Number of points, N_t [-]');
 
-% Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parVals);
+Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parVals);

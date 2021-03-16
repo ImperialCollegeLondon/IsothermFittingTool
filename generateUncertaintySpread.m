@@ -32,8 +32,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [outScatter]=generateUncertaintySpread(x,y,isothermModel,parVals,conRange95)
 clc
-nPoints = 50;
-Pvals=linspace(0,max(x),200);
+nPoints = 30;
+Pvals=linspace(0,max(x),400);
 Tvals=unique(y);
 
 switch isothermModel

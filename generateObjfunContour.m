@@ -112,7 +112,7 @@ switch isothermModel
         figure
         for mm = 1:3
             subplot(1,3,mm)
-            contourf(X(:,:,1,mm),Y(:,:,1,mm),Z(:,:,1,mm),20,'--');
+            contourf(X(:,:,1,mm),Y(:,:,1,mm),Z(:,:,1,mm),50,'--','LineWidth',0.2);
             colorbar('northoutside');
             hold on
             switch mm
@@ -208,7 +208,7 @@ switch isothermModel
         figure
         for mm = 1:3
             subplot(1,3,mm)
-            contourf(X(:,:,1,mm),Y(:,:,1,mm),Z(:,:,1,mm),20,'--');
+            contourf(X(:,:,1,mm),Y(:,:,1,mm),Z(:,:,1,mm),50,'--','LineWidth',0.2);
             colorbar('northoutside');
             hold on
             switch mm
