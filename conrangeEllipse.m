@@ -14,6 +14,8 @@
 % or WSS for a data set assumed to follow a normal distribution
 %
 % Last modified:
+% - 2021-03-15, HA: Updated method to obtain confidence intervals and made
+% corrections to the code
 % - 2021-03-11, HA: Initial creation
 %
 % Input arguments:
@@ -40,6 +42,8 @@
 function [conRange95] = conrangeEllipse(x,y,z,  qfit, isothermModel, varargin)
 % Calculate standard deviation of the data (not needed)
 stDevData = 1/length(x) * sum((z-qfit).^2);
+% degree of variation of parameter to calculate sensitivity
+del = 0.000001;
 % Generate and solve global optimisation problem for confidence regions
 % based on isotherm model
 switch isothermModel
@@ -53,8 +57,6 @@ switch isothermModel
         delU2 = varargin{6};
         % Create empty sensitivity matrix
         sensitivityMatrix = zeros(length(x),6);
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.0001;
         % Calculate sensitivity at every data point for each parameter
         for jj = 1:6
             for kk = 1:length(x)
@@ -83,7 +85,7 @@ switch isothermModel
         % by Yonathan Bard (1974) pg. 178
         hessianMatrix = 1/stDevData*transpose(sensitivityMatrix)*sensitivityMatrix;
         % Confidence range given by chi squared distribution at Np degrees
-        % of freedom
+        % of freedom (independent parameter conf intervals)
         conRange95 = sqrt(chi2inv(0.95,6)./diag(hessianMatrix));
         
         % for DSS model
@@ -97,8 +99,6 @@ switch isothermModel
         gamma = varargin{7};
         % Create empty sensitivity matrix
         sensitivityMatrix = zeros(length(x),7);
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.0001;
         % Calculate sensitivity at every data point for each parameter
         for jj = 1:7
             for kk = 1:length(x)
@@ -130,7 +130,7 @@ switch isothermModel
         % by Yonathan Bard (1974) pg. 178)
         hessianMatrix = 1/stDevData*transpose(sensitivityMatrix)*sensitivityMatrix;
         % Confidence range given by chi squared distribution at Np degrees
-        % of freedom
+        % of freedom (independent parameter conf intervals)
         conRange95 = sqrt(chi2inv(0.95,7)./diag(hessianMatrix));
 end
 end
