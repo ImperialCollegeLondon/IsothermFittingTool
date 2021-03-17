@@ -30,6 +30,7 @@ clear
 % format with Pressure (bar), adsorbed amount (-), temperature (K) in the 3
 % columns respectively
 load zif8Data
+% Copy name of input file here
 fitData = zif8Data;
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range (for Weighted sum of squares method
@@ -42,9 +43,9 @@ isothermModel = 'DSS'; % DSL = Dual site Langmuir. DSS = Dual site Sips
 % likely to be normally distributed with a mean of 0.
 % WSS is preferred for fitting data for cases where the error might not be
 % random and not be normally distributed.
-fittingMethod = 'MLE'; 
+fittingMethod = 'MLE';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %   
+%                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% GENERATING AND SOLVING GLOBAL OPTIMISATION PROBLEM
 % Pressure (x), adsorbed amount (z), Temperature (y) data from input
