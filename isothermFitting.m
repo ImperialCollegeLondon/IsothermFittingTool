@@ -22,7 +22,7 @@
 % Output arguments:
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% INITIALISATION
+%% INITIALISATION & INPUTS
 % Clear command window and workspace
 clc
 clear
@@ -32,18 +32,25 @@ clear
 load zif8Data
 fitData = zif8Data;
 % Determine number of bins you want the experimental data to be binned to
-% in terms of the total pressure range
+% in terms of the total pressure range (for Weighted sum of squares method
+% ONLY). IF ERROR --> Reduce number of bins
 nbins = 8;
+% Select isotherm model for fitting
+isothermModel = 'DSS'; % DSL = Dual site Langmuir. DSS = Dual site Sips
+% Select fitting method.WSS = weighted sum of squares, MLE = max log likelihood estimator
+% MLE is preferred for data that is from a single source where the error is
+% likely to be normally distributed with a mean of 0.
+% WSS is preferred for fitting data for cases where the error might not be
+% random and not be normally distributed.
+fittingMethod = 'MLE'; 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% GENERATING AND SOLVING GLOBAL OPTIMISATION PROBLEM
 % Pressure (x), adsorbed amount (z), Temperature (y) data from input
 x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
-% Select isotherm model for fitting
-isothermModel = 'DSS'; % DSL = Dual site Langmuir. DSS = Dual site Sips
-% Select fitting method
-fittingMethod = 'MLE'; % WSS = weighted sum of squares, MLE = max log likelihood estimator
-
-%% GENERATING AND SOLVING GLOBAL OPTIMISATION PROBLEM
 % Set fitting procedure based on isotherm model
 switch isothermModel
     case 'DSL'
