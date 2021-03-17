@@ -15,6 +15,7 @@
 % b02-delU2.
 %
 % Last modified:
+% - 2021-03-17, HA: Added comments
 % - 2021-03-12, HA: Initial creation
 %
 % Input arguments:
@@ -40,34 +41,37 @@ function Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parVa
 switch isothermModel
     % For DSL model
     case 'DSL'
+        % Determine number of points to consider in each axis
         nPoints = 200;
+        % Obtain optimal parameter values from input
         qs1 = parVals(1);
         qs2 = parVals(2);
         b01 =  parVals(3);
         b02 =  parVals(4);
         delU1 =  parVals(5);
         delU2= parVals(6);
-        
+        % Define lower and upper bounds for parameters for contour plots
         parLB = 0.1.*parVals;
         parUB = 1.9.*parVals;
-        
+        % Create matrix for parameter range
         parRange = [];
         for jj = 1:length(parVals)
             parRange(:,jj) = linspace(parLB(jj),parUB(jj),nPoints);
         end
-        
+        % Obtain individual parameter ranges
         qs1vals = parRange(:,1);
         qs2vals = parRange(:,2);
         b01vals = parRange(:,3);
         b02vals = parRange(:,4);
         delU1vals = parRange(:,5);
         delU2vals = parRange(:,6);
-        
+        % create matrix for input and output mesh grids
         Z=zeros(nPoints,nPoints,1,3);
         X=zeros(nPoints,nPoints,1,3);
         Y=zeros(nPoints,nPoints,1,3);
-        
         %% qs1 vs qs2
+        % obtain objective function values for qs1 and qs2 parameter variation from
+        % optima for WSS method
         [X(:,:,1,1),Y(:,:,1,1)] = meshgrid(qs1vals,qs2vals);
         for jj = 1:nPoints
             for kk =1:nPoints
@@ -82,6 +86,8 @@ switch isothermModel
         end
         
         %% b01 vs delU1
+        % obtain objective function values for b01 and delU1 parameter variation from
+        % optima for WSS method
         [X(:,:,1,2),Y(:,:,1,2)] = meshgrid(b01vals,delU1vals);
         for jj = 1:nPoints
             for kk =1:nPoints
@@ -96,6 +102,8 @@ switch isothermModel
         end
         
         %% b02 vs delU2
+        % obtain objective function values for b02 and delU2 parameter variation from
+        % optima for WSS method
         [X(:,:,1,3),Y(:,:,1,3)] = meshgrid(b02vals,delU2vals);
         for jj = 1:nPoints
             for kk =1:nPoints
@@ -109,6 +117,7 @@ switch isothermModel
             end
         end
         
+        % Plot figure with the contour subplots
         figure
         for mm = 1:3
             subplot(1,3,mm)
@@ -134,7 +143,7 @@ switch isothermModel
         
         % For DSL model
     case 'DSS'
-        nPoints = 100;
+        nPoints = 200;
         qs1 = parVals(1);
         qs2 = parVals(2);
         b01 =  parVals(3);

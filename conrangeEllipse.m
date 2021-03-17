@@ -42,6 +42,8 @@
 function [conRange95] = conrangeEllipse(x,y,z,  qfit, isothermModel, varargin)
 % Calculate standard deviation of the data (not needed)
 stDevData = 1/length(x) * sum((z-qfit).^2);
+% degree of variation of parameter to calculate sensitivity
+del = 0.000001;
 % Generate and solve global optimisation problem for confidence regions
 % based on isotherm model
 switch isothermModel
@@ -55,8 +57,6 @@ switch isothermModel
         delU2 = varargin{6};
         % Create empty sensitivity matrix
         sensitivityMatrix = zeros(length(x),6);
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.0001;
         % Calculate sensitivity at every data point for each parameter
         for jj = 1:6
             for kk = 1:length(x)
@@ -99,8 +99,6 @@ switch isothermModel
         gamma = varargin{7};
         % Create empty sensitivity matrix
         sensitivityMatrix = zeros(length(x),7);
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.0001;
         % Calculate sensitivity at every data point for each parameter
         for jj = 1:7
             for kk = 1:length(x)

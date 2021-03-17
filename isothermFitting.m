@@ -33,7 +33,7 @@ load zif8Data
 fitData = zif8Data;
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range
-nbins = 3;
+nbins = 8;
 % Pressure (x), adsorbed amount (z), Temperature (y) data from input
 x = fitData(:,1);
 z = fitData(:,2);
@@ -43,7 +43,7 @@ isothermModel = 'DSS'; % DSL = Dual site Langmuir. DSS = Dual site Sips
 % Select fitting method
 fittingMethod = 'MLE'; % WSS = weighted sum of squares, MLE = max log likelihood estimator
 
-%% GENERATING AND SOLVING OPTIMISATION PROBLEM
+%% GENERATING AND SOLVING GLOBAL OPTIMISATION PROBLEM
 % Set fitting procedure based on isotherm model
 switch isothermModel
     case 'DSL'
@@ -142,7 +142,7 @@ switch isothermModel
         
 end
 
-%% PLOT RESULTING DATA
+%% PLOT RESULTING OUTPUTS
 [outScatter]=generateUncertaintySpread(x,y,isothermModel,parVals,conRange95);
 figure
 % plot of experimental data and fitted data (q vs P)
@@ -190,4 +190,7 @@ histogram(z-qfit,15);
 xlabel('error [exp - model]');
 ylabel('Number of points, N_t [-]');
 
+% Plot the contour plots for the objective function (MLE or WSS) around the
+% optimal parameter values in the combinations qs1-qs2, b01-delU1, and
+% b02-delU2.
 Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parVals);
