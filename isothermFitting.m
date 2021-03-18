@@ -34,7 +34,8 @@ load zif8Data
 fitData = zif8Data;
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range (for Weighted sum of squares method
-% ONLY). IF ERROR --> Reduce number of bins
+% ONLY). 
+% IF ERROR --> Reduce number of bins until error is gone
 nbins = 8;
 % Select isotherm model for fitting
 isothermModel = 'DSS'; % DSL = Dual site Langmuir. DSS = Dual site Sips
