@@ -122,7 +122,7 @@ switch isothermModel
         for mm = 1:3
             subplot(1,3,mm)
             contourf(X(:,:,1,mm),Y(:,:,1,mm),Z(:,:,1,mm),50,'--','LineWidth',0.2);
-            colorbar('northoutside');
+            colorbar('southoutside');
             hold on
             switch mm
                 case 1
@@ -218,7 +218,7 @@ switch isothermModel
         for mm = 1:3
             subplot(1,3,mm)
             contourf(X(:,:,1,mm),Y(:,:,1,mm),Z(:,:,1,mm),50,'--','LineWidth',0.2);
-            colorbar('northoutside');
+            colorbar('southoutside');
             hold on
             switch mm
                 case 1
