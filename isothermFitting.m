@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%2.281458
 %
 % Imperial College London, United Kingdom
 % Multifunctional Nanomaterials Laboratory / Complex Porous Media
@@ -34,9 +34,9 @@ load zif8Data
 fitData = zif8Data;
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range (for Weighted sum of squares method
-% ONLY). 
+% ONLY).
 % IF ERROR --> Reduce number of bins until error is gone
-nbins = 8;
+nbins = 4;
 % Select isotherm model for fitting
 isothermModel = 'DSS'; % DSL = Dual site Langmuir. DSS = Dual site Sips
 % Select fitting method.WSS = weighted sum of squares, MLE = max log likelihood estimator
@@ -75,7 +75,7 @@ switch isothermModel
         end
         % Initial conditions, lower bounds, and upper bounds for parameters
         % in DSL isotherm model
-        x0 = [3,3,1e-5,1e-5,2e4,2e4];
+        x0 = [3,3,1e-5,1e-5,4e4,4e4];
         lb = [0,0,0,0,0,0];
         ub = [10,10,1,1,8e4,8e4];
         % Create global optimisation problem with solver 'fmincon' and
@@ -121,7 +121,7 @@ switch isothermModel
         end
         % Initial conditions, lower bounds, and upper bounds for parameters
         % in DSL isotherm model
-        x0 = [3,3,1e-5,1e-5,2e4,2e4,1];
+        x0 = [3,3,1e-5,1e-5,4e4,4e4,1];
         lb = [0,0,0,0,0,0,0];
         ub = [20,20,1,1,8e4,8e4,2];
         % Create global optimisation problem with solver 'fmincon' and
