@@ -1,12 +1,12 @@
 # Adsorption Isotherm fitting tool
 
-Fits input experimental adsorption isotherm data to either dual-site Langmuir or dual-site Sips adsorption model, and outputs isotherm parameters and ellipsoidal confidence bounds
+Fits input experimental adsorption isotherm data to either dual-site Langmuir or dual-site Sips adsorption model, and outputs isotherm parameters and parameter confidence intervals.
 
 ## Main features
 
 - Fit adsorption isotherms to dual-site Langmuir (DSL) and dual-site Sips (DSS) isotherms
-- Isotherm fitting can be done using either maximum log-likelihood estimation (MLE) or weighted least sum of squares (WSS)
-- Determines ellipsoidal confidence regions based on the covariance of the data to fitted parameters
+- Isotherm fitting can be done using either maximum log-likelihood estimation (MLE) or weight least sum of squares (WSS)
+- Determines individual confidence intervals based on the diagonal covariance matrix of the of the model to fitted parameters
 - Generates contour plots for combinations of parameter pairs to identify correlation between parameters
 - Generates plot of uncertainty in isotherm (solid loading) with respect to pressure based on uncertainty in fitted parameters
 
@@ -20,4 +20,4 @@ Fits input experimental adsorption isotherm data to either dual-site Langmuir or
 - Authors: Hassan Azzan (HA)
 - email: hassan.azzan15@imperial.ac.uk
 
-Last updated: 12/03/2021
+Last updated: 17/03/2021
