@@ -65,7 +65,7 @@ switch isothermModel
             end
             err(jj) = err(jj);
         end
-    % Calculate error for DSS model    
+    % Calculate error for DSS model
     case 'DSS'
         qs1 = varargin{1};
         qs2 = varargin{2};
