@@ -4,7 +4,7 @@ Fits input experimental adsorption isotherm data to either dual-site Langmuir or
 
 ## Main features
 
-- Fit adsorption isotherms to dual-site Langmuir (DSL) and dual-site Sips (DSS) isotherms
+- Fit adsorption isotherms to dual/single-site Langmuir (DSL/SSL) and dual/single-site Sips (DSS/SSS) isotherms
 - Isotherm fitting can be done using either maximum log-likelihood estimation (MLE) or weight least sum of squares (WSS)
 - Determines individual confidence intervals based on the diagonal covariance matrix of the of the model to fitted parameters
 - Generates contour plots for combinations of parameter pairs to identify correlation between parameters

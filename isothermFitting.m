@@ -102,7 +102,6 @@ switch isothermModel
         [conRange95] = conrangeEllipse(x, y, z, qfit, isothermModel, qs1, qs2, b01, b02, delU1, delU2);
         % Convert confidence intervals to percentage error
         percentageError = conRange95./parVals' *100;
-        
     case 'SSL'
         rng default % For reproducibility
         % Create gs, a GlobalSearch solver with its properties set to the defaults.
@@ -250,7 +249,6 @@ switch isothermModel
         % Convert confidence intervals to percentage error
         percentageError = conRange95./parameters' *100;
 end
-
 %% PLOT RESULTING OUTPUTS
 switch isothermModel
     case 'DSL'
