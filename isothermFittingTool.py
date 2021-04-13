@@ -10,7 +10,7 @@
 # 
 #  Purpose:
 #  Fits input experimental adsorption isotherm data to dual-site
-#  Langmuir model using MLE
+#  Langmuir model using MLE using differential evolution method
 # 
 #  Last modified:
 #  - 2021-04-07, HA: Change minimizer method and add options and bounds   
@@ -23,7 +23,8 @@
 ##############################################################################
 
 def isothermFittingTool():
-    from scipy.optimize import basinhopping
+    # from scipy.optimize import basinhopping
+    from scipy.optimize import differential_evolution
     import numpy as np
     optBounds = np.array([[0, 10],
                          [0, 10],
@@ -32,18 +33,20 @@ def isothermFittingTool():
                          [0, 8e4],
                          [0, 8e4]])
     
-    minimizer_kwargs = {"method":"SLSQP","bounds":optBounds, "tol":1e-6}
-    x0 = [3,3,1e-5,1e-5,4e4,4e4]    
-    ret = basinhopping(generateObjectiveFunction, x0, 
-                       minimizer_kwargs=minimizer_kwargs, 
-                       disp = True,niter=10000, T = 10,niter_success=200)
+    # minimizer_kwargs = {"method":"SLSQP","bounds":optBounds, "tol":1e-6}
+    # x0 = [3,3,1e-5,1e-5,4e4,4e4]    
+    # ret = basinhopping(generateObjectiveFunction, x0, 
+    #                    minimizer_kwargs=minimizer_kwargs, 
+    #                    disp = True,niter=10000, T = 10)
+    ret = differential_evolution(generateObjectiveFunction, optBounds,
+                                 disp=True)
     return ret
 
 def generateObjectiveFunction(x):
     from scipy.io import loadmat
     import numpy as np
-    matData = loadmat('expData')
-    rawData = matData["expData"]
+    matData = loadmat('zif8Data')
+    rawData = matData["zif8Data"]
     pressure = np.array(rawData[:,0])
     qamount = np.array(rawData[:,1])
     temperature = np.array(rawData[:,2])
