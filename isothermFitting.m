@@ -45,7 +45,7 @@ isothermModel = 'SSS';
 % MLE is preferred for data that is from a single source where the error is
 % likely to be normally distributed with a mean of 0.
 % WSS is preferred for fitting data for cases where the error might not be
-% random and not be normally distributed.
+% random and not be normally distributed (data from different sources)
 fittingMethod = 'MLE';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
