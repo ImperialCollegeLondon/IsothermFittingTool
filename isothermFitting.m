@@ -29,14 +29,14 @@ clear
 % Load input experimental data from *.mat or *.csv file in a 3 column
 % format with Pressure (bar), adsorbed amount (-), temperature (K) in the 3
 % columns respectively
-load zif8Data
+load AC_HPVA
 % Copy name of input file here
-fitData = zif8Data;
+fitData = AC_HPVA;
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range (for Weighted sum of squares method
 % ONLY).
 % IF ERROR --> Reduce number of bins until error is gone
-nbins = 4;
+nbins = 3;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
@@ -79,7 +79,7 @@ switch isothermModel
         % in DSL isotherm model
         x0 = [3,3,1e-5,1e-5,4e4,4e4];
         lb = [0,0,0,0,0,0];
-        ub = [10,10,1,1,8e4,8e4];
+        ub = [20,20,1,1,8e4,8e4];
         % Create global optimisation problem with solver 'fmincon' and
         % other bounds
         problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -112,19 +112,38 @@ switch isothermModel
                 % Number of bins is automatically set to 1 for MLE as
                 % weights cannot be assigned in MLE
                 nbins =1;
-                % Generate objective function for MLE method
-                optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', par(1), 0, par(2), ...
-                    0, par(3), 0);
+                if length(unique(y)) == 1 % if only one temperature
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', par(1), 0, par(2), ...
+                        0, 0, 0);
+                else
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', par(1), 0, par(2), ...
+                        0, par(3), 0);
+                end
             case 'WSS'
                 % Generate objective function for WSS method
-                optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', par(1), 0, par(2), ...
-                    0, par(3), 0);
+                if length(unique(y)) == 1
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', par(1), 0, par(2), ...
+                        0, 0, 0);
+                else
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', par(1), 0, par(2), ...
+                        0, par(3), 0);
+                end
         end
         % Initial conditions, lower bounds, and upper bounds for parameters
         % in DSL isotherm model
-        x0 = [3,1e-5,4e4];
-        lb = [0,0,0];
-        ub = [10,1,8e4];
+        if length(unique(y)) == 1 % if only one temperature
+            x0 = [3,1e-5];
+            lb = [0,0];
+            ub = [20,1];
+        else
+            x0 = [3,1e-5,4e4];
+            lb = [0,0,0];
+            ub = [20,1,8e4];
+        end
         % Create global optimisation problem with solver 'fmincon' and
         % other bounds
         problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -136,7 +155,11 @@ switch isothermModel
         qs2   = 0;
         b01   = parVals(2);
         b02   = 0;
-        delU1 = parVals(3);
+        if length(unique(y)) == 1 % if only one temperature
+            delU1 = 0;
+        else
+            delU1 = parVals(3);
+        end
         delU2 = 0;
         % Calculate fitted isotherm loadings for conditions (P,T)
         % corresponding to experimental data
