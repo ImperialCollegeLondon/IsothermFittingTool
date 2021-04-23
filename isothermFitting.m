@@ -25,14 +25,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% INITIALISATION and INPUTS
 % Clear command window and workspace
-clc
-clear
 % Load input experimental data from *.mat or *.csv file in a 3 column
 % format with Pressure (bar), adsorbed amount (-), temperature (K) in the 3
-% columns respectively
-load zif8Data
-% Copy name of input file here
-fitData = zif8Data;
+% columns respectively. The name of the variable must be 'fitData'
+uiopen
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range (for Weighted sum of squares method
 % ONLY).
@@ -41,7 +37,7 @@ nbins = 3;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'SSS';
+isothermModel = 'DSS';
 % Select fitting method.WSS = weighted sum of squares, MLE = max log likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
 % likely to be normally distributed with a mean of 0.
