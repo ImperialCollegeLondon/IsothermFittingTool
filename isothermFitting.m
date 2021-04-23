@@ -14,6 +14,7 @@
 % and outputs isotherm parameters and ellipsoidal confidence bounds
 %
 % Last modified:
+% - 2021-04-23, HA: Add display of predicted parameters with uncertainty
 % - 2021-04-13, HA: Add capability to use single site isotherm models
 % - 2021-03-11, HA: Initial creation
 %
@@ -29,9 +30,9 @@ clear
 % Load input experimental data from *.mat or *.csv file in a 3 column
 % format with Pressure (bar), adsorbed amount (-), temperature (K) in the 3
 % columns respectively
-load AC_HPVA
+load zif8Data
 % Copy name of input file here
-fitData = AC_HPVA;
+fitData = zif8Data;
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range (for Weighted sum of squares method
 % ONLY).
@@ -60,7 +61,7 @@ switch isothermModel
     case 'DSL'
         rng default % For reproducibility
         % Create gs, a GlobalSearch solver with its properties set to the defaults.
-        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200);
+        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200,'Display','off');
         % Set objective function based on fitting method
         switch fittingMethod
             case 'MLE'
@@ -99,13 +100,21 @@ switch isothermModel
             + qs2.*(b02.*x.*exp(delU2./(8.314.*y)))./(1+(b02.*x.*exp(delU2./(8.314.*y))));
         % Calculate ellipsoidal confidence intervals (delta parameter) for
         % fitted parameters
-        [conRange95] = conrangeEllipse(x, y, z, qfit, isothermModel, qs1, qs2, b01, b02, delU1, delU2);
+        parameters = [qs1, qs2, b01, b02, delU1, delU2];
+        parameters(isnan(parameters))=0;
+        [conRange95] = conrangeEllipse(x, y, z, qfit, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
+        conRange95(isnan(conRange95))=0;
         % Convert confidence intervals to percentage error
-        percentageError = conRange95./parVals' *100;
+        percentageError = conRange95./parameters' *100;
+        parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
+        units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
+        for ii = 1:length(parameters)
+            fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+        end
     case 'SSL'
         rng default % For reproducibility
         % Create gs, a GlobalSearch solver with its properties set to the defaults.
-        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200);
+        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200,'Display','off');
         % Set objective function based on fitting method
         switch fittingMethod
             case 'MLE'
@@ -138,7 +147,7 @@ switch isothermModel
         if length(unique(y)) == 1 % if only one temperature
             x0 = [3,1e-5];
             lb = [0,0];
-            ub = [20,1];
+            ub = [20,3];
         else
             x0 = [3,1e-5,4e4];
             lb = [0,0,0];
@@ -173,10 +182,15 @@ switch isothermModel
         conRange95(isnan(conRange95))=0;
         % Convert confidence intervals to percentage error
         percentageError = conRange95./parameters' *100;
+        parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
+        units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
+        for ii = 1:length(parameters)
+            fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+        end
     case 'DSS'
         rng default % For reproducibility
         % Create gs, a GlobalSearch solver with its properties set to the defaults.
-        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200);
+        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200,'Display','off');
         % Set objective function based on fitting method
         switch fittingMethod
             case 'MLE'
@@ -222,10 +236,15 @@ switch isothermModel
         conRange95(isnan(conRange95))=0;
         % Convert confidence intervals to percentage error
         percentageError = conRange95./parameters' *100;
+        parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
+        units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
+        for ii = 1:length(parameters)
+            fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+        end
     case 'SSS'
         rng default % For reproducibility
         % Create gs, a GlobalSearch solver with its properties set to the defaults.
-        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200);
+        gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',200,'Display','off');
         % Set objective function based on fitting method
         switch fittingMethod
             case 'MLE'
@@ -271,6 +290,11 @@ switch isothermModel
         conRange95(isnan(conRange95))=0;
         % Convert confidence intervals to percentage error
         percentageError = conRange95./parameters' *100;
+        parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
+        units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
+        for ii = 1:length(parameters)
+            fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+        end
 end
 %% PLOT RESULTING OUTPUTS
 switch isothermModel
