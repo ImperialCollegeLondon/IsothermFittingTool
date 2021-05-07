@@ -25,19 +25,23 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% INITIALISATION and INPUTS
 % Clear command window and workspace
+clc; clear all;
+% For new data create a new variable for editing named 'fitData' and save
+% the data as *.mat file in 3 column format with Pressure (bar), adsorbed 
+% amount (-), temperature (K) in the 3 columns respectively.
 % Load input experimental data from *.mat or *.csv file in a 3 column
 % format with Pressure (bar), adsorbed amount (-), temperature (K) in the 3
 % columns respectively. The name of the variable must be 'fitData'
 uiopen
 % Determine number of bins you want the experimental data to be binned to
-% in terms of the total pressure range (for Weighted sum of squares method
-% ONLY).
+% in terms of the total pressure range 
+% (for Weighted sum of squares method ONLY).
 % IF ERROR --> Reduce number of bins until error is gone
-nbins = 3;
+nbins = 8;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'DSS';
+isothermModel = 'SSL';
 % Select fitting method.WSS = weighted sum of squares, MLE = max log likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
 % likely to be normally distributed with a mean of 0.
@@ -64,19 +68,38 @@ switch isothermModel
                 % Number of bins is automatically set to 1 for MLE as
                 % weights cannot be assigned in MLE
                 nbins =1;
-                % Generate objective function for MLE method
-                optfunc = @(par) generateMLEfun(x, y, z, nbins, isothermModel, par(1), par(2), par(3), ...
-                    par(4), par(5), par(6));
+                if length(unique(y)) == 1 % if only one temperature
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', par(1), par(2), par(3), ...
+                        par(4), 0, 0);
+                else
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', par(1), par(2), par(3), ...
+                        par(4), par(5), par(6));
+                end
             case 'WSS'
                 % Generate objective function for WSS method
-                optfunc = @(par) generateWSSfun(x, y, z, nbins, isothermModel, par(1), par(2), par(3), ...
-                    par(4), par(5), par(6));
+                if length(unique(y)) == 1
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', par(1), par(2), par(3), ...
+                        par(4), 0, 0);
+                else
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', par(1), par(2), par(3), ...
+                        par(4), par(5), par(6));
+                end
         end
         % Initial conditions, lower bounds, and upper bounds for parameters
         % in DSL isotherm model
-        x0 = [3,3,1e-5,1e-5,4e4,4e4];
-        lb = [0,0,0,0,0,0];
-        ub = [20,20,1,1,8e4,8e4];
+        if length(unique(y)) == 1 % if only one temperature
+            x0 = [3, 3,1e-5,1e-5];
+            lb = [0,0,0,0];
+            ub = [20,20,10,10];
+        else
+            x0 = [3,3,1e-5,1e-5,4e4,4e4];
+            lb = [0,0,0,0,0,0];
+            ub = [20,20,1,1,8e4,8e4];
+        end
         % Create global optimisation problem with solver 'fmincon' and
         % other bounds
         problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -88,8 +111,14 @@ switch isothermModel
         qs2   = parVals(2);
         b01   = parVals(3);
         b02   = parVals(4);
-        delU1 = parVals(5);
-        delU2 = parVals(6);
+        if length(unique(y)) == 1 % if only one temperature
+            delU1 = 0;
+            delU2 = 0;
+        else
+            delU1 = parVals(5);
+            delU2 = parVals(6);
+        end
+        
         % Calculate fitted isotherm loadings for conditions (P,T)
         % corresponding to experimental data
         qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y)))./(1+(b01.*x.*exp(delU1./(8.314.*y)))) ...
@@ -143,7 +172,7 @@ switch isothermModel
         if length(unique(y)) == 1 % if only one temperature
             x0 = [3,1e-5];
             lb = [0,0];
-            ub = [20,3];
+            ub = [20,10];
         else
             x0 = [3,1e-5,4e4];
             lb = [0,0,0];
@@ -361,7 +390,13 @@ ylabel('Number of points, N_t [-]');
 % b02-delU2.
 switch isothermModel
     case 'DSL'
-        Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parameters);
+        if length(unique(y)) == 1
+        else
+            Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parameters);
+        end
     case 'DSS'
-        Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parameters);
+        if length(unique(y)) == 1
+        else
+            Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parameters);
+        end
 end
