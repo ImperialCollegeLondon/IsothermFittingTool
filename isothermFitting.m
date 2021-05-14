@@ -27,21 +27,21 @@
 % Clear command window and workspace
 clc; clear all;
 % For new data create a new variable for editing named 'fitData' and save
-% the data as *.mat file in 3 column format with Pressure (bar), adsorbed 
+% the data as *.mat file in 3 column format with Pressure (bar), adsorbed
 % amount (-), temperature (K) in the 3 columns respectively.
 % Load input experimental data from *.mat or *.csv file in a 3 column
 % format with Pressure (bar), adsorbed amount (-), temperature (K) in the 3
 % columns respectively. The name of the variable must be 'fitData'
 uiopen
 % Determine number of bins you want the experimental data to be binned to
-% in terms of the total pressure range 
+% in terms of the total pressure range
 % (for Weighted sum of squares method ONLY).
 % IF ERROR --> Reduce number of bins until error is gone
 nbins = 8;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'SSL';
+isothermModel = 'SSS';
 % Select fitting method.WSS = weighted sum of squares, MLE = max log likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
 % likely to be normally distributed with a mean of 0.
@@ -133,7 +133,8 @@ switch isothermModel
         percentageError = conRange95./parameters' *100;
         parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
         units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
-        for ii = 1:length(parameters)
+        if parameters(ii) == 0
+        else
             fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
         end
     case 'SSL'
@@ -209,7 +210,8 @@ switch isothermModel
         percentageError = conRange95./parameters' *100;
         parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
         units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
-        for ii = 1:length(parameters)
+        if parameters(ii) == 0
+        else
             fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
         end
     case 'DSS'
@@ -263,7 +265,8 @@ switch isothermModel
         percentageError = conRange95./parameters' *100;
         parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
         units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
-        for ii = 1:length(parameters)
+        if parameters(ii) == 0
+        else
             fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
         end
     case 'SSS'
@@ -318,7 +321,10 @@ switch isothermModel
         parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
         units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
         for ii = 1:length(parameters)
-            fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+            if parameters(ii) == 0
+            else
+                fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+            end
         end
 end
 %% PLOT RESULTING OUTPUTS
