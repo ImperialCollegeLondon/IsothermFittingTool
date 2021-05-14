@@ -41,7 +41,7 @@ nbins = 8;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'SSS';
+isothermModel = 'SSL';
 % Select fitting method.WSS = weighted sum of squares, MLE = max log likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
 % likely to be normally distributed with a mean of 0.
@@ -133,9 +133,11 @@ switch isothermModel
         percentageError = conRange95./parameters' *100;
         parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
         units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
-        if parameters(ii) == 0
-        else
-            fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+        for ii = 1:length(parameters)
+            if parameters(ii) == 0
+            else
+                fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+            end
         end
     case 'SSL'
         rng default % For reproducibility
@@ -210,9 +212,11 @@ switch isothermModel
         percentageError = conRange95./parameters' *100;
         parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
         units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
-        if parameters(ii) == 0
-        else
-            fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+        for ii = 1:length(parameters)
+            if parameters(ii) == 0
+            else
+                fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+            end
         end
     case 'DSS'
         rng default % For reproducibility
@@ -265,9 +269,11 @@ switch isothermModel
         percentageError = conRange95./parameters' *100;
         parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
         units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
-        if parameters(ii) == 0
-        else
-            fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+        for ii = 1:length(parameters)
+            if parameters(ii) == 0
+            else
+                fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+            end
         end
     case 'SSS'
         rng default % For reproducibility
