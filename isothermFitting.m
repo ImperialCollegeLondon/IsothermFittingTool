@@ -26,12 +26,13 @@
 %% INITIALISATION and INPUTS
 % Clear command window and workspace
 clc; clear all;
-% For new data create a new variable (HOME -> New Variable) named 'fitData' 
+% For new data create a new variable (HOME -> New Variable) named 'fitData'
 % (rename on workspace) and save the data as *.mat file in 3 column format
-% with Pressure (bar), adsorbed amount (-), temperature (K) respectively.
-% RUN THE FILE.
-uiopen
+% with Pressure (bar), adsorbed amount (-), temperature (K) respectively
+% with any name of your choice.
+% RUN THIS SCRIPT.
 % Load input experimental data from *.mat or *.csv file via prompt
+uiopen
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range
 % (for Weighted sum of squares method ONLY).
@@ -48,18 +49,18 @@ isothermModel = 'SSL';
 % random and not be normally distributed (data from different sources)
 fittingMethod = 'MLE';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                  %%
+%                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-%            dP                                                            oo   dP   
-%            88                                                                 88   
-%   88d888b. 88 .d8888b. .d8888b. .d8888b. .d8888b.    dP  dP  dP .d8888b. dP d8888P 
-%   88'  `88 88 88ooood8 88'  `88 Y8ooooo. 88ooood8    88  88  88 88'  `88 88   88   
-%   88.  .88 88 88.  ... 88.  .88       88 88.  ...    88.88b.88' 88.  .88 88   88   
-%   88Y888P' dP `88888P' `88888P8 `88888P' `88888P'    8888P Y8P  `88888P8 dP   dP   
-%   88                                                                               
+%
+%            dP                                                            oo   dP
+%            88                                                                 88
+%   88d888b. 88 .d8888b. .d8888b. .d8888b. .d8888b.    dP  dP  dP .d8888b. dP d8888P
+%   88'  `88 88 88ooood8 88'  `88 Y8ooooo. 88ooood8    88  88  88 88'  `88 88   88
+%   88.  .88 88 88.  ... 88.  .88       88 88.  ...    88.88b.88' 88.  .88 88   88
+%   88Y888P' dP `88888P' `88888P8 `88888P' `88888P'    8888P Y8P  `88888P8 dP   dP
+%   88
 %   dP
-% 
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     isotherm parameters can be found in 'parVals' and uncertainties in 'conRange95'    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
