@@ -1,6 +1,6 @@
 # Adsorption Isotherm fitting tool
 
-Fits input experimental adsorption isotherm data to either dual-site Langmuir or dual-site Sips adsorption model, and outputs isotherm parameters and parameter confidence intervals.
+Fits input experimental adsorption isotherm data to different isotherm models, and outputs isotherm parameters and parameter confidence intervals.
 
 ## Main features
 
@@ -20,4 +20,4 @@ Fits input experimental adsorption isotherm data to either dual-site Langmuir or
 - Authors: Hassan Azzan (HA)
 - email: hassan.azzan15@imperial.ac.uk
 
-Last updated: 17/03/2021
+Last updated: 13/04/2021

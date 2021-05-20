@@ -41,7 +41,7 @@ nbins = 8;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'SSL';
+isothermModel = 'DSL';
 % Select fitting method.WSS = weighted sum of squares, MLE = max log likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
 % likely to be normally distributed with a mean of 0.
