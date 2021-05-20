@@ -26,22 +26,21 @@
 %% INITIALISATION and INPUTS
 % Clear command window and workspace
 clc; clear all;
-% For new data create a new variable for editing named 'fitData' and save
-% the data as *.mat file in 3 column format with Pressure (bar), adsorbed
-% amount (-), temperature (K) in the 3 columns respectively.
-% Load input experimental data from *.mat or *.csv file in a 3 column
-% format with Pressure (bar), adsorbed amount (-), temperature (K) in the 3
-% columns respectively. The name of the variable must be 'fitData'
+% For new data create a new variable (HOME -> New Variable) named 'fitData' 
+% (rename on workspace) and save the data as *.mat file in 3 column format
+% with Pressure (bar), adsorbed amount (-), temperature (K) respectively.
+% RUN THE FILE.
 uiopen
+% Load input experimental data from *.mat or *.csv file via prompt
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range
 % (for Weighted sum of squares method ONLY).
 % IF ERROR --> Reduce number of bins until error is gone
-nbins = 8;
+nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'DSL';
+isothermModel = 'SSL';
 % Select fitting method.WSS = weighted sum of squares, MLE = max log likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
 % likely to be normally distributed with a mean of 0.
@@ -49,7 +48,20 @@ isothermModel = 'DSL';
 % random and not be normally distributed (data from different sources)
 fittingMethod = 'MLE';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
+%%                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                  %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%            dP                                                            oo   dP   
+%            88                                                                 88   
+%   88d888b. 88 .d8888b. .d8888b. .d8888b. .d8888b.    dP  dP  dP .d8888b. dP d8888P 
+%   88'  `88 88 88ooood8 88'  `88 Y8ooooo. 88ooood8    88  88  88 88'  `88 88   88   
+%   88.  .88 88 88.  ... 88.  .88       88 88.  ...    88.88b.88' 88.  .88 88   88   
+%   88Y888P' dP `88888P' `88888P8 `88888P' `88888P'    8888P Y8P  `88888P8 dP   dP   
+%   88                                                                               
+%   dP
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     isotherm parameters can be found in 'parVals' and uncertainties in 'conRange95'    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% GENERATING AND SOLVING GLOBAL OPTIMISATION PROBLEM
 % Pressure (x), adsorbed amount (z), Temperature (y) data from input
