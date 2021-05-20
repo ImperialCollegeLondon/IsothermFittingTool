@@ -2,6 +2,9 @@
 
 Fits input experimental adsorption isotherm data to different isotherm models, and outputs isotherm parameters and parameter confidence intervals.
 
+## How to use
+- Open 'isothermFitting.m' and follow remaining instructions at the top of the file.
+
 ## Main features
 
 - Fit adsorption isotherms to dual/single-site Langmuir (DSL/SSL) and dual/single-site Sips (DSS/SSS) isotherms
