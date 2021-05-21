@@ -41,7 +41,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'DSS';
+isothermModel = 'SSL';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -392,7 +392,7 @@ end
 outFit = [Pvals' qvals];
 plot(x,z,'ok');
 xlabel('Pressure [bar]');
-ylabel('q [mol/kg]');
+ylabel('Amount adsorbed [mol/kg]');
 % quantile-quantile plot of experimental data vs normal distribution
 box on
 set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
