@@ -122,6 +122,9 @@ switch isothermModel
         for mm = 1:3
             subplot(1,3,mm)
             contourf(X(:,:,1,mm),Y(:,:,1,mm),Z(:,:,1,mm),50,'--','LineWidth',0.2);
+            box on
+            set(gca,'YScale','linear','XScale','linear','FontSize',10,'LineWidth',1)
+            grid on; axis square
             colorbar('southoutside');
             hold on
             switch mm
@@ -220,6 +223,9 @@ switch isothermModel
             contourf(X(:,:,1,mm),Y(:,:,1,mm),Z(:,:,1,mm),50,'--','LineWidth',0.2);
             colorbar('southoutside');
             hold on
+            box on
+            set(gca,'YScale','linear','XScale','linear','FontSize',10,'LineWidth',1)
+            grid on; axis square
             switch mm
                 case 1
                     plot(qs1,qs2,'r*');

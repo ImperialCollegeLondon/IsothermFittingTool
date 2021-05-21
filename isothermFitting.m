@@ -41,7 +41,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'SSL';
+isothermModel = 'DSS';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -361,8 +361,7 @@ end
 figure
 % plot of experimental data and fitted data (q vs P)
 subplot(1,3,1)
-scatter(outScatter(:,1),outScatter(:,2),5,'sc','MarkerEdgeAlpha',0.2)
-scatter(outScatter(:,1),outScatter(:,2),5,'sc','MarkerEdgeAlpha',0.2)
+scatter(outScatter(:,1),outScatter(:,2),5,'MarkerFaceColor','#D9E9FC','MarkerEdgeAlpha',0.05)
 hold on
 Pvals = linspace(0,max(x),200);
 Tvals = unique(y);
@@ -388,16 +387,22 @@ for jj = 1:length(Pvals)
     end
 end
 for kk = 1:length(Tvals)
-    semilogx(Pvals,qvals(:,kk),'-b','LineWidth',1.5);
+    plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
 end
 outFit = [Pvals' qvals];
 plot(x,z,'ok');
 xlabel('Pressure [bar]');
 ylabel('q [mol/kg]');
 % quantile-quantile plot of experimental data vs normal distribution
+box on
+set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+grid on; axis square
 subplot(1,3,2)
 pd = fitdist(z-qfit,'Normal');
 qqplot(qfit,pd);
+box on
+set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+grid on; axis square
 subplot(1,3,3)
 % Histogram for the error (experimental - fitted q) overlayed by the normal
 % distribution fitted for this error
@@ -410,7 +415,9 @@ yyaxis left
 histogram(z-qfit,15);
 xlabel('error [exp - model]');
 ylabel('Number of points, N_t [-]');
-
+box on
+set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+grid on; axis square
 % Plot the contour plots for the objective function (MLE or WSS) around the
 % optimal parameter values in the combinations qs1-qs2, b01-delU1, and
 % b02-delU2.
