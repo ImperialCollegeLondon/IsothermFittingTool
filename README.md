@@ -3,7 +3,7 @@
 Fits input experimental adsorption isotherm data to different isotherm models, and outputs isotherm parameters and parameter confidence intervals.
 
 ## How to use
-- Open 'isothermFitting.m' and follow remaining instructions at the top of the file.
+- Open 'isothermFitting.m' and follow instructions at the top of the file.
 
 ## Main features
 
