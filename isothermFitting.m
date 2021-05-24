@@ -150,7 +150,7 @@ switch isothermModel
         for ii = 1:length(parameters)
             if parameters(ii) == 0
             else
-                fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+                fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
             end
         end
     case 'SSL'
@@ -229,7 +229,7 @@ switch isothermModel
         for ii = 1:length(parameters)
             if parameters(ii) == 0
             else
-                fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+                fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
             end
         end
     case 'DSS'
@@ -286,7 +286,7 @@ switch isothermModel
         for ii = 1:length(parameters)
             if parameters(ii) == 0
             else
-                fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+                fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
             end
         end
     case 'SSS'
@@ -343,7 +343,7 @@ switch isothermModel
         for ii = 1:length(parameters)
             if parameters(ii) == 0
             else
-                fprintf('%s = %5.2e ± %5.2e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
+                fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parameters(ii),conRange95(ii),units(ii));
             end
         end
 end
