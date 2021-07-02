@@ -45,7 +45,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'DSL';
+isothermModel = 'DSS';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -57,7 +57,7 @@ fittingMethod = 'MLE';
 flagConcUnits = 0;
 % Flag for fixing saturation capacities (0 for CO2 fitting, 1 for other
 % gases)
-flagFixQsat = 1;
+flagFixQsat = 0;
 % IF YOU ARE FIXING SATURATION CAPACITY ENTER THE CO2 SATURATION CAPACITIES
 % FOR THE RELEVANT MODEL BELOW
 qs1 = 1.0851e+1;
@@ -293,9 +293,9 @@ if ~flagFixQsat
             end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
-            x0 = [3,3,1e-5,1e-5,3e4,3e4,1];
+            x0 = [3,3,1e-5,1e-5,1e4,1e4,1];
             lb = [0,0,0,0,0,0,0];
-            ub = [20,20,1,1,5e4,5e4,2];
+            ub = [20,20,1,1,8e4,8e4,2];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -747,6 +747,7 @@ else
             end
     end
 end
+fprintf('%s %5.4e \n','objective function:',fval);
 %% PLOT RESULTING OUTPUTS
 switch isothermModel
     case 'DSL'
