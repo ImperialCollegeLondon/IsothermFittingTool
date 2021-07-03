@@ -45,7 +45,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'DSS';
+isothermModel = 'DSL';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -55,6 +55,10 @@ isothermModel = 'DSS';
 fittingMethod = 'MLE';
 % Flag for concentration units in parameters
 flagConcUnits = 0;
+% Flag for plotting objective function contour plots for dual site models
+flagContour = 0;
+% Flag for plotting q-q plot and error distribution
+flagStats = 0;
 % Flag for fixing saturation capacities (0 for CO2 fitting, 1 for other
 % gases)
 flagFixQsat = 0;
@@ -76,7 +80,7 @@ qs2 = 9.1451e-1;
 %   dP
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% isotherm parameters can be found in 'parsDisp' and uncertainties in 'conRange95Disp' %
+%  isotherm parameters can be found in 'parsDisp' and uncertainties in 'conRange95Disp'  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% GENERATING AND SOLVING GLOBAL OPTIMISATION PROBLEM
 % Pressure (x), adsorbed amount (z), Temperature (y) data from input
@@ -90,7 +94,7 @@ if ~flagFixQsat
     end
     rng default % For reproducibility
     % Create gs, a GlobalSearch solver with its properties set to the defaults.
-    gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',400,'Display','off');
+    gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',1000,'Display','off');
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'DSL'
@@ -162,6 +166,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
@@ -220,7 +225,7 @@ if ~flagFixQsat
                 lb = [0,0];
                 ub = [20,10];
             else
-                x0 = [3,1e-5,3e4];
+                x0 = [3,1e-5,1e4];
                 lb = [0,0,0];
                 ub = [20,1,5e4];
             end
@@ -253,6 +258,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
@@ -322,6 +328,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
@@ -362,9 +369,9 @@ if ~flagFixQsat
             end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
-            x0 = [3,1e-5,3e4,1];
+            x0 = [3,1e-5,1e4,1];
             lb = [0,0,0,0];
-            ub = [20,1,5e4,2];
+            ub = [20,1,9e4,2];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -391,6 +398,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
@@ -790,7 +798,10 @@ if flagConcUnits
 end
 if ~flagConcUnits
     figure
-    subplot(1,3,1)
+    if flagStats
+        subplot(1,3,1)
+    else
+    end
     scatter(outScatter(:,1),outScatter(:,2),5,'MarkerFaceColor','#D9E9FC','MarkerEdgeAlpha',0.05)
     hold on
     for kk = 1:length(Tvals)
@@ -804,40 +815,47 @@ if ~flagConcUnits
     box on
     set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
     grid on; axis square
-    subplot(1,3,2)
-    pd = fitdist(z-qfit,'Normal');
-    qqplot(qfit,pd);
-    box on
-    set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
-    grid on; axis square
-    subplot(1,3,3)
-    % Histogram for the error (experimental - fitted q) overlayed by the normal
-    % distribution fitted for this error
-    x_values = linspace(min(z-qfit),max(z-qfit),100);
-    y_values = pdf(pd,x_values);
-    yyaxis right
-    plot(x_values,y_values,'LineWidth',0.5)
-    ylabel('PDF [-]');
-    yyaxis left
-    histogram(z-qfit,15);
-    xlabel('error [exp - model]');
-    ylabel('Number of points, N_t [-]');
-    box on
-    set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
-    grid on; axis square
-    % Plot the contour plots for the objective function (MLE or WSS) around the
-    % optimal parameter values in the combinations qs1-qs2, b01-delU1, and
-    % b02-delU2.
-    switch isothermModel
-        case 'DSL'
-            if length(unique(y)) == 1
-            else
-                Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parameters);
-            end
-        case 'DSS'
-            if length(unique(y)) == 1
-            else
-                Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parameters);
-            end
+    if flagStats
+        subplot(1,3,2)
+        pd = fitdist(z-qfit,'Normal');
+        qqplot(qfit,pd);
+        box on
+        title('')
+        set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+        grid on; axis square
+        subplot(1,3,3)
+        % Histogram for the error (experimental - fitted q) overlayed by the normal
+        % distribution fitted for this error
+        x_values = linspace(min(z-qfit),max(z-qfit),100);
+        y_values = pdf(pd,x_values);
+        yyaxis right
+        plot(x_values,y_values,'LineWidth',0.5)
+        ylabel('PDF [-]');
+        yyaxis left
+        histogram(z-qfit,15);
+        xlabel('error [exp - model]');
+        ylabel('Number of points, N_t [-]');
+        box on
+        set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+        grid on; axis square
+    else
+    end
+    if ~flagContour
+    else
+        % Plot the contour plots for the objective function (MLE or WSS) around the
+        % optimal parameter values in the combinations qs1-qs2, b01-delU1, and
+        % b02-delU2.
+        switch isothermModel
+            case 'DSL'
+                if length(unique(y)) == 1
+                else
+                    Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parameters);
+                end
+            case 'DSS'
+                if length(unique(y)) == 1
+                else
+                    Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parameters);
+                end
+        end
     end
 end
