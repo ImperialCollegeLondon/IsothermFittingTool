@@ -14,6 +14,7 @@
 % and outputs isotherm parameters and ellipsoidal confidence bounds
 %
 % Last modified:
+% - 2021-07-08, HA: Add capability save resulting data to a *.mat file
 % - 2021-07-01, HA: Add capability to set fixed saturation capacities for
 %                   fitting
 % - 2021-06-16, HA: Add capability to display isotherm parameters in
@@ -57,15 +58,17 @@ fittingMethod = 'MLE';
 flagConcUnits = 0;
 % Flag for plotting objective function contour plots for dual site models
 flagContour = 0;
-% Flag for plotting q-q plot and error distribution
+% Flag for plotting statistical plots (q-q plot and error distribution)
 flagStats = 0;
 % Flag for fixing saturation capacities (0 for CO2 fitting, 1 for other
 % gases)
 flagFixQsat = 0;
+% Flag for saving output in a matfile
+saveFlag = 1;
 % IF YOU ARE FIXING SATURATION CAPACITY ENTER THE CO2 SATURATION CAPACITIES
 % FOR THE RELEVANT MODEL BELOW
-qs1 = 1.0851e+1;
-qs2 = 9.1451e-1;
+qs1 = 0;
+qs2 = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -797,7 +800,7 @@ if flagConcUnits
     outScatter(:,1) = outScatter(:,1)./(1e5./(8.314.*outScatter(:,3)));
 end
 if ~flagConcUnits
-    figure
+%     figure
     if flagStats
         subplot(1,3,1)
     else
@@ -857,5 +860,27 @@ if ~flagConcUnits
                     Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parameters);
                 end
         end
+    end
+end
+
+% Save outputdata
+isothermData.experiment = fitData;
+isothermData.isothermFit = [x qfit y];
+isothermData.confidenceRegion = outScatter;
+isothermData.isothermParameters = [parVals' conRange95Disp];
+if ~saveFlag
+else
+    filename = input('Enter file name: ','s');
+    currentDate=datestr(date,'mmddyy');
+    if exist(['..',filesep,'IsothermFittingTool',filesep','fittingResults'],'dir') == 7
+        % Save the fitting results for further use
+        save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate],'isothermData');
+        clear all
+    else
+        % Create the fitting results folder if it does not exist
+        mkdir(['..',filesep,'IsothermFittingTool',filesep','fittingResults'])
+        % Save the calibration data for further use
+        save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate],'isothermData');
+        clear all
     end
 end
