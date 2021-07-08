@@ -46,7 +46,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'DSL';
+isothermModel = 'DSS';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -62,13 +62,13 @@ flagContour = 0;
 flagStats = 0;
 % Flag for fixing saturation capacities (0 for CO2 fitting, 1 for other
 % gases)
-flagFixQsat = 0;
+flagFixQsat = 1;
 % Flag for saving output in a matfile
-saveFlag = 1;
+saveFlag = 0;
 % IF YOU ARE FIXING SATURATION CAPACITY ENTER THE CO2 SATURATION CAPACITIES
 % FOR THE RELEVANT MODEL BELOW
-qs1 = 0;
-qs2 = 0;
+qs1 = 3.6749e+00;
+qs2 = 6.6845e+00;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -135,7 +135,7 @@ if ~flagFixQsat
                 lb = [0,0,0,0];
                 ub = [20,20,10,10];
             else
-                x0 = [3,3,1e-5,1e-5,1e4,1e4];
+                x0 = [3,3,1e-5,1e-5,5e4,5e4];
                 lb = [0,0,0,0,0,0];
                 ub = [20,20,1,1,7e4,7e4];
             end
@@ -302,7 +302,7 @@ if ~flagFixQsat
             end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
-            x0 = [3,3,1e-5,1e-5,1e4,1e4,1];
+            x0 = [3,3,1e-5,1e-5,2e4,2e4,1];
             lb = [0,0,0,0,0,0,0];
             ub = [20,20,1,1,8e4,8e4,2];
             % Create global optimisation problem with solver 'fmincon' and
@@ -867,7 +867,7 @@ end
 isothermData.experiment = fitData;
 isothermData.isothermFit = [x qfit y];
 isothermData.confidenceRegion = outScatter;
-isothermData.isothermParameters = [parVals' conRange95Disp];
+isothermData.isothermParameters = [parameters' conRange95Disp];
 if ~saveFlag
 else
     filename = input('Enter file name: ','s');
