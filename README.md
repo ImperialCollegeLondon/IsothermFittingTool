@@ -12,6 +12,7 @@ Fits input experimental adsorption isotherm data to different isotherm models, a
 - Determines individual confidence intervals based on the diagonal covariance matrix of the of the model to fitted parameters
 - Generates contour plots for combinations of parameter pairs to identify correlation between parameters
 - Generates plot of uncertainty in isotherm (solid loading) with respect to pressure based on uncertainty in fitted parameters
+- Save fitted parameters and confidence regions in a .mat file
 
 ### Other details
 - Institution: Imperial College London, United Kingdom
@@ -23,4 +24,4 @@ Fits input experimental adsorption isotherm data to different isotherm models, a
 - Authors: Hassan Azzan (HA)
 - email: hassan.azzan15@imperial.ac.uk
 
-Last updated: 20/05/2021
+Last updated: 08/07/2021
