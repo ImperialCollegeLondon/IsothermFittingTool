@@ -37,22 +37,22 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parVals)
+function Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parVals)
 switch isothermModel
     % For DSL model
     case 'DSL'
         % Determine number of points to consider in each axis
         nPoints = 200;
         % Obtain optimal parameter values from input
-        qs1 = parVals(1);
-        qs2 = parVals(2);
-        b01 =  parVals(3);
-        b02 =  parVals(4);
-        delU1 =  parVals(5);
-        delU2= parVals(6);
+        qs1 = parVals(1)./isoRef(1);
+        qs2 = parVals(2)./isoRef(2);
+        b01 =  parVals(3)./isoRef(3);
+        b02 =  parVals(4)./isoRef(4);
+        delU1 =  parVals(5)./isoRef(5);
+        delU2= parVals(6)./isoRef(6);
         % Define lower and upper bounds for parameters for contour plots
-        parLB = 0.1.*parVals;
-        parUB = 1.9.*parVals;
+        parLB = 0.1.*parVals.*isoRef;
+        parUB = 1.9.*parVals.*isoRef;
         % Create matrix for parameter range
         parRange = [];
         for jj = 1:length(parVals)
@@ -77,10 +77,10 @@ switch isothermModel
             for kk =1:nPoints
                 switch fittingMethod
                     case 'WSS'
-                        Z(jj,kk,1,1) = generateWSSfun(x,y,z, nbins,  isothermModel, qs1vals(jj), qs2vals(kk), b01, b02, delU1, delU2);
+                        Z(jj,kk,1,1) = generateWSSfun(x,y,z, nbins,  isothermModel, isoRef, qs1vals(jj), qs2vals(kk), b01, b02, delU1, delU2);
                     case 'MLE'
                         nbins = 1;
-                        Z(jj,kk,1,1) = generateMLEfun(x,y,z, nbins,  isothermModel, qs1vals(jj), qs2vals(kk), b01, b02, delU1, delU2);
+                        Z(jj,kk,1,1) = generateMLEfun(x,y,z, nbins,  isothermModel, isoRef, qs1vals(jj), qs2vals(kk), b01, b02, delU1, delU2);
                 end
             end
         end
@@ -93,10 +93,10 @@ switch isothermModel
             for kk =1:nPoints
                 switch fittingMethod
                     case 'WSS'
-                        Z(jj,kk,1,2) = generateWSSfun(x,y,z, nbins,  isothermModel, qs1, qs2, b01vals(jj), b02, delU1vals(kk), delU2);
+                        Z(jj,kk,1,2) = generateWSSfun(x,y,z, nbins,  isothermModel, isoRef, qs1, qs2, b01vals(jj), b02, delU1vals(kk), delU2);
                     case 'MLE'
                         nbins = 1;
-                        Z(jj,kk,1,2) = generateMLEfun(x,y,z, nbins,  isothermModel, qs1, qs2, b01vals(jj), b02, delU1vals(kk), delU2);
+                        Z(jj,kk,1,2) = generateMLEfun(x,y,z, nbins,  isothermModel, isoRef, qs1, qs2, b01vals(jj), b02, delU1vals(kk), delU2);
                 end
             end
         end
@@ -109,10 +109,10 @@ switch isothermModel
             for kk =1:nPoints
                 switch fittingMethod
                     case 'WSS'
-                        Z(jj,kk,1,3) = generateWSSfun(x,y,z, nbins,  isothermModel, qs1, qs2, b01, b02vals(jj), delU1, delU2vals(kk));
+                        Z(jj,kk,1,3) = generateWSSfun(x,y,z, nbins,  isothermModel, isoRef, qs1, qs2, b01, b02vals(jj), delU1, delU2vals(kk));
                     case 'MLE'
                         nbins = 1;
-                        Z(jj,kk,1,3) = generateMLEfun(x,y,z, nbins,  isothermModel, qs1, qs2, b01, b02vals(jj), delU1, delU2vals(kk));
+                        Z(jj,kk,1,3) = generateMLEfun(x,y,z, nbins,  isothermModel, isoRef, qs1, qs2, b01, b02vals(jj), delU1, delU2vals(kk));
                 end
             end
         end
@@ -147,16 +147,16 @@ switch isothermModel
         % For DSL model
     case 'DSS'
         nPoints = 200;
-        qs1 = parVals(1);
-        qs2 = parVals(2);
-        b01 =  parVals(3);
-        b02 =  parVals(4);
-        delU1 =  parVals(5);
-        delU2= parVals(6);
-        gamma= parVals(7);
-        
-        parLB = 0.1.*parVals;
-        parUB = 1.9.*parVals;
+        qs1 = parVals(1)./isoRef(1);
+        qs2 = parVals(2)./isoRef(2);
+        b01 =  parVals(3)./isoRef(3);
+        b02 =  parVals(4)./isoRef(4);
+        delU1 =  parVals(5)./isoRef(5);
+        delU2= parVals(6)./isoRef(6);
+        gamma= parVals(6)./isoRef(7);
+        % Define lower and upper bounds for parameters for contour plots
+        parLB = 0.1.*parVals.*isoRef;
+        parUB = 1.9.*parVals.*isoRef;
         
         parRange = [];
         for jj = 1:length(parVals)
@@ -181,10 +181,10 @@ switch isothermModel
             for kk =1:nPoints
                 switch fittingMethod
                     case 'WSS'
-                        Z(jj,kk,1,1) = generateWSSfun(x,y,z, nbins,  isothermModel, qs1vals(jj), qs2vals(kk), b01, b02, delU1, delU2, gamma);
+                        Z(jj,kk,1,1) = generateWSSfun(x,y,z, nbins,  isothermModel, isoRef, qs1vals(jj), qs2vals(kk), b01, b02, delU1, delU2, gamma);
                     case 'MLE'
                         nbins = 1;
-                        Z(jj,kk,1,1) = generateMLEfun(x,y,z, nbins,  isothermModel, qs1vals(jj), qs2vals(kk), b01, b02, delU1, delU2, gamma);
+                        Z(jj,kk,1,1) = generateMLEfun(x,y,z, nbins,  isothermModel, isoRef, qs1vals(jj), qs2vals(kk), b01, b02, delU1, delU2, gamma);
                 end
             end
         end
@@ -195,10 +195,10 @@ switch isothermModel
             for kk =1:nPoints
                 switch fittingMethod
                     case 'WSS'
-                        Z(jj,kk,1,2) = generateWSSfun(x,y,z, nbins,  isothermModel, qs1, qs2, b01vals(jj), b02, delU1vals(kk), delU2, gamma);
+                        Z(jj,kk,1,2) = generateWSSfun(x,y,z, nbins,  isothermModel, isoRef, qs1, qs2, b01vals(jj), b02, delU1vals(kk), delU2, gamma);
                     case 'MLE'
                         nbins = 1;
-                        Z(jj,kk,1,2) = generateMLEfun(x,y,z, nbins,  isothermModel, qs1, qs2, b01vals(jj), b02, delU1vals(kk), delU2, gamma);
+                        Z(jj,kk,1,2) = generateMLEfun(x,y,z, nbins,  isothermModel, isoRef, qs1, qs2, b01vals(jj), b02, delU1vals(kk), delU2, gamma);
                 end
             end
         end
@@ -209,10 +209,10 @@ switch isothermModel
             for kk =1:nPoints
                 switch fittingMethod
                     case 'WSS'
-                        Z(jj,kk,1,3) = generateWSSfun(x,y,z, nbins,  isothermModel, qs1, qs2, b01, b02vals(jj), delU1, delU2vals(kk), gamma);
+                        Z(jj,kk,1,3) = generateWSSfun(x,y,z, nbins,  isothermModel, isoRef, qs1, qs2, b01, b02vals(jj), delU1, delU2vals(kk), gamma);
                     case 'MLE'
                         nbins = 1;
-                        Z(jj,kk,1,3) = generateMLEfun(x,y,z, nbins,  isothermModel, qs1, qs2, b01, b02vals(jj), delU1, delU2vals(kk), gamma);
+                        Z(jj,kk,1,3) = generateMLEfun(x,y,z, nbins,  isothermModel, isoRef, qs1, qs2, b01, b02vals(jj), delU1, delU2vals(kk), gamma);
                 end
             end
         end

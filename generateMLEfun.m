@@ -34,7 +34,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function objfun = generateMLEfun(x,y,z, nbins, isothermModel, varargin)
+function objfun = generateMLEfun(x,y,z, nbins, isothermModel, isoRef, varargin)
 % Discretize the data range into 'nbins' evenly spaced bins of pressure
 % ranges ('nbins = 1' for MLE')
 [bins] = discretize(x,nbins);
@@ -47,12 +47,12 @@ Nt = length(bins);
 switch isothermModel
     % Calculate error for DSL model
     case 'DSL'
-        qs1 = varargin{1};
-        qs2 = varargin{2};
-        b01 = varargin{3};
-        b02 = varargin{4};
-        delU1 = varargin{5};
-        delU2 = varargin{6};
+        qs1 = varargin{1}.*isoRef(1);
+        qs2 = varargin{2}.*isoRef(2);
+        b01 = varargin{3}.*isoRef(3);
+        b02 = varargin{4}.*isoRef(4);
+        delU1 = varargin{5}.*isoRef(5);
+        delU2 = varargin{6}.*isoRef(6);
         
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
@@ -67,13 +67,14 @@ switch isothermModel
         end
     % Calculate error for DSS model
     case 'DSS'
-        qs1 = varargin{1};
-        qs2 = varargin{2};
-        b01 = varargin{3};
-        b02 = varargin{4};
-        delU1 = varargin{5};
-        delU2 = varargin{6};
-        gamma = varargin{7};
+        qs1 = varargin{1}.*isoRef(1);
+        qs2 = varargin{2}.*isoRef(2);
+        b01 = varargin{3}.*isoRef(3);
+        b02 = varargin{4}.*isoRef(4);
+        delU1 = varargin{5}.*isoRef(5);
+        delU2 = varargin{6}.*isoRef(6);
+        gamma = varargin{7}.*isoRef(7);
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)

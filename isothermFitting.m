@@ -59,7 +59,7 @@ flagConcUnits = 0;
 % Flag for plotting objective function contour plots for dual site models
 flagContour = 0;
 % Flag for plotting statistical plots (q-q plot and error distribution)
-flagStats = 0;
+flagStats = 1;
 % Flag for fixing saturation capacities (0 for CO2 fitting, 1 for other
 % gases)
 flagFixQsat = 0;
@@ -102,6 +102,8 @@ if ~flagFixQsat
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'DSL'
+            % Reference isotherm parameters for non-dimensionalisation
+            isoRef = [20,20,1,1,10e4,10e4];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -110,35 +112,35 @@ if ~flagFixQsat
                     nbins =1;
                     if length(unique(y)) == 1 % if only one temperature
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', par(1), par(2), par(3), ...
+                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', isoRef, par(1), par(2), par(3), ...
                             par(4), 0, 0);
                     else
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', par(1), par(2), par(3), ...
+                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', isoRef, par(1), par(2), par(3), ...
                             par(4), par(5), par(6));
                     end
                 case 'WSS'
                     % Generate objective function for WSS method
                     if length(unique(y)) == 1
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', par(1), par(2), par(3), ...
+                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', isoRef, par(1), par(2), par(3), ...
                             par(4), 0, 0);
                     else
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', par(1), par(2), par(3), ...
+                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', isoRef, par(1), par(2), par(3), ...
                             par(4), par(5), par(6));
                     end
             end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             if length(unique(y)) == 1 % if only one temperature
-                x0 = [1, 1,1e-1,1e-1];
+                x0 = [0.5, 0.5,0.5,0.5];
                 lb = [0,0,0,0];
-                ub = [20,20,10,10];
+                ub = [1,1,1,1];
             else
-                x0 = [3,3,1e-5,1e-5,1e4,1e4];
+                x0 = [0.5,0.5,0.5,0.5,0.5,0.5];
                 lb = [0,0,0,0,0,0];
-                ub = [20,20,1,1,10e4,10e4];
+                ub = [1,1,1,1,1,1];
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
@@ -147,16 +149,16 @@ if ~flagFixQsat
             % for the fit
             [parVals, fval]= run(gs,problem);
             % Set fitted parameter values for isotherm model calculation
-            qs1   = parVals(1);
-            qs2   = parVals(2);
-            b01   = parVals(3);
-            b02   = parVals(4);
+            qs1   = parVals(1).*isoRef(1);
+            qs2   = parVals(2).*isoRef(2);
+            b01   = parVals(3).*isoRef(3);
+            b02   = parVals(4).*isoRef(4);
             if length(unique(y)) == 1 % if only one temperature
                 delU1 = 0;
                 delU2 = 0;
             else
-                delU1 = parVals(5);
-                delU2 = parVals(6);
+                delU1 = parVals(5).*isoRef(5);
+                delU2 = parVals(6).*isoRef(6);
             end
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
@@ -195,6 +197,8 @@ if ~flagFixQsat
                 end
             end
         case 'SSL'
+            % Reference isotherm parameters for non-dimensionalisation
+            isoRef = [20,20,1,1,10e4,10e4];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -225,13 +229,13 @@ if ~flagFixQsat
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             if length(unique(y)) == 1 % if only one temperature
-                x0 = [3,1e-5];
+                x0 = [0.5,0.5];
                 lb = [0,0];
-                ub = [20,10];
+                ub = [1,1];
             else
-                x0 = [3,1e-5,2e4];
+                x0 = [0.5,0.5,0.5];
                 lb = [0,0,0];
-                ub = [20,1,10e4];
+                ub = [1,1,1];
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
@@ -240,14 +244,14 @@ if ~flagFixQsat
             % for the fit
             [parVals, fval]= run(gs,problem);
             % Set fitted parameter values for isotherm model calculation
-            qs1   = parVals(1);
+            qs1   = parVals(1).*isoRef(1);
             qs2   = 0;
-            b01   = parVals(2);
+            b01   = parVals(2).*isoRef(3);
             b02   = 0;
             if length(unique(y)) == 1 % if only one temperature
                 delU1 = 0;
             else
-                delU1 = parVals(3);
+                delU1 = parVals(3).*isoRef(5);
             end
             delU2 = 0;
             % Calculate fitted isotherm loadings for conditions (P,T)
@@ -287,6 +291,8 @@ if ~flagFixQsat
                 end
             end
         case 'DSS'
+            % Reference isotherm parameters for non-dimensionalisation
+            isoRef = [20,20,1,1,10e4,10e4,2];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -294,18 +300,18 @@ if ~flagFixQsat
                     % weights cannot be assigned in MLE
                     nbins =1;
                     % Generate objective function for MLE method
-                    optfunc = @(par) generateMLEfun(x, y, z, nbins, isothermModel, par(1), par(2), par(3), ...
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, isothermModel, isoRef, par(1), par(2), par(3), ...
                         par(4), par(5), par(6), par(7));
                 case 'WSS'
                     % Generate objective function for WSS method
-                    optfunc = @(par) generateWSSfun(x, y, z, nbins, isothermModel, par(1), par(2), par(3), ...
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, isothermModel, isoRef, par(1), par(2), par(3), ...
                         par(4), par(5), par(6), par(7));
             end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
-            x0 = [3,3,1e-5,1e-5,2e4,2e4,1];
+            x0 = [0.5,0.5,0.5,0.5,0.5,0.5,0.5];
             lb = [0,0,0,0,0,0,0];
-            ub = [20,20,1,1,8e4,8e4,2];
+            ub = [1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -313,13 +319,13 @@ if ~flagFixQsat
             % for the fit
             [parVals, fval]= run(gs,problem);
             % Set fitted parameter values for isotherm model calculation
-            qs1   = parVals(1);
-            qs2   = parVals(2);
-            b01   = parVals(3);
-            b02   = parVals(4);
-            delU1 = parVals(5);
-            delU2 = parVals(6);
-            gamma = parVals(7);
+            qs1   = parVals(1).*isoRef(1);
+            qs2   = parVals(2).*isoRef(2);
+            b01   = parVals(3).*isoRef(3);
+            b02   = parVals(4).*isoRef(4);
+            delU1 = parVals(5).*isoRef(5);
+            delU2 = parVals(6).*isoRef(6);
+            gamma = parVals(7).*isoRef(7);
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y))).^gamma./(1+(b01.*x.*exp(delU1./(8.314.*y))).^gamma) ...
@@ -357,6 +363,8 @@ if ~flagFixQsat
                 end
             end
         case 'SSS'
+            % Reference isotherm parameters for non-dimensionalisation
+            isoRef = [20,20,1,1,10e4,10e4,2];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -364,18 +372,18 @@ if ~flagFixQsat
                     % weights cannot be assigned in MLE
                     nbins =1;
                     % Generate objective function for MLE method
-                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSS', par(1), 0, par(2), ...
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSS', isoRef, par(1), 0, par(2), ...
                         0, par(3), 0, par(4));
                 case 'WSS'
                     % Generate objective function for WSS method
-                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSS', par(1), 0, par(2), ...
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSS', isoRef, par(1), 0, par(2), ...
                         0, par(3), 0, par(4));
             end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
-            x0 = [3,1e-5,1e4,1];
+            x0 = [0.5,0.5,0.5,0.5];
             lb = [0,0,0,0];
-            ub = [20,1,9e4,2];
+            ub = [1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -383,13 +391,13 @@ if ~flagFixQsat
             % for the fit
             [parVals, fval]= run(gs,problem);
             % Set fitted parameter values for isotherm model calculation
-            qs1   = parVals(1);
+            qs1   = parVals(1).*isoRef(1);
             qs2   = 0;
-            b01   = parVals(2);
+            b01   = parVals(2).*isoRef(3);
             b02   = 0;
-            delU1 = parVals(3);
+            delU1 = parVals(3).*isoRef(5);
             delU2 = 0;
-            gamma = parVals(4);
+            gamma = parVals(4).*isoRef(7);
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y))).^gamma./(1+(b01.*x.*exp(delU1./(8.314.*y))).^gamma) ...
@@ -437,6 +445,8 @@ else
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'DSL'
+            % Reference isotherm parameters for non-dimensionalisation
+            isoRef = [20,20,1,1,10e4,10e4];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -445,35 +455,35 @@ else
                     nbins =1;
                     if length(unique(y)) == 1 % if only one temperature
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', qs1, qs2, par(1), ...
+                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', isoRef, qs1, qs2, par(1), ...
                             par(2), 0, 0);
                     else
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', qs1, qs2, par(1), ...
+                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', isoRef, qs1, qs2, par(1), ...
                             par(2), par(3), par(4));
                     end
                 case 'WSS'
                     % Generate objective function for WSS method
                     if length(unique(y)) == 1
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', qs1, qs2, par(1), ...
+                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', isoRef, qs1, qs2, par(1), ...
                             par(2), 0, 0);
                     else
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', qs1, qs2, par(1), ...
+                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', isoRef, qs1, qs2, par(1), ...
                             par(2), par(3), par(4));
                     end
             end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             if length(unique(y)) == 1 % if only one temperature
-                x0 = [1e-5,1e-5];
-                lb = [0,0,0,0];
-                ub = [20,20,10,10];
+                x0 = [0.5,0.5];
+                lb = [0,0];
+                ub = [1,1];
             else
-                x0 = [1e-5,1e-5,3e4,3e4];
+                x0 = [0.5,0.5,0.5,0.5];
                 lb = [0,0,0,0];
-                ub = [1,1,7e4,7e4];
+                ub = [1,1,1,1];
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
@@ -484,14 +494,14 @@ else
             % Set fitted parameter values for isotherm model calculation
             qs1   = qs1;
             qs2   = qs2;
-            b01   = parVals(1);
-            b02   = parVals(2);
+            b01   = parVals(1).*isoRef(3);
+            b02   = parVals(2).*isoRef(4);
             if length(unique(y)) == 1 % if only one temperature
                 delU1 = 0;
                 delU2 = 0;
             else
-                delU1 = parVals(3);
-                delU2 = parVals(4);
+                delU1 = parVals(3).*isoRef(5);
+                delU2 = parVals(4).*isoRef(6);
             end
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
@@ -529,6 +539,8 @@ else
                 end
             end
         case 'SSL'
+            % Reference isotherm parameters for non-dimensionalisation
+            isoRef = [20,20,1,1,10e4,10e4];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -537,35 +549,35 @@ else
                     nbins =1;
                     if length(unique(y)) == 1 % if only one temperature
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', qs1, 0, par(1), ...
+                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', isoRef, qs1, 0, par(1), ...
                             0, 0, 0);
                     else
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', qs1, 0, par(1), ...
+                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', isoRef, qs1, 0, par(1), ...
                             0, par(2), 0);
                     end
                 case 'WSS'
                     % Generate objective function for WSS method
                     if length(unique(y)) == 1
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', qs1, 0, par(1), ...
+                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', isoRef, qs1, 0, par(1), ...
                             0, 0, 0);
                     else
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', qs1, 0, par(1), ...
+                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', isoRef, qs1, 0, par(1), ...
                             0, par(2), 0);
                     end
             end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             if length(unique(y)) == 1 % if only one temperature
-                x0 = [1e-5];
+                x0 = [0.5];
                 lb = [0];
-                ub = [10];
+                ub = [1];
             else
-                x0 = [1e-5,3e4];
+                x0 = [0.5,0.5];
                 lb = [0,0];
-                ub = [1,5e4];
+                ub = [1,1];
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
@@ -576,12 +588,12 @@ else
             % Set fitted parameter values for isotherm model calculation
             qs1   = qs1;
             qs2   = 0;
-            b01   = parVals(1);
+            b01   = parVals(1).*isoRef(3);
             b02   = 0;
             if length(unique(y)) == 1 % if only one temperature
                 delU1 = 0;
             else
-                delU1 = parVals(2);
+                delU1 = parVals(2).*isoRef(5);
             end
             delU2 = 0;
             % Calculate fitted isotherm loadings for conditions (P,T)
@@ -620,6 +632,8 @@ else
                 end
             end
         case 'DSS'
+            % Reference isotherm parameters for non-dimensionalisation
+            isoRef = [20,20,1,1,10e4,10e4,2];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -627,18 +641,18 @@ else
                     % weights cannot be assigned in MLE
                     nbins =1;
                     % Generate objective function for MLE method
-                    optfunc = @(par) generateMLEfun(x, y, z, nbins, isothermModel, qs1, qs2, par(1), ...
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, isothermModel, isoRef, qs1, qs2, par(1), ...
                         par(2), par(3), par(4), par(5));
                 case 'WSS'
                     % Generate objective function for WSS method
-                    optfunc = @(par) generateWSSfun(x, y, z, nbins, isothermModel, qs1, qs2, par(1), ...
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, isothermModel, isoRef, qs1, qs2, par(1), ...
                         par(2), par(3), par(4), par(5));
             end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
-            x0 = [1e-5,1e-5,3e4,3e4,1];
+            x0 = [0.5,0.5,0.5,0.5,0.5];
             lb = [0,0,0,0,0];
-            ub = [1,1,5e4,5e4,2];
+            ub = [1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -648,11 +662,11 @@ else
             % Set fitted parameter values for isotherm model calculation
             qs1   = qs1;
             qs2   = qs2;
-            b01   = parVals(1);
-            b02   = parVals(2);
-            delU1 = parVals(3);
-            delU2 = parVals(4);
-            gamma = parVals(5);
+            b01   = parVals(1).*isoRef(3);
+            b02   = parVals(2).*isoRef(4);
+            delU1 = parVals(3).*isoRef(5);
+            delU2 = parVals(4).*isoRef(6);
+            gamma = parVals(5).*isoRef(7);
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y))).^gamma./(1+(b01.*x.*exp(delU1./(8.314.*y))).^gamma) ...
@@ -689,6 +703,8 @@ else
                 end
             end
         case 'SSS'
+            % Reference isotherm parameters for non-dimensionalisation
+            isoRef = [20,20,1,1,10e4,10e4,2];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -696,18 +712,18 @@ else
                     % weights cannot be assigned in MLE
                     nbins =1;
                     % Generate objective function for MLE method
-                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSS', qs1, 0, par(1), ...
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSS', isoRef, qs1, 0, par(1), ...
                         0, par(2), 0, par(3));
                 case 'WSS'
                     % Generate objective function for WSS method
-                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSS', qs1, 0, par(1), ...
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSS', isoRef, qs1, 0, par(1), ...
                         0, par(2), 0, par(3));
             end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
-            x0 = [1e-5,3e4,1];
+            x0 = [0.5,0.5,0.5];
             lb = [0,0,0];
-            ub = [1,5e4,2];
+            ub = [1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -717,11 +733,11 @@ else
             % Set fitted parameter values for isotherm model calculation
             qs1   = qs1;
             qs2   = 0;
-            b01   = parVals(1);
+            b01   = parVals(1).*isoRef(3);
             b02   = 0;
-            delU1 = parVals(2);
+            delU1 = parVals(2).*isoRef(5);
             delU2 = 0;
-            gamma = parVals(3);
+            gamma = parVals(3).*isoRef(7);
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y))).^gamma./(1+(b01.*x.*exp(delU1./(8.314.*y))).^gamma) ...
@@ -853,12 +869,12 @@ if ~flagConcUnits
             case 'DSL'
                 if length(unique(y)) == 1
                 else
-                    Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parameters);
+                    Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
                 end
             case 'DSS'
                 if length(unique(y)) == 1
                 else
-                    Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod,parameters);
+                    Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
                 end
         end
     end
