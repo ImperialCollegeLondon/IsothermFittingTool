@@ -59,7 +59,7 @@ flagConcUnits = 0;
 % Flag for plotting objective function contour plots for dual site models
 flagContour = 0;
 % Flag for plotting statistical plots (q-q plot and error distribution)
-flagStats = 1;
+flagStats = 0;
 % Flag for fixing saturation capacities (0 for CO2 fitting, 1 for other
 % gases)
 flagFixQsat = 0;
@@ -103,7 +103,7 @@ if ~flagFixQsat
     switch isothermModel
         case 'DSL'
             % Reference isotherm parameters for non-dimensionalisation
-            isoRef = [20,20,1,1,10e4,10e4];
+            isoRef = [20,20,0.1,0.1,10e4,10e4];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -198,7 +198,7 @@ if ~flagFixQsat
             end
         case 'SSL'
             % Reference isotherm parameters for non-dimensionalisation
-            isoRef = [20,20,1,1,10e4,10e4];
+            isoRef = [20,20,0.1,0.1,10e4,10e4];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -207,22 +207,22 @@ if ~flagFixQsat
                     nbins =1;
                     if length(unique(y)) == 1 % if only one temperature
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', par(1), 0, par(2), ...
+                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', isoRef, par(1), 0, par(2), ...
                             0, 0, 0);
                     else
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', par(1), 0, par(2), ...
+                        optfunc = @(par) generateMLEfun(x, y, z, nbins, 'DSL', isoRef, par(1), 0, par(2), ...
                             0, par(3), 0);
                     end
                 case 'WSS'
                     % Generate objective function for WSS method
                     if length(unique(y)) == 1
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', par(1), 0, par(2), ...
+                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', isoRef, par(1), 0, par(2), ...
                             0, 0, 0);
                     else
                         % Generate objective function for MLE method
-                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', par(1), 0, par(2), ...
+                        optfunc = @(par) generateWSSfun(x, y, z, nbins, 'DSL', isoRef, par(1), 0, par(2), ...
                             0, par(3), 0);
                     end
             end
@@ -292,7 +292,7 @@ if ~flagFixQsat
             end
         case 'DSS'
             % Reference isotherm parameters for non-dimensionalisation
-            isoRef = [20,20,1,1,10e4,10e4,2];
+            isoRef = [20,20,0.1,0.1,10e4,10e4,2];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -364,7 +364,7 @@ if ~flagFixQsat
             end
         case 'SSS'
             % Reference isotherm parameters for non-dimensionalisation
-            isoRef = [20,20,1,1,10e4,10e4,2];
+            isoRef = [20,20,0.1,0.1,10e4,10e4,2];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -446,7 +446,7 @@ else
     switch isothermModel
         case 'DSL'
             % Reference isotherm parameters for non-dimensionalisation
-            isoRef = [20,20,1,1,10e4,10e4];
+            isoRef = [20,20,0.1,0.1,10e4,10e4];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -540,7 +540,7 @@ else
             end
         case 'SSL'
             % Reference isotherm parameters for non-dimensionalisation
-            isoRef = [20,20,1,1,10e4,10e4];
+            isoRef = [20,20,0.1,0.1,10e4,10e4];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -633,7 +633,7 @@ else
             end
         case 'DSS'
             % Reference isotherm parameters for non-dimensionalisation
-            isoRef = [20,20,1,1,10e4,10e4,2];
+            isoRef = [20,20,0.1,0.1,10e4,10e4,2];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -704,7 +704,7 @@ else
             end
         case 'SSS'
             % Reference isotherm parameters for non-dimensionalisation
-            isoRef = [20,20,1,1,10e4,10e4,2];
+            isoRef = [20,20,0.1,0.1,10e4,10e4,2];
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'

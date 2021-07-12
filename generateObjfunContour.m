@@ -51,8 +51,8 @@ switch isothermModel
         delU1 =  parVals(5)./isoRef(5);
         delU2= parVals(6)./isoRef(6);
         % Define lower and upper bounds for parameters for contour plots
-        parLB = 0.1.*parVals.*isoRef;
-        parUB = 1.9.*parVals.*isoRef;
+        parLB = 0.1.*parVals./isoRef;
+        parUB = 1.9.*parVals./isoRef;
         % Create matrix for parameter range
         parRange = [];
         for jj = 1:length(parVals)
@@ -155,8 +155,8 @@ switch isothermModel
         delU2= parVals(6)./isoRef(6);
         gamma= parVals(6)./isoRef(7);
         % Define lower and upper bounds for parameters for contour plots
-        parLB = 0.1.*parVals.*isoRef;
-        parUB = 1.9.*parVals.*isoRef;
+        parLB = 0.1.*parVals./isoRef;
+        parUB = 1.9.*parVals./isoRef;
         
         parRange = [];
         for jj = 1:length(parVals)
