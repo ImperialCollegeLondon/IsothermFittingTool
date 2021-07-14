@@ -45,6 +45,30 @@ err = zeros(nbins,1);
 % Number of data points
 Nt = length(bins);
 
+expData = [x,z,y];
+expData = sortrows(expData,3);
+
+x = expData(:,1);
+z = expData(:,2);
+y = expData(:,3);
+
+temperatureValues = unique(y);
+qRefIndexTemp = zeros(length(temperatureValues),1);
+for ii = 1:length(temperatureValues)
+    qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
+    qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
+end
+
+% Find qref for the experimental data
+qRefMax = max(z(qRefIndexTemp(:,2)));
+qRefTemp = z(qRefIndexTemp(:,2));
+normalizationFactorTemp = qRefMax./qRefTemp;
+normalizationFactor = zeros(length(x),1);
+
+for ii = 1:length(temperatureValues)
+    normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
+end
+
 % Calculate error based on isotherm model
 switch isothermModel
     % Calculate error for DSL model
@@ -64,7 +88,7 @@ switch isothermModel
                 qfun = qs1*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
                     + qs2*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))));
                 if bins(kk) == jj
-                    err(jj) = (err(jj) + (z(kk) - qfun)^2);
+                    err(jj) = (err(jj) + (normalizationFactor(kk).*(z(kk) - qfun))^2);
                 end
             end
             % sum of error in bin is multiplied by the weight
@@ -87,7 +111,7 @@ switch isothermModel
                 qfun = qs1*(b01*x(kk)*exp(delU1/(8.314*y(kk))))^gamma/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^gamma) ...
                     + qs2*(b02*x(kk)*exp(delU2/(8.314*y(kk))))^gamma/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk))))^gamma);
                 if bins(kk) == jj
-                    err(jj) = (err(jj) + (z(kk) - qfun)^2);
+                    err(jj) = (err(jj) + (normalizationFactor(kk).*(z(kk) - qfun))^2);
                 end
             end
             err(jj) = err(jj)*weights(jj);
