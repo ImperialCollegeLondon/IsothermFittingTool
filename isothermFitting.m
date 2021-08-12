@@ -106,9 +106,9 @@ if ~flagFixQsat
         case 'DSL'
             % Reference isotherm parameters for non-dimensionalisation
             if flagConcUnits
-                isoRef = [10,10,1e-5,1e-5,4e4,4e4];
+                isoRef = [11,11,1e-3,1e-3,4e4,4e4];
             else
-                isoRef = [10,10,1e-1,1e-1,4e4,4e4];
+                isoRef = [11,11,1e-1,1e-1,4e4,4e4];
             end
             % Set objective function based on fitting method
             switch fittingMethod
@@ -845,12 +845,12 @@ for jj = 1:length(Pvals)
     end
 end
 if flagConcUnits
-    Pvals = Pvals./(1e5./(8.314.*y));
-    x = x./(1e5./(8.314.*y));
+%     Pvals = Pvals./(1e5./(8.314.*y));
+%     x = x./(1e5./(8.314.*y));
     outScatter(:,1) = outScatter(:,1)./(1e5./(8.314.*outScatter(:,3)));
 end
 if ~flagConcUnits
-    figure
+    figure(1)
     if flagStats
         subplot(1,3,1)
     else
@@ -939,4 +939,6 @@ figure
 plot(isothermData.isothermFit(:,1),isothermData.isothermFit(:,2:end),'-k')
 hold on;
 plot(isothermData.experiment(:,1),isothermData.experiment(:,2),'xb')
+xlabel('Concentration [mol/m3]');
+ylabel('Adsorbed amount [mol/kg]');
 end
