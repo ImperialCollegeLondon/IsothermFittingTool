@@ -39,7 +39,8 @@ clc; clear all;
 % with any name of your choice.
 % RUN THIS SCRIPT.
 % Get git commit ID
-gitCommitID = getGitCommit;
+gitCommitID.ERASE = getGitCommit('..');
+gitCommitID.isotherm = getGitCommit;
 % Load input experimental data from *.mat or *.csv file via prompt
 uiopen
 % Determine number of bins you want the experimental data to be binned to
@@ -50,7 +51,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'SSL';
+isothermModel = 'DSL';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -921,18 +922,19 @@ headerRow = [NaN unique(y)'];
 isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
 isothermData.confidenceRegion = outScatter;
 isothermData.isothermParameters = [parameters' conRange95Disp];
+isothermData.gitCommitID = gitCommitID;
 if ~saveFlag
 else
     filename = input('Enter file name: ','s');
     currentDate=datestr(date,'mmddyy');
     if exist(['..',filesep,'IsothermFittingTool',filesep','fittingResults'],'dir') == 7
         % Save the fitting results for further use
-        save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate,'_',gitCommitID],'isothermData');
+        save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate],'isothermData');
     else
         % Create the fitting results folder if it does not exist
         mkdir(['..',filesep,'IsothermFittingTool',filesep','fittingResults'])
         % Save the calibration data for further use
-        save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate,'_',gitCommitID],'isothermData');
+        save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate],'isothermData');
     end
 end
 
