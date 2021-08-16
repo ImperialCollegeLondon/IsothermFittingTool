@@ -37,10 +37,26 @@ clc; clear all;
 % (rename on workspace) and save the data as *.mat file in 3 column format
 % with Pressure (bar), adsorbed amount (-), temperature (K) respectively
 % with any name of your choice.
-% RUN THIS SCRIPT.
-% Get git commit ID
-gitCommitID.ERASE = getGitCommit('..');
-gitCommitID.isotherm = getGitCommit;
+% RUN THIS SCRIPT from ERASE OR IsothermFittingTool ONLY!!!!!!!!!!
+currentDir = strsplit(cd,filesep);
+if strcmp(currentDir(end),'ERASE')
+    cd IsothermFittingTool
+end
+% Obtain git commit ID if submodule of ERASE
+try
+    gitCommitID.ERASE = getGitCommit('..');
+    gitCommitID.isotherm = getGitCommit;
+    % Else find git commit ID corresponding to isothermFittingTool only
+catch
+    % Get short version of git commit ID
+    [status,cmdout] = system('git rev-parse HEAD');
+    if status == 0
+        % Command was successful
+        gitCommitID.isotherm = cmdout(1:7);
+    else
+        gitCommitID.isotherm = [];
+    end
+end
 % Load input experimental data from *.mat or *.csv file via prompt
 uiopen
 % Determine number of bins you want the experimental data to be binned to
@@ -945,4 +961,8 @@ hold on;
 plot(isothermData.experiment(:,1),isothermData.experiment(:,2),'xb')
 xlabel('Concentration [mol/m3]');
 ylabel('Adsorbed amount [mol/kg]');
+end
+
+if strcmp(currentDir(end),'ERASE')
+    cd ..
 end
