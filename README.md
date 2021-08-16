@@ -24,4 +24,4 @@ Fits input experimental adsorption isotherm data to different isotherm models, a
 - Authors: Hassan Azzan (HA)
 - email: hassan.azzan15@imperial.ac.uk
 
-Last updated: 08/07/2021
+Last updated: 12/08/2021
