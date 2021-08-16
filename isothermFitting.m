@@ -38,6 +38,8 @@ clc; clear all;
 % with Pressure (bar), adsorbed amount (-), temperature (K) respectively
 % with any name of your choice.
 % RUN THIS SCRIPT.
+% Get git commit ID
+gitCommitID = getGitCommit;
 % Load input experimental data from *.mat or *.csv file via prompt
 uiopen
 % Determine number of bins you want the experimental data to be binned to
@@ -48,7 +50,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'DSL';
+isothermModel = 'SSL';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -67,7 +69,7 @@ flagStats = 0;
 flagFixQsat = 0;
 % Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN
 % PROMPTED IN COMMAND WINDOW)
-saveFlag = 0;
+saveFlag = 1;
 % IF YOU ARE FIXING SATURATION CAPACITY ENTER THE CO2 SATURATION CAPACITIES
 % FOR THE RELEVANT MODEL BELOW
 qs1 = 3.6749e+00;
@@ -106,9 +108,9 @@ if ~flagFixQsat
         case 'DSL'
             % Reference isotherm parameters for non-dimensionalisation
             if flagConcUnits
-                isoRef = [11,11,1e-3,1e-3,4e4,4e4];
+                isoRef = [10,10,1e-3,1e-3,5e4,5e4];
             else
-                isoRef = [11,11,1e-1,1e-1,4e4,4e4];
+                isoRef = [10,10,1e-1,1e-1,5e4,5e4];
             end
             % Set objective function based on fitting method
             switch fittingMethod
@@ -925,12 +927,12 @@ else
     currentDate=datestr(date,'mmddyy');
     if exist(['..',filesep,'IsothermFittingTool',filesep','fittingResults'],'dir') == 7
         % Save the fitting results for further use
-        save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate],'isothermData');
+        save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate,'_',gitCommitID],'isothermData');
     else
         % Create the fitting results folder if it does not exist
         mkdir(['..',filesep,'IsothermFittingTool',filesep','fittingResults'])
         % Save the calibration data for further use
-        save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate],'isothermData');
+        save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate,'_',gitCommitID],'isothermData');
     end
 end
 
