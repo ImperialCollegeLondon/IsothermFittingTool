@@ -67,7 +67,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'DSL';
+isothermModel = 'SSS';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -76,7 +76,7 @@ isothermModel = 'DSL';
 % random and not be normally distributed (data from different sources)
 fittingMethod = 'MLE';
 % Flag for concentration units in parameters
-flagConcUnits = 1;
+flagConcUnits = 0;
 % Flag for plotting objective function contour plots for dual site models
 flagContour = 0;
 % Flag for plotting statistical plots (q-q plot and error distribution)
@@ -86,10 +86,10 @@ flagStats = 0;
 flagFixQsat = 0;
 % Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN
 % PROMPTED IN COMMAND WINDOW)
-saveFlag = 1;
+saveFlag = 0;
 % IF YOU ARE FIXING SATURATION CAPACITY ENTER THE CO2 SATURATION CAPACITIES
 % FOR THE RELEVANT MODEL BELOW
-qs1 = 3.6749e+00;
+qs1 = 1.0930e+01;
 qs2 = 6.6845e+00;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
@@ -125,9 +125,9 @@ if ~flagFixQsat
         case 'DSL'
             % Reference isotherm parameters for non-dimensionalisation
             if flagConcUnits
-                isoRef = [10,10,1e-3,1e-3,4e4,4e4];
+                isoRef = [12,11,1e-3,1e-3,4e4,4e4];
             else
-                isoRef = [10,10,1e-1,1e-1,4e4,4e4];
+                isoRef = [12,12,1e-1,1e-1,4e4,4e4];
             end
             % Set objective function based on fitting method
             switch fittingMethod
@@ -398,9 +398,9 @@ if ~flagFixQsat
         case 'SSS'
             % Reference isotherm parameters for non-dimensionalisation
             if flagConcUnits
-                isoRef = [10,10,1e-5,1e-5,4e4,4e4,2];
+                isoRef = [12,12,1e-5,1e-5,4e4,4e4,2];
             else
-                isoRef = [10,10,1e-1,1e-1,4e4,4e4,2];
+                isoRef = [12,12,1e-1,1e-1,4e4,4e4,2];
             end
             % Set objective function based on fitting method
             switch fittingMethod
@@ -753,9 +753,9 @@ else
         case 'SSS'
             % Reference isotherm parameters for non-dimensionalisation
              if flagConcUnits
-                isoRef = [10,10,1e-5,1e-5,4e4,4e4,2];
+                isoRef = [12,12,1e-5,1e-5,4e4,4e4,2];
             else
-                isoRef = [10,10,1e-1,1e-1,4e4,4e4,2];
+                isoRef = [12,12,1e-1,1e-1,4e4,4e4,2];
             end
             % Set objective function based on fitting method
             switch fittingMethod

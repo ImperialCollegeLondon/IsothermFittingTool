@@ -41,7 +41,7 @@
 
 function [conRange95] = conrangeEllipse(x,y,z,  qfit, isothermModel, varargin)
 % Calculate standard deviation of the data (not needed)
-stDevData = 1/length(x) * sum((z-qfit).^2);
+stDevData = 1/(length(x)-length(cell2mat(varargin(cell2mat(varargin)~=0)))) * sum((z-qfit).^2);
 % degree of variation of parameter to calculate sensitivity
 del = 0.000001;
 % Generate and solve global optimisation problem for confidence regions
