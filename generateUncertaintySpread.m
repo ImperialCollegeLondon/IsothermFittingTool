@@ -14,7 +14,8 @@
 % parameter confidence intervals
 %
 % Last modified:
-% - 2021-03-17, HA: Added comments
+% - 2021-10-04, HA: Add extremes of the uncertainty spread as an output
+% - 2021-03-17, HA: Add comments
 % - 2021-03-15, HA: Initial creation
 %
 % Input arguments:
@@ -31,13 +32,16 @@
 % - outScatter:          Matrix of points for uncertainty bound plots
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [outScatter]=generateUncertaintySpread(x,y,isothermModel,parVals,conRange95)
+function [outScatter,qeqBounds]=generateUncertaintySpread(x,y,isothermModel,parVals,conRange95)
 % Decide number of samplint points for q at each pressure point
 nPoints = 60;
 % Decide the range of pressure for the uncertainty spread calculation
 Pvals = linspace(0,max(x),400);
 % Obtain a vector of the temperatures present in the input data
 Tvals = unique(y);
+qeqBounds = [];
+qeqBounds(:,1) = repmat(Pvals',length(Tvals),1);
+
 % Calculate the uncertainty spread for q in the pressure range
 switch isothermModel
     % for the dual-site langmuir model
@@ -90,12 +94,16 @@ switch isothermModel
                     qeqUnc(3,kk,mm) = qs1_unc.*(b01_unc.*P.*exp(delU1_unc./(8.314.*T)))./(1+(b01_unc.*P.*exp(delU1_unc./(8.314.*T)))) ...
                         + qs2_unc.*(b02_unc.*P.*exp(delU2_unc./(8.314.*T)))./(1+(b02_unc.*P.*exp(delU2_unc./(8.314.*T))));
                 end
+                qeqBounds(length(Pvals)*(mm-1)+(jj-1)+1,2)= min(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                qeqBounds(length(Pvals)*(mm-1)+(jj-1)+1,3)= max(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                qeqBounds(length(Pvals)*(mm-1)+(jj-1)+1,4)= Tvals(mm);
             end
         end
         % Obtain the output in a matrix [nPoints*length(Pvals) x 3]
         outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
         % Transpose of the output
         outScatter=outScatter';
+        
         
     case 'DSS'
         qs1 = parVals(1);
@@ -104,7 +112,7 @@ switch isothermModel
         b02 =  parVals(4);
         delU1 = parVals(5);
         delU2 = parVals(6);
-        gamma = parVals(7);       
+        gamma = parVals(7);
         qeqUnc=zeros(3,nPoints*length(Pvals),length(Tvals));
         for mm = 1:length(Tvals)
             for jj = 1:length(Pvals)
@@ -113,8 +121,8 @@ switch isothermModel
                     qeqUnc(2,kk,mm)=Tvals(mm);
                 end
             end
-        end        
-        lhsMat = 2*lhsdesign(nPoints,7)-1;      
+        end
+        lhsMat = 2*lhsdesign(nPoints,7)-1;
         for mm = 1:length(Tvals)
             for jj = 1:length(Pvals)
                 hh = 0;
@@ -132,8 +140,11 @@ switch isothermModel
                     qeqUnc(3,kk,mm)=qs1_unc.*(b01_unc.*P.*exp(delU1_unc./(8.314.*T))).^gamma_unc./(1+(b01_unc.*P.*exp(delU1_unc./(8.314.*T))).^gamma_unc) ...
                         + qs2_unc.*(b02_unc.*P.*exp(delU2_unc./(8.314.*T))).^gamma_unc./(1+(b02_unc.*P.*exp(delU2_unc./(8.314.*T))).^gamma_unc);
                 end
+                qeqBounds(length(Pvals)*(mm-1)+(jj-1)+1,2)= min(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                qeqBounds(length(Pvals)*(mm-1)+(jj-1)+1,3)= max(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                qeqBounds(length(Pvals)*(mm-1)+(jj-1)+1,4)= Tvals(mm);
             end
-        end       
+        end
         outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
         outScatter=outScatter';
 end

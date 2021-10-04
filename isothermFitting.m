@@ -67,7 +67,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'SSS';
+isothermModel = 'SSL';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -127,7 +127,7 @@ if ~flagFixQsat
             if flagConcUnits
                 isoRef = [12,11,1e-3,1e-3,4e4,4e4];
             else
-                isoRef = [12,12,1e-1,1e-1,4e4,4e4];
+                isoRef = [12,12,1e-0,1e-0,4e4,4e4];
             end
             % Set objective function based on fitting method
             switch fittingMethod
@@ -226,7 +226,7 @@ if ~flagFixQsat
             if flagConcUnits
                 isoRef = [10,10,1e-5,1e-5,4e4,4e4];
             else
-                isoRef = [10,10,1e-1,1e-1,4e4,4e4];
+                isoRef = [10,10,1e-0,1e-0,4e4,4e4];
             end
             % Set objective function based on fitting method
             switch fittingMethod
@@ -400,7 +400,7 @@ if ~flagFixQsat
             if flagConcUnits
                 isoRef = [12,12,1e-5,1e-5,4e4,4e4,2];
             else
-                isoRef = [12,12,1e-1,1e-1,4e4,4e4,2];
+                isoRef = [12,12,1e-0,1e-0,4e4,4e4,2];
             end
             % Set objective function based on fitting method
             switch fittingMethod
@@ -486,7 +486,7 @@ else
             if flagConcUnits
                 isoRef = [10,10,1e-5,1e-5,4e4,4e4];
             else
-                isoRef = [10,10,1e-1,1e-1,4e4,4e4];
+                isoRef = [10,10,1e-0,1e4,4e4,4e4];
             end            % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -752,7 +752,7 @@ else
             end
         case 'SSS'
             % Reference isotherm parameters for non-dimensionalisation
-             if flagConcUnits
+            if flagConcUnits
                 isoRef = [12,12,1e-5,1e-5,4e4,4e4,2];
             else
                 isoRef = [12,12,1e-1,1e-1,4e4,4e4,2];
@@ -831,13 +831,13 @@ fprintf('%s %5.4e \n','objective function:',fval);
 %% PLOT RESULTING OUTPUTS
 switch isothermModel
     case 'DSL'
-        [outScatter]=generateUncertaintySpread(x,y,'DSL',parameters,conRange95);
+        [outScatter,qeqBounds]=generateUncertaintySpread(x,y,'DSL',parameters,conRange95);
     case 'SSL'
-        [outScatter]=generateUncertaintySpread(x,y,'DSL',parameters,conRange95);
+        [outScatter,qeqBounds]=generateUncertaintySpread(x,y,'DSL',parameters,conRange95);
     case 'DSS'
-        [outScatter]=generateUncertaintySpread(x,y,'DSS',parameters,conRange95);
+        [outScatter,qeqBounds]=generateUncertaintySpread(x,y,'DSS',parameters,conRange95);
     case 'SSS'
-        [outScatter]=generateUncertaintySpread(x,y,'DSS',parameters,conRange95);
+        [outScatter,qeqBounds]=generateUncertaintySpread(x,y,'DSS',parameters,conRange95);
 end
 % plot of experimental data and fitted data (q vs P)
 Pvals = linspace(0,max(x),200);
@@ -864,9 +864,8 @@ for jj = 1:length(Pvals)
     end
 end
 if flagConcUnits
-%     Pvals = Pvals./(1e5./(8.314.*y));
-%     x = x./(1e5./(8.314.*y));
     outScatter(:,1) = outScatter(:,1)./(1e5./(8.314.*outScatter(:,3)));
+    qeqBounds(:,1) = qeqBounds(:,1)./(1e5./(8.314.*qeqBounds(:,4)));
 end
 if ~flagConcUnits
     figure(1)
@@ -874,8 +873,9 @@ if ~flagConcUnits
         subplot(1,3,1)
     else
     end
-    scatter(outScatter(:,1),outScatter(:,2),5,'MarkerFaceColor','#D9E9FC','MarkerEdgeAlpha',0.05)
+    scatter(qeqBounds(:,1),qeqBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5)
     hold on
+    scatter(qeqBounds(:,1),qeqBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5)
     for kk = 1:length(Tvals)
         plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
     end
@@ -955,12 +955,12 @@ else
 end
 
 if flagConcUnits
-figure
-plot(isothermData.isothermFit(:,1),isothermData.isothermFit(:,2:end),'-k')
-hold on;
-plot(isothermData.experiment(:,1),isothermData.experiment(:,2),'xb')
-xlabel('Concentration [mol/m3]');
-ylabel('Adsorbed amount [mol/kg]');
+    figure
+    plot(isothermData.isothermFit(:,1),isothermData.isothermFit(:,2:end),'-k')
+    hold on;
+    plot(isothermData.experiment(:,1),isothermData.experiment(:,2),'xb')
+    xlabel('Concentration [mol/m3]');
+    ylabel('Adsorbed amount [mol/kg]');
 end
 
 if strcmp(currentDir(end),'ERASE')
