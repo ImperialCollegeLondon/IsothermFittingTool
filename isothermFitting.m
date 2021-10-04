@@ -112,7 +112,40 @@ qs2 = 6.6845e+00;
 x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
-% for concentration units, convert p to concentration
+% Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
+refValsP = [11,11,1e-1,1e-1,4e4,4e4];
+refValsC = [11,11,1e-5,1e-5,4e4,4e4];
+switch isothermModel
+    case 'DSL'
+        % Reference isotherm parameters for non-dimensionalisation
+        if flagConcUnits
+            isoRef = refValsC;
+        else
+            isoRef = refValsP;
+        end
+    case 'SSL'
+        % Reference isotherm parameters for non-dimensionalisation
+        if flagConcUnits
+            isoRef = refValsC;
+        else
+            isoRef = refValsP;
+        end
+    case  'DSS'
+        % Reference isotherm parameters for non-dimensionalisation
+        if flagConcUnits
+            isoRef = [refValsC 2];
+        else
+            isoRef = [refValsP 2];
+        end
+    case  'SSS'
+        % Reference isotherm parameters for non-dimensionalisation
+        if flagConcUnits
+            isoRef = [refValsC 2];
+        else
+            isoRef = [refValsP 2];
+        end
+end
+% for concentration units, convert pressure to concentration
 if ~flagFixQsat
     if flagConcUnits
         x = 1e5*x./(8.314.*y);
@@ -123,12 +156,6 @@ if ~flagFixQsat
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'DSL'
-            % Reference isotherm parameters for non-dimensionalisation
-            if flagConcUnits
-                isoRef = [11,11,1e-3,1e-3,4e4,4e4];
-            else
-                isoRef = [11,11,1e-0,1e-0,4e4,4e4];
-            end
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -222,12 +249,6 @@ if ~flagFixQsat
                 end
             end
         case 'SSL'
-            % Reference isotherm parameters for non-dimensionalisation
-            if flagConcUnits
-                isoRef = [10,10,1e-5,1e-5,4e4,4e4];
-            else
-                isoRef = [10,10,1e-0,1e-0,4e4,4e4];
-            end
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -320,12 +341,6 @@ if ~flagFixQsat
                 end
             end
         case 'DSS'
-            % Reference isotherm parameters for non-dimensionalisation
-            if flagConcUnits
-                isoRef = [10,10,1e-5,1e-5,4e4,4e4,2];
-            else
-                isoRef = [10,10,1e-1,1e-1,4e4,4e4,2];
-            end
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -396,12 +411,6 @@ if ~flagFixQsat
                 end
             end
         case 'SSS'
-            % Reference isotherm parameters for non-dimensionalisation
-            if flagConcUnits
-                isoRef = [12,12,1e-5,1e-5,4e4,4e4,2];
-            else
-                isoRef = [12,12,1e-0,1e-0,4e4,4e4,2];
-            end
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -482,12 +491,7 @@ else
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'DSL'
-            % Reference isotherm parameters for non-dimensionalisation
-            if flagConcUnits
-                isoRef = [10,10,1e-5,1e-5,4e4,4e4];
-            else
-                isoRef = [10,10,1e-0,1e4,4e4,4e4];
-            end            % Set objective function based on fitting method
+            % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
                     % Number of bins is automatically set to 1 for MLE as
@@ -579,12 +583,6 @@ else
                 end
             end
         case 'SSL'
-            % Reference isotherm parameters for non-dimensionalisation
-            if flagConcUnits
-                isoRef = [10,10,1e-5,1e-5,4e4,4e4];
-            else
-                isoRef = [10,10,1e-1,1e-1,4e4,4e4];
-            end
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -676,12 +674,6 @@ else
                 end
             end
         case 'DSS'
-            % Reference isotherm parameters for non-dimensionalisation
-            if flagConcUnits
-                isoRef = [10,10,1e-5,1e-5,4e4,4e4,2];
-            else
-                isoRef = [10,10,1e-1,1e-1,4e4,4e4,2];
-            end
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -751,12 +743,6 @@ else
                 end
             end
         case 'SSS'
-            % Reference isotherm parameters for non-dimensionalisation
-            if flagConcUnits
-                isoRef = [12,12,1e-5,1e-5,4e4,4e4,2];
-            else
-                isoRef = [12,12,1e-1,1e-1,4e4,4e4,2];
-            end
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
