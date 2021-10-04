@@ -67,7 +67,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'SSL';
+isothermModel = 'DSL';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -125,9 +125,9 @@ if ~flagFixQsat
         case 'DSL'
             % Reference isotherm parameters for non-dimensionalisation
             if flagConcUnits
-                isoRef = [12,11,1e-3,1e-3,4e4,4e4];
+                isoRef = [11,11,1e-3,1e-3,4e4,4e4];
             else
-                isoRef = [12,12,1e-0,1e-0,4e4,4e4];
+                isoRef = [11,11,1e-0,1e-0,4e4,4e4];
             end
             % Set objective function based on fitting method
             switch fittingMethod
@@ -937,6 +937,7 @@ isothermData.experiment = [x z y];
 headerRow = [NaN unique(y)'];
 isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
 isothermData.confidenceRegion = outScatter;
+isothermData.confidenceBounds = qeqBounds;
 isothermData.isothermParameters = [parameters' conRange95Disp];
 isothermData.gitCommitID = gitCommitID;
 if ~saveFlag
