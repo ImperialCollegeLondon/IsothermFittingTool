@@ -67,7 +67,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'DSL';
+isothermModel = 'SSS';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -76,7 +76,7 @@ isothermModel = 'DSL';
 % random and not be normally distributed (data from different sources)
 fittingMethod = 'MLE';
 % Flag for concentration units in parameters
-flagConcUnits = 0;
+flagConcUnits = 1;
 % Flag for plotting objective function contour plots for dual site models
 flagContour = 0;
 % Flag for plotting statistical plots (q-q plot and error distribution)
@@ -850,8 +850,8 @@ for jj = 1:length(Pvals)
     end
 end
 if flagConcUnits
-    outScatter(:,1) = outScatter(:,1)./(1e5./(8.314.*outScatter(:,3)));
-    qeqBounds(:,1) = qeqBounds(:,1)./(1e5./(8.314.*qeqBounds(:,4)));
+    outScatter(:,1) = outScatter(:,1);
+    qeqBounds(:,1) = qeqBounds(:,1);
 end
 if ~flagConcUnits
     figure(1)
@@ -945,7 +945,9 @@ if flagConcUnits
     figure
     plot(isothermData.isothermFit(:,1),isothermData.isothermFit(:,2:end),'-k')
     hold on;
-    plot(isothermData.experiment(:,1),isothermData.experiment(:,2),'xb')
+    plot(isothermData.experiment(:,1),isothermData.experiment(:,2),'xk')
+    scatter(isothermData.confidenceBounds(:,1),isothermData.confidenceBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5);
+    scatter(isothermData.confidenceBounds(:,1),isothermData.confidenceBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5);
     xlabel('Concentration [mol/m3]');
     ylabel('Adsorbed amount [mol/kg]');
 end
