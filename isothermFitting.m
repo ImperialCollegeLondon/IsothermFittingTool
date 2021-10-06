@@ -67,7 +67,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'SSS';
+isothermModel = 'DSL';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -86,7 +86,7 @@ flagStats = 0;
 flagFixQsat = 0;
 % Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN
 % PROMPTED IN COMMAND WINDOW)
-saveFlag = 0;
+saveFlag = 1;
 % IF YOU ARE FIXING SATURATION CAPACITY ENTER THE CO2 SATURATION CAPACITIES
 % FOR THE RELEVANT MODEL BELOW
 qs1 = 1.0930e+01;
@@ -113,8 +113,8 @@ x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-refValsP = [11,11,1e-1,1e-1,4e4,4e4];
-refValsC = [11,11,1e-5,1e-5,4e4,4e4];
+refValsP = [10,10,1e-1,1e-1,4e4,4e4];
+refValsC = [10,10,1e-5,1e-5,4e4,4e4];
 switch isothermModel
     case 'DSL'
         % Reference isotherm parameters for non-dimensionalisation
@@ -849,10 +849,6 @@ for jj = 1:length(Pvals)
         end
     end
 end
-if flagConcUnits
-    outScatter(:,1) = outScatter(:,1);
-    qeqBounds(:,1) = qeqBounds(:,1);
-end
 if ~flagConcUnits
     figure(1)
     if flagStats
@@ -919,13 +915,17 @@ if ~flagConcUnits
 end
 
 % Save outputdata
-isothermData.experiment = [x z y];
+isothermData.experiment = [x./(1e5./(8.314.*y)) z y];
 headerRow = [NaN unique(y)'];
 isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
 isothermData.confidenceRegion = outScatter;
 isothermData.confidenceBounds = qeqBounds;
 isothermData.isothermParameters = [parameters' conRange95Disp];
 isothermData.gitCommitID = gitCommitID;
+if flagConcUnits
+    isothermData.isothermFit(2:end,1) = linspace(0,x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x)))))),200)';
+    isothermData.confidenceBounds(:,1) = qeqBounds(:,1)./(1e5./(8.314.*qeqBounds(find(x==max(max(x))),4)));
+end
 if ~saveFlag
 else
     filename = input('Enter file name: ','s');
@@ -943,9 +943,9 @@ end
 
 if flagConcUnits
     figure
-    plot(isothermData.isothermFit(:,1),isothermData.isothermFit(:,2:end),'-k')
+    plot(isothermData.isothermFit(:,1),isothermData.isothermFit(:,2:end),'-k','LineWidth',1.5)
     hold on;
-    plot(isothermData.experiment(:,1),isothermData.experiment(:,2),'xk')
+    plot(isothermData.experiment(:,1),isothermData.experiment(:,2),'ok')
     scatter(isothermData.confidenceBounds(:,1),isothermData.confidenceBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5);
     scatter(isothermData.confidenceBounds(:,1),isothermData.confidenceBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5);
     xlabel('Concentration [mol/m3]');

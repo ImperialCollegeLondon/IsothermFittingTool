@@ -34,9 +34,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [outScatter,qeqBounds]=generateUncertaintySpread(x,y,isothermModel,parVals,conRange95)
 % Decide number of samplint points for q at each pressure point
-nPoints = 60;
+nPoints = 40;
 % Decide the range of pressure for the uncertainty spread calculation
-Pvals = linspace(0,max(x),400);
+Pvals = linspace(0,max(x),800);
 % Obtain a vector of the temperatures present in the input data
 Tvals = unique(y);
 qeqBounds = [];
