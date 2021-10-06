@@ -76,7 +76,7 @@ isothermModel = 'DSL';
 % random and not be normally distributed (data from different sources)
 fittingMethod = 'MLE';
 % Flag for concentration units in parameters
-flagConcUnits = 1;
+flagConcUnits = 0;
 % Flag for plotting objective function contour plots for dual site models
 flagContour = 0;
 % Flag for plotting statistical plots (q-q plot and error distribution)
@@ -86,7 +86,7 @@ flagStats = 0;
 flagFixQsat = 0;
 % Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN
 % PROMPTED IN COMMAND WINDOW)
-saveFlag = 1;
+saveFlag = 0;
 % IF YOU ARE FIXING SATURATION CAPACITY ENTER THE CO2 SATURATION CAPACITIES
 % FOR THE RELEVANT MODEL BELOW
 qs1 = 1.0930e+01;
@@ -915,7 +915,11 @@ if ~flagConcUnits
 end
 
 % Save outputdata
-isothermData.experiment = [x./(1e5./(8.314.*y)) z y];
+if flagConcUnits
+    isothermData.experiment = [x./(1e5./(8.314.*y)) z y];
+else
+    isothermData.experiment = [x z y];
+end
 headerRow = [NaN unique(y)'];
 isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
 isothermData.confidenceRegion = outScatter;
