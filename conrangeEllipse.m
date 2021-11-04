@@ -40,8 +40,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [conRange95] = conrangeEllipse(x,y,z,  qfit, isothermModel, varargin)
+% Number of parameters
+Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
 % Calculate standard deviation of the data (not needed)
-stDevData = 1/(length(x)-length(cell2mat(varargin(cell2mat(varargin)~=0)))) * sum((z-qfit).^2);
+stDevData = sqrt(1/(length(x)-length(Np)) * sum((z-qfit).^2));
 % degree of variation of parameter to calculate sensitivity
 del = 0.000001;
 % Generate and solve global optimisation problem for confidence regions
@@ -83,10 +85,10 @@ switch isothermModel
         end
         % estimated Hessian Matrix for the data set (Non-linear parameter estimation
         % by Yonathan Bard (1974) pg. 178
-        hessianMatrix = 1/stDevData*transpose(sensitivityMatrix)*sensitivityMatrix;
+        hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
         % Confidence range given by chi squared distribution at Np degrees
         % of freedom (independent parameter conf intervals)
-        conRange95 = sqrt(chi2inv(0.95,6)./diag(hessianMatrix));
+        conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
         
         % for DSS model
     case 'DSS'
@@ -128,9 +130,9 @@ switch isothermModel
         end
         % Hessian Matrix for the data set (Non-linear parameter estimation
         % by Yonathan Bard (1974) pg. 178)
-        hessianMatrix = 1/stDevData*transpose(sensitivityMatrix)*sensitivityMatrix;
+        hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
         % Confidence range given by chi squared distribution at Np degrees
         % of freedom (independent parameter conf intervals)
-        conRange95 = sqrt(chi2inv(0.95,7)./diag(hessianMatrix));
+        conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
 end
 end

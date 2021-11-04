@@ -67,7 +67,7 @@ nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
 % Sips. SSS = Single site Sips
-isothermModel = 'DSL';
+isothermModel = 'SSS';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -76,7 +76,7 @@ isothermModel = 'DSL';
 % random and not be normally distributed (data from different sources)
 fittingMethod = 'MLE';
 % Flag for concentration units in parameters
-flagConcUnits = 0;
+flagConcUnits = 1;
 % Flag for plotting objective function contour plots for dual site models
 flagContour = 0;
 % Flag for plotting statistical plots (q-q plot and error distribution)
@@ -89,8 +89,8 @@ flagFixQsat = 0;
 saveFlag = 0;
 % IF YOU ARE FIXING SATURATION CAPACITY ENTER THE CO2 SATURATION CAPACITIES
 % FOR THE RELEVANT MODEL BELOW
-qs1 = 1.0930e+01;
-qs2 = 6.6845e+00;
+qs1 = 1.9834e+00;
+qs2 = 8.9856e+00;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -113,8 +113,8 @@ x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-refValsP = [10,10,1e-1,1e-1,4e4,4e4];
-refValsC = [10,10,1e-5,1e-5,4e4,4e4];
+refValsP = [15,15,1e-1,1e-1,4e4,4e4];
+refValsC = [15,15,1e-5,1e-5,4e4,4e4];
 switch isothermModel
     case 'DSL'
         % Reference isotherm parameters for non-dimensionalisation
@@ -859,10 +859,10 @@ if ~flagConcUnits
     hold on
     scatter(qeqBounds(:,1),qeqBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5)
     for kk = 1:length(Tvals)
-        plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
+        plot(Pvals,qvals(:,kk),'-b','LineWidth',1.5);
     end
     outFit = [Pvals' qvals];
-    plot(x,z,'ok');
+    plot(x,z,'ob');
     xlabel('Pressure [bar]');
     ylabel('Amount adsorbed [mol/kg]');
     % quantile-quantile plot of experimental data vs normal distribution
