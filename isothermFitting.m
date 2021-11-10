@@ -14,6 +14,8 @@
 % and outputs isotherm parameters and ellipsoidal confidence bounds
 %
 % Last modified:
+% - 2021-11-10, HA: Add capability to use 6-parameter temperature dependent
+%                   virial isotherm model
 % - 2021-07-14, HA: Normalise experimetal adsorption data for objective
 %                   function calculation
 % - 2021-07-08, HA: Add capability save resulting data to a *.mat file
@@ -66,8 +68,8 @@ uiopen
 nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
-% Sips. SSS = Single site Sips
-isothermModel = 'SSS';
+% Sips. SSS = Single site Sips. VIRIAL = Virial Equation
+isothermModel = 'VIRIAL';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -76,7 +78,7 @@ isothermModel = 'SSS';
 % random and not be normally distributed (data from different sources)
 fittingMethod = 'MLE';
 % Flag for concentration units in parameters
-flagConcUnits = 1;
+flagConcUnits = 0;
 % Flag for plotting objective function contour plots for dual site models
 flagContour = 0;
 % Flag for plotting statistical plots (q-q plot and error distribution)
@@ -152,7 +154,7 @@ if ~flagFixQsat
     end
     rng default % For reproducibility
     % Create gs, a GlobalSearch solver with its properties set to the defaults.
-    gs = GlobalSearch('NumTrialPoints',1400,'NumStageOnePoints',1000,'Display','off');
+    gs = GlobalSearch('NumTrialPoints',2400,'NumStageOnePoints',2000,'Display','off');
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'DSL'
@@ -478,6 +480,80 @@ if ~flagFixQsat
                     else
                         fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
                     end
+                end
+            end
+        case 'VIRIAL'
+            % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
+            refValsP = [3e3,3e3,3e3,3e3,3e3,3e3,3e3,3e3];
+            refValsC = refValsP;
+            isoRef = refValsC;
+            % Set objective function based on fitting method
+            switch fittingMethod
+                case 'MLE'
+                    % Number of bins is automatically set to 1 for MLE as
+                    % weights cannot be assigned in MLE
+                    nbins =1;
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'VIRIAL', isoRef, par(1), par(2), ...
+                        par(3), par(4), par(5), par(6), 0, 0);
+                case 'WSS'
+                    % Generate objective function for WSS method
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'VIRIAL', isoRef, par(1), par(2), ...
+                        par(3), par(4), par(5), par(6), 0, 0);
+            end
+            % Initial conditions, lower bounds, and upper bounds for parameters
+            % in DSL isotherm model
+            x0 = [0.1,0.5,0.5,0.5,0.5,0.5,0.5,0.5];
+            lb = [-1,-1,-1,-1,-1,-1,-1,-1];
+            ub = [1,1,1,1,1,1,1,1];
+            % Create global optimisation problem with solver 'fmincon' and
+            % other bounds
+            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+            [parVals, fval]= run(gs,problem);
+            % Set fitted parameter values for isotherm model calculation
+            a0   = parVals(1).*isoRef(1);
+            a1   = parVals(2).*isoRef(2);
+            a2   = parVals(3).*isoRef(3);
+            a3   = parVals(4).*isoRef(4);
+            b0   = parVals(5).*isoRef(5);
+            b1   = parVals(6).*isoRef(6);
+            b2   = 0;
+            b3   = 0;
+            parameters = [a0, a1, a2, a3, b0, b1, b2, b3];
+            parameters(isnan(parameters))=0;
+            % Calculate fitted isotherm loadings for conditions (P,T)
+            % corresponding to experimental data
+            qfit = [];
+            expData = [x,z,y];
+            expData = sortrows(expData,1);
+            expData = expData(length(unique(y))+1:end,:);
+            
+            x = expData(:,1);
+            z = expData(:,2);
+            y = expData(:,3);
+            for kk = 1:length(x)
+                lnPfit(kk)  = log(z(kk)) + 1/y(kk).*(parameters(1) + parameters(2)*z(kk) + ...
+                    parameters(3)*z(kk)^2 + parameters(4)*z(kk)^3)  + parameters(5) ...
+                    + parameters(6)*z(kk)+ parameters(7)*z(kk).^2 ...
+                    + parameters(8)*z(kk).^3;
+            end
+            % Calculate ellipsoidal confidence intervals (delta parameter) for
+            % fitted parameters
+            [conRange95] = conrangeEllipse(x, y, z, lnPfit, 'VIRIAL', a0, a1, a2, a3, b0, b1, b2, b3);
+            conRange95(isnan(conRange95))=0;
+            % Convert confidence intervals to percentage error
+            percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
+            parNames = ["a0" "a1" "a2" "a3" "b0" "b1" "b2" "b3"];
+            units = ["K" "1/K" "1/K^2" "1/K^3" " " " " " " " "];
+            parsDisp = parameters;
+            conRange95Disp = conRange95;
+            for ii = 1:length(parameters)
+                if parsDisp(ii) == 0
+                else
+                    fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
                 end
             end
     end
@@ -817,101 +893,162 @@ fprintf('%s %5.4e \n','objective function:',fval);
 %% PLOT RESULTING OUTPUTS
 switch isothermModel
     case 'DSL'
-        [outScatter,qeqBounds]=generateUncertaintySpread(x,y,'DSL',parameters,conRange95);
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'DSL',parameters,conRange95);
     case 'SSL'
-        [outScatter,qeqBounds]=generateUncertaintySpread(x,y,'DSL',parameters,conRange95);
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'DSL',parameters,conRange95);
     case 'DSS'
-        [outScatter,qeqBounds]=generateUncertaintySpread(x,y,'DSS',parameters,conRange95);
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'DSS',parameters,conRange95);
     case 'SSS'
-        [outScatter,qeqBounds]=generateUncertaintySpread(x,y,'DSS',parameters,conRange95);
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'DSS',parameters,conRange95);
+    case 'VIRIAL'
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'VIRIAL',parameters,conRange95);
 end
-% plot of experimental data and fitted data (q vs P)
-Pvals = linspace(0,max(x),200);
-Tvals = unique(y);
-qvals = zeros(length(Pvals),length(Tvals));
-for jj = 1:length(Pvals)
-    for kk = 1:length(Tvals)
-        P = Pvals(jj);
-        T = Tvals(kk);
-        switch isothermModel
-            case 'DSL'
-                qvals(jj,kk) = qs1.*(b01.*P.*exp(delU1./(8.314.*T)))./(1+(b01.*P.*exp(delU1./(8.314.*T)))) ...
-                    + qs2.*(b02.*P.*exp(delU2./(8.314.*T)))./(1+(b02.*P.*exp(delU2./(8.314.*T))));
-            case 'SSL'
-                qvals(jj,kk) = qs1.*(b01.*P.*exp(delU1./(8.314.*T)))./(1+(b01.*P.*exp(delU1./(8.314.*T)))) ...
-                    + qs2.*(b02.*P.*exp(delU2./(8.314.*T)))./(1+(b02.*P.*exp(delU2./(8.314.*T))));
-            case 'DSS'
-                qvals(jj,kk) = qs1.*((b01.*P.*exp(delU1./(8.314.*T)))^gamma)./(1+(b01.*P.*exp(delU1./(8.314.*T)))^gamma) ...
-                    + qs2.*((b02.*P.*exp(delU2./(8.314.*T)))^gamma)./(1+(b02.*P.*exp(delU2./(8.314.*T)))^gamma);
-            case 'SSS'
-                qvals(jj,kk) = qs1.*((b01.*P.*exp(delU1./(8.314.*T)))^gamma)./(1+(b01.*P.*exp(delU1./(8.314.*T)))^gamma) ...
-                    + qs2.*((b02.*P.*exp(delU2./(8.314.*T)))^gamma)./(1+(b02.*P.*exp(delU2./(8.314.*T)))^gamma);
+switch isothermModel
+    case 'VIRIAL'
+        qvals = linspace(0,max(z),500);
+        Tvals = unique(y);
+        lnPvals = zeros(length(qvals),length(Tvals));
+        for jj = 1:length(qvals)
+            for kk = 1:length(Tvals)
+                qeq = qvals(jj);
+                T = Tvals(kk);
+                lnPvals(jj,kk) = log(qeq) + 1/T.*(parameters(1) + parameters(2).*qeq + ...
+                    parameters(3).*qeq^2 + parameters(4).*qeq^3) + parameters(5) ...
+                    + parameters(6).*qeq+ parameters(7).*qeq.^2 ...
+                    + parameters(8).*qeq.^3;
+            end
         end
-    end
-end
-if ~flagConcUnits
-    figure(1)
-    if flagStats
+        
+        figure(1)
         subplot(1,3,1)
-    else
-    end
-    scatter(qeqBounds(:,1),qeqBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5)
-    hold on
-    scatter(qeqBounds(:,1),qeqBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5)
-    for kk = 1:length(Tvals)
-        plot(Pvals,qvals(:,kk),'-b','LineWidth',1.5);
-    end
-    outFit = [Pvals' qvals];
-    plot(x,z,'ob');
-    xlabel('Pressure [bar]');
-    ylabel('Amount adsorbed [mol/kg]');
-    % quantile-quantile plot of experimental data vs normal distribution
-    box on
-    set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
-    grid on; axis square
-    if flagStats
-        subplot(1,3,2)
-        pd = fitdist(z-qfit,'Normal');
-        qqplot(qfit,pd);
+        scatter(uncBounds(:,1),uncBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+        hold on
+        scatter(uncBounds(:,1),uncBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+        for kk = 1:length(Tvals)
+            plot(qvals,lnPvals(:,kk),'-k','LineWidth',1.5);
+        end
+        plot(z,log(x),'ob');
+        xlabel('Amount adsorbed [mol/kg]');
+        ylabel('ln(P) [-]');
+        % quantile-quantile plot of experimental data vs normal distribution
         box on
-        title('')
+        set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+        grid on; axis square
+        subplot(1,3,2)
+        hold on
+        for kk = 1:length(Tvals)
+            plot(exp(lnPvals(:,kk)),qvals,'-k','LineWidth',1.5);
+        end
+        plot(x,z,'ob');
+        xlabel('Pressure [bar]');
+        ylabel('Amount adsorbed [mol/kg]');
+        xlim([0 max(x)+1]);
+        ylim([0 max(z)+1]);
+        box on
         set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
         grid on; axis square
         subplot(1,3,3)
-        % Histogram for the error (experimental - fitted q) overlayed by the normal
-        % distribution fitted for this error
-        x_values = linspace(min(z-qfit),max(z-qfit),100);
-        y_values = pdf(pd,x_values);
-        yyaxis right
-        plot(x_values,y_values,'LineWidth',0.5)
-        ylabel('PDF [-]');
-        yyaxis left
-        histogram(z-qfit,15);
-        xlabel('error [exp - model]');
-        ylabel('Number of points, N_t [-]');
+        for kk = 1:length(Tvals)
+            delH = -8.314*(a0 +a1.*qvals+a2.*qvals.^2+a3.*qvals.^3)./1000;
+            plot(qvals,delH,'-k','LineWidth',1.5);
+        end
+        xlabel('Amount adsorbed [mol/kg]');
+        ylabel('-\Delta H_{ads} (Heat of Adsorption) [kJ/mol]');
+        ylim([0 max(delH)+5]);
         box on
         set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
         grid on; axis square
-    else
-    end
-    if ~flagContour
-    else
-        % Plot the contour plots for the objective function (MLE or WSS) around the
-        % optimal parameter values in the combinations qs1-qs2, b01-delU1, and
-        % b02-delU2.
-        switch isothermModel
-            case 'DSL'
-                if length(unique(y)) == 1
-                else
-                    Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
+        
+        outFit = [qvals' lnPvals];
+    otherwise
+        % plot of experimental data and fitted data (q vs P)
+        Pvals = linspace(0,max(x),500);
+        Tvals = unique(y);
+        qvals = zeros(length(Pvals),length(Tvals));
+        for jj = 1:length(Pvals)
+            for kk = 1:length(Tvals)
+                P = Pvals(jj);
+                T = Tvals(kk);
+                switch isothermModel
+                    case 'DSL'
+                        qvals(jj,kk) = qs1.*(b01.*P.*exp(delU1./(8.314.*T)))./(1+(b01.*P.*exp(delU1./(8.314.*T)))) ...
+                            + qs2.*(b02.*P.*exp(delU2./(8.314.*T)))./(1+(b02.*P.*exp(delU2./(8.314.*T))));
+                    case 'SSL'
+                        qvals(jj,kk) = qs1.*(b01.*P.*exp(delU1./(8.314.*T)))./(1+(b01.*P.*exp(delU1./(8.314.*T)))) ...
+                            + qs2.*(b02.*P.*exp(delU2./(8.314.*T)))./(1+(b02.*P.*exp(delU2./(8.314.*T))));
+                    case 'DSS'
+                        qvals(jj,kk) = qs1.*((b01.*P.*exp(delU1./(8.314.*T)))^gamma)./(1+(b01.*P.*exp(delU1./(8.314.*T)))^gamma) ...
+                            + qs2.*((b02.*P.*exp(delU2./(8.314.*T)))^gamma)./(1+(b02.*P.*exp(delU2./(8.314.*T)))^gamma);
+                    case 'SSS'
+                        qvals(jj,kk) = qs1.*((b01.*P.*exp(delU1./(8.314.*T)))^gamma)./(1+(b01.*P.*exp(delU1./(8.314.*T)))^gamma) ...
+                            + qs2.*((b02.*P.*exp(delU2./(8.314.*T)))^gamma)./(1+(b02.*P.*exp(delU2./(8.314.*T)))^gamma);
                 end
-            case 'DSS'
-                if length(unique(y)) == 1
-                else
-                    Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
-                end
+            end
         end
-    end
+        if ~flagConcUnits
+            figure(1)
+            if flagStats
+                subplot(1,3,1)
+            else
+            end
+            scatter(uncBounds(:,1),uncBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+            hold on
+            scatter(uncBounds(:,1),uncBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+            for kk = 1:length(Tvals)
+                plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
+            end
+            outFit = [Pvals' qvals];
+            plot(x,z,'ob');
+            xlabel('Pressure [bar]');
+            ylabel('Amount adsorbed [mol/kg]');
+            % quantile-quantile plot of experimental data vs normal distribution
+            box on
+            set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+            grid on; axis square
+            if flagStats
+                subplot(1,3,2)
+                pd = fitdist(z-qfit,'Normal');
+                qqplot(qfit,pd);
+                box on
+                title('')
+                set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+                grid on; axis square
+                subplot(1,3,3)
+                % Histogram for the error (experimental - fitted q) overlayed by the normal
+                % distribution fitted for this error
+                x_values = linspace(min(z-qfit),max(z-qfit),100);
+                y_values = pdf(pd,x_values);
+                yyaxis right
+                plot(x_values,y_values,'LineWidth',0.5)
+                ylabel('PDF [-]');
+                yyaxis left
+                histogram(z-qfit,15);
+                xlabel('error [exp - model]');
+                ylabel('Number of points, N_t [-]');
+                box on
+                set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+                grid on; axis square
+            else
+            end
+            if ~flagContour
+            else
+                % Plot the contour plots for the objective function (MLE or WSS) around the
+                % optimal parameter values in the combinations qs1-qs2, b01-delU1, and
+                % b02-delU2.
+                switch isothermModel
+                    case 'DSL'
+                        if length(unique(y)) == 1
+                        else
+                            Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
+                        end
+                    case 'DSS'
+                        if length(unique(y)) == 1
+                        else
+                            Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
+                        end
+                end
+            end
+        end
 end
 
 % Save outputdata
@@ -921,15 +1058,23 @@ else
     isothermData.experiment = [x z y];
 end
 headerRow = [NaN unique(y)'];
-isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
-isothermData.confidenceRegion = outScatter;
-isothermData.confidenceBounds = qeqBounds;
-isothermData.isothermParameters = [parameters' conRange95Disp];
-isothermData.gitCommitID = gitCommitID;
-if flagConcUnits
-    isothermData.isothermFit(2:end,1) = linspace(0,x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x)))))),200)';
-    isothermData.confidenceBounds(:,1) = qeqBounds(:,1)./(1e5./(8.314.*qeqBounds(find(x==max(max(x))),4)));
+switch isothermModel
+    case 'VIRIAL'
+        isothermData.isothermFit = [headerRow;qvals(1,:)' lnPvals];
+        isothermData.experiment = [z log(x) y];
+    otherwise
+        isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
+        isothermData.confidenceRegion = outScatter;
+        isothermData.confidenceBounds = uncBounds;
+        isothermData.isothermParameters = [parameters' conRange95Disp];
+        isothermData.gitCommitID = gitCommitID;
+        if flagConcUnits
+            isothermData.isothermFit(2:end,1) = linspace(0,x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x)))))),200)';
+            isothermData.confidenceBounds(:,1) = uncBounds(:,1)./(1e5./(8.314.*uncBounds(find(x==max(max(x))),4)));
+        end
 end
+
+
 if ~saveFlag
 else
     filename = input('Enter file name: ','s');
@@ -955,6 +1100,7 @@ if flagConcUnits
     xlabel('Concentration [mol/m3]');
     ylabel('Adsorbed amount [mol/kg]');
 end
+
 
 if strcmp(currentDir(end),'ERASE')
     cd ..
