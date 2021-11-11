@@ -188,7 +188,7 @@ if ~flagFixQsat
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             if length(unique(y)) == 1 % if only one temperature
-                x0 = [0.5, 0.5,0.5,0.5];
+                x0 = [0.5,0.5,0.5,0.5];
                 lb = [0,0,0,0];
                 ub = [1,1,1,1];
             else
@@ -547,7 +547,7 @@ if ~flagFixQsat
             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             parNames = ["a0" "a1" "a2" "a3" "b0" "b1" "b2" "b3"];
-            units = ["K" "1/K" "1/K^2" "1/K^3" " " " " " " " "];
+            units = ["K" "K/mol" "K/mol^2" "K/mol^3" " " "1/mol" "1/mol^2" "1/mol^3"];
             parsDisp = parameters;
             conRange95Disp = conRange95;
             for ii = 1:length(parameters)
