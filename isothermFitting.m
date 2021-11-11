@@ -34,7 +34,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% INITIALISATION and INPUTS
 % Clear command window and workspace
-clc; clear all;
+clc; clear all; close all;
 % For new data create a new variable (HOME -> New Variable) named 'fitData'
 % (rename on workspace) and save the data as *.mat file in 3 column format
 % with Pressure (bar), adsorbed amount (-), temperature (K) respectively
@@ -1064,15 +1064,16 @@ switch isothermModel
         isothermData.experiment = [z log(x) y];
     otherwise
         isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
-        isothermData.confidenceRegion = outScatter;
-        isothermData.confidenceBounds = uncBounds;
-        isothermData.isothermParameters = [parameters' conRange95Disp];
-        isothermData.gitCommitID = gitCommitID;
-        if flagConcUnits
-            isothermData.isothermFit(2:end,1) = linspace(0,x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x)))))),200)';
-            isothermData.confidenceBounds(:,1) = uncBounds(:,1)./(1e5./(8.314.*uncBounds(find(x==max(max(x))),4)));
-        end
 end
+isothermData.confidenceRegion = outScatter;
+isothermData.confidenceBounds = uncBounds;
+isothermData.isothermParameters = [parameters' conRange95Disp];
+isothermData.gitCommitID = gitCommitID;
+if flagConcUnits
+    isothermData.isothermFit(2:end,1) = linspace(0,x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x)))))),200)';
+    isothermData.confidenceBounds(:,1) = uncBounds(:,1)./(1e5./(8.314.*uncBounds(find(x==max(max(x))),4)));
+end
+
 
 
 if ~saveFlag
