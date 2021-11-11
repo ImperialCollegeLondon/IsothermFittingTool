@@ -142,6 +142,58 @@ switch isothermModel
         % Confidence range given by chi squared distribution at Np degrees
         % of freedom (independent parameter conf intervals)
         conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+        % for DSS model
+    case 'TOTH'
+        % Number of parameters
+        Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
+        % Calculate standard deviation of the data (not needed)
+        stDevData = sqrt(1/(length(x)-length(Np)) * sum((z-fitVals).^2));
+        % degree of variation of parameter to calculate sensitivity
+        del = 0.000001;
+        % Generate and solve global optimisation problem for confidence regions
+        % based on isotherm model
+        qs1 = varargin{1};
+        qs2 = varargin{2};
+        b01 = varargin{3};
+        b02 = varargin{4};
+        delU1 = varargin{5};
+        delU2 = varargin{6};
+        toth = varargin{7};
+        % Create empty sensitivity matrix
+        sensitivityMatrix = zeros(length(x),7);
+        % Calculate sensitivity at every data point for each parameter
+        for jj = 1:7
+            for kk = 1:length(x)
+                if jj == 1
+                    sensitivityMatrix(kk,jj) = ((((1+del)*qs1)*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^toth).^(1./toth) ...
+                        - fitVals(kk))/(del*qs1);
+                elseif jj == 2
+                    sensitivityMatrix(kk,jj) = (((1+del)*qs1*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^toth).^(1./toth) ...
+                        - fitVals(kk))/(del*qs1);
+                elseif jj == 3
+                    sensitivityMatrix(kk,jj) = ((qs1*(1+del)*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^toth).^(1./toth) ...
+                        - fitVals(kk))/(del*b01);
+                elseif jj == 4
+                    sensitivityMatrix(kk,jj) = ((qs1*(1+del)*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^toth).^(1./toth) ...
+                        - fitVals(kk))/(del*b01);
+                elseif jj == 5
+                    sensitivityMatrix(kk,jj) = ((qs1*b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^toth).^(1./toth) ...
+                        - fitVals(kk))/(del*delU1);
+                elseif jj == 6
+                    sensitivityMatrix(kk,jj) = ((qs1*b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^toth).^(1./toth) ...
+                        - fitVals(kk))/(del*delU1);
+                else
+                    sensitivityMatrix(kk,jj) = ((qs1*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(1+del)*toth).^(1./(1+del)*toth) ...
+                        - fitVals(kk))/(del*toth);
+                end
+            end
+        end
+        % Hessian Matrix for the data set (Non-linear parameter estimation
+        % by Yonathan Bard (1974) pg. 178)
+        hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
+        % Confidence range given by chi squared distribution at Np degrees
+        % of freedom (independent parameter conf intervals)
+        conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
         % for Virial model
     case 'VIRIAL'
         % Number of parameters

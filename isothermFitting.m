@@ -11,9 +11,11 @@
 %
 % Purpose:
 % Fits input experimental adsorption isotherm data to different isotherm,
-% and outputs isotherm parameters and ellipsoidal confidence bounds
+% and outputs isotherm parameters and independent confidence bounds
 %
 % Last modified:
+% - 2021-11-11, HA: Add capability to use 4-parameter temperature dependent
+%                   Toth isotherm model
 % - 2021-11-10, HA: Add capability to use 6-parameter temperature dependent
 %                   virial isotherm model
 % - 2021-07-14, HA: Normalise experimetal adsorption data for objective
@@ -68,8 +70,8 @@ uiopen
 nbins = 1;
 % Select isotherm model for fitting
 % DSL = Dual site Langmuir. SSL = Single site Langmuir. DSS = Dual site
-% Sips. SSS = Single site Sips. VIRIAL = Virial Equation
-isothermModel = 'VIRIAL';
+% Sips. SSS = Single site Sips. TOTH = Toth Isotherm. VIRIAL = Virial Equation
+isothermModel = 'TOTH';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -140,6 +142,13 @@ switch isothermModel
             isoRef = [refValsP 2];
         end
     case  'SSS'
+        % Reference isotherm parameters for non-dimensionalisation
+        if flagConcUnits
+            isoRef = [refValsC 2];
+        else
+            isoRef = [refValsP 2];
+        end
+    case  'TOTH'
         % Reference isotherm parameters for non-dimensionalisation
         if flagConcUnits
             isoRef = [refValsC 2];
@@ -482,7 +491,76 @@ if ~flagFixQsat
                     end
                 end
             end
-        case 'VIRIAL'
+        case 'TOTH'
+            % Set objective function based on fitting method
+            switch fittingMethod
+                case 'MLE'
+                    % Number of bins is automatically set to 1 for MLE as
+                    % weights cannot be assigned in MLE
+                    nbins =1;
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'TOTH', isoRef, par(1), 0, par(2), ...
+                        0, par(3), 0, par(4));
+                case 'WSS'
+                    % Generate objective function for WSS method
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'TOTH', isoRef, par(1), 0, par(2), ...
+                        0, par(3), 0, par(4));
+            end
+            % Initial conditions, lower bounds, and upper bounds for parameters
+            % in DSL isotherm model
+            x0 = [0.5,0.5,0.5,0.5];
+            lb = [0,0,0,0];
+            ub = [1,1,1,1];
+            % Create global optimisation problem with solver 'fmincon' and
+            % other bounds
+            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+            [parVals, fval]= run(gs,problem);
+            % Set fitted parameter values for isotherm model calculation
+            qs1   = parVals(1).*isoRef(1);
+            qs2   = 0;
+            b01   = parVals(2).*isoRef(3);
+            b02   = 0;
+            delU1 = parVals(3).*isoRef(5);
+            delU2 = 0;
+            toth = parVals(4).*isoRef(7);
+            % Calculate fitted isotherm loadings for conditions (P,T)
+            % corresponding to experimental data
+            qfit  = qs1.*b01.*x.*exp(delU1./(8.314.*y))./(1+(b01.*x.*exp(delU1./(8.314.*y))).^toth).^(1./toth);
+            % Calculate ellipsoidal confidence intervals (delta parameter) for
+            % fitted parameters
+            parameters = [qs1, qs2, b01, b02, delU1, delU2, toth];
+            parameters(isnan(parameters))=0;
+            [conRange95] = conrangeEllipse(x, y, z, qfit, 'TOTH', qs1, qs2, b01, b02, delU1, delU2, toth);
+            conRange95(isnan(conRange95))=0;
+            % Convert confidence intervals to percentage error
+            percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
+            if ~flagConcUnits
+                parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "toth"];
+                units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
+                parsDisp = parameters;
+                conRange95Disp = conRange95;
+                for ii = 1:length(parameters)
+                    if parsDisp(ii) == 0
+                    else
+                        fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
+                    end
+                end
+            else
+                parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"  "toth"];
+                units = ["mol/kg" "mol/kg" "m3/mol" "m3/mol" "J/mol" "J/mol"  " "];
+                parsDisp = parameters;
+                conRange95Disp = conRange95;
+                for ii = 1:length(parsDisp)
+                    if parsDisp(ii) == 0
+                    else
+                        fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
+                    end
+                end
+            end
+         case 'VIRIAL'
             % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
             refValsP = [10e4,10e4,10e4,10e4,10e4,10e4,10e4,10e4];
             refValsC = refValsP;
@@ -887,6 +965,75 @@ else
                     end
                 end
             end
+        case 'TOTH'
+            % Set objective function based on fitting method
+            switch fittingMethod
+                case 'MLE'
+                    % Number of bins is automatically set to 1 for MLE as
+                    % weights cannot be assigned in MLE
+                    nbins =1;
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'TOTH', isoRef, qs1, 0, par(1), ...
+                        0, par(2), 0, par(3));
+                case 'WSS'
+                    % Generate objective function for WSS method
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'TOTH', isoRef, qs1, 0, par(1), ...
+                        0, par(2), 0, par(3));
+            end
+            % Initial conditions, lower bounds, and upper bounds for parameters
+            % in DSL isotherm model
+            x0 = [0.5,0.5,0.5];
+            lb = [0,0,0];
+            ub = [1,1,1];
+            % Create global optimisation problem with solver 'fmincon' and
+            % other bounds
+            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+            [parVals, fval]= run(gs,problem);
+            % Set fitted parameter values for isotherm model calculation
+            qs1   = qs1;
+            qs2   = 0;
+            b01   = parVals(1).*isoRef(3);
+            b02   = 0;
+            delU1 = parVals(2).*isoRef(5);
+            delU2 = 0;
+            toth = parVals(3).*isoRef(7);
+            % Calculate fitted isotherm loadings for conditions (P,T)
+            % corresponding to experimental data
+            qfit  = qs1.*b01.*x.*exp(delU1./(8.314.*y))./(1+(b01.*x.*exp(delU1./(8.314.*y))).^toth).^(1./toth);
+            % Calculate ellipsoidal confidence intervals (delta parameter) for
+            % fitted parameters
+            parameters = [qs1, qs2, b01, b02, delU1, delU2, toth];
+            parameters(isnan(parameters))=0;
+            [conRange95] = conrangeEllipse(x, y, z, qfit, 'TOTH', qs1, qs2, b01, b02, delU1, delU2, toth);
+            conRange95(isnan(conRange95))=0;
+            % Convert confidence intervals to percentage error
+            percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
+            if ~flagConcUnits
+                parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "toth"];
+                units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
+                parsDisp = parameters;
+                conRange95Disp = conRange95;
+                for ii = 1:length(parameters)
+                    if parsDisp(ii) == 0
+                    else
+                        fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
+                    end
+                end
+            else
+                parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"  "toth"];
+                units = ["mol/kg" "mol/kg" "m3/mol" "m3/mol" "J/mol" "J/mol"  " "];
+                parsDisp = parameters;
+                conRange95Disp = conRange95;
+                for ii = 1:length(parsDisp)
+                    if parsDisp(ii) == 0
+                    else
+                        fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
+                    end
+                end
+            end
     end
 end
 fprintf('%s %5.4e \n','objective function:',fval);
@@ -900,6 +1047,8 @@ switch isothermModel
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'DSS',parameters,conRange95);
     case 'SSS'
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'DSS',parameters,conRange95);
+    case 'TOTH'
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'TOTH',parameters,conRange95);
     case 'VIRIAL'
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'VIRIAL',parameters,conRange95);
 end
@@ -953,7 +1102,7 @@ switch isothermModel
             plot(qvals,delH,'-k','LineWidth',1.5);
         end
         xlabel('Amount adsorbed [mol/kg]');
-        ylabel('-\Delta H_{ads} (Heat of Adsorption) [kJ/mol]');
+        ylabel('-\Delta H_{ads} [kJ/mol]');
         ylim([0 max(delH)+5]);
         box on
         set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
@@ -982,6 +1131,8 @@ switch isothermModel
                     case 'SSS'
                         qvals(jj,kk) = qs1.*((b01.*P.*exp(delU1./(8.314.*T)))^gamma)./(1+(b01.*P.*exp(delU1./(8.314.*T)))^gamma) ...
                             + qs2.*((b02.*P.*exp(delU2./(8.314.*T)))^gamma)./(1+(b02.*P.*exp(delU2./(8.314.*T)))^gamma);
+                    case 'TOTH'
+                        qvals(jj,kk) = qs1.*b01.*P.*exp(delU1./(8.314.*T))/(1+(b01.*P.*exp(delU1./(8.314.*T))).^toth).^(1./toth);
                 end
             end
         end
