@@ -484,7 +484,7 @@ if ~flagFixQsat
             end
         case 'VIRIAL'
             % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-            refValsP = [3e3,3e3,3e3,3e3,3e3,3e3,3e3,3e3];
+            refValsP = [10e4,10e4,10e4,10e4,10e4,10e4,10e4,10e4];
             refValsC = refValsP;
             isoRef = refValsC;
             % Set objective function based on fitting method
@@ -503,7 +503,7 @@ if ~flagFixQsat
             end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
-            x0 = [0.1,0.5,0.5,0.5,0.5,0.5,0.5,0.5];
+            x0 = [0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
             lb = [-1,-1,-1,-1,-1,-1,-1,-1];
             ub = [1,1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
@@ -949,7 +949,7 @@ switch isothermModel
         grid on; axis square
         subplot(1,3,3)
         for kk = 1:length(Tvals)
-            delH = -8.314*(a0 +a1.*qvals+a2.*qvals.^2+a3.*qvals.^3)./1000;
+            delH = -8.314.*(a0 +a1.*qvals+a2.*qvals.^2+a3.*qvals.^3)./1000;
             plot(qvals,delH,'-k','LineWidth',1.5);
         end
         xlabel('Amount adsorbed [mol/kg]');
