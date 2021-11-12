@@ -16,7 +16,7 @@
 % Last modified:
 % - 2021-11-12, HA: Add capability to use temperature dependent
 %                   Dual (9 param) or Single (6 param) site Henry-Langmuir 
-%                   isotherm models
+%                   isotherm model
 % - 2021-11-11, HA: Add capability to use 4-parameter temperature dependent
 %                   Toth isotherm model
 % - 2021-11-10, HA: Add capability to use 6-parameter temperature dependent
