@@ -158,6 +158,74 @@ switch isothermModel
         % Confidence range given by chi squared distribution at Np degrees
         % of freedom (independent parameter conf intervals)
         conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+    case 'TSL'
+        % Number of parameters
+        Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
+        % Calculate standard deviation of the data (not needed)
+        stDevData = sqrt(1/(length(x)-length(Np)) * sum((z-fitVals).^2));
+        % degree of variation of parameter to calculate sensitivity
+        del = 0.001;
+        % Generate and solve global optimisation problem for confidence regions
+        % based on isotherm model
+        qs1 = varargin{1};
+        qs2 = varargin{2};
+        b01 = varargin{3};
+        b02 = varargin{4};
+        delU1 = varargin{5};
+        delU2 = varargin{6};
+        qs3 = varargin{7};
+        b03 = varargin{8};
+        delU3 = varargin{9};
+        % Create empty sensitivity matrix
+        sensitivityMatrix = zeros(length(x),9);
+        % Calculate sensitivity at every data point for each parameter
+        for jj = 1:9
+            for kk = 1:length(x)
+                if jj == 1
+                    sensitivityMatrix(kk,jj) = (((((1+del)*qs1)*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                        + qs2*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) ...
+                        + qs3*(b03*x(kk)*exp(delU3/(8.314*y(kk))))./(1+(b03*x(kk)*exp(delU3/(8.314*y(kk)))))) - fitVals(kk))/(del*qs1);
+                elseif jj == 2
+                    sensitivityMatrix(kk,jj) = (((qs1*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                        + ((1+del)*qs2)*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) ...
+                        + qs3*(b03*x(kk)*exp(delU3/(8.314*y(kk))))./(1+(b03*x(kk)*exp(delU3/(8.314*y(kk)))))) - fitVals(kk))/(del*qs2);
+                elseif jj == 3
+                    sensitivityMatrix(kk,jj) = (((qs1*(((1+del)*b01)*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(((1+del)*b01)*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                        + qs2*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) ...
+                        + qs3*(b03*x(kk)*exp(delU3/(8.314*y(kk))))./(1+(b03*x(kk)*exp(delU3/(8.314*y(kk)))))) - fitVals(kk))/(del*b01);
+                elseif jj == 4
+                    sensitivityMatrix(kk,jj) = (((qs1*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                        + qs2*(((1+del)*b02)*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(((1+del)*b02)*x(kk)*exp(delU2/(8.314*y(kk)))))) ...
+                        + qs3*(b03*x(kk)*exp(delU3/(8.314*y(kk))))./(1+(b03*x(kk)*exp(delU3/(8.314*y(kk)))))) - fitVals(kk))/(del*b02);
+                elseif jj == 5
+                    sensitivityMatrix(kk,jj) = ((((qs1)*(b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))) ...
+                        + qs2*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) ...
+                        + qs3*(b03*x(kk)*exp(delU3/(8.314*y(kk))))./(1+(b03*x(kk)*exp(delU3/(8.314*y(kk)))))) - fitVals(kk))/(del*delU1);
+                elseif jj == 6
+                    sensitivityMatrix(kk,jj) = ((((qs1)*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                        + qs2*(b02*x(kk)*exp((1+del)*delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp((1+del)*delU2/(8.314*y(kk)))))) ...
+                        + qs3*(b03*x(kk)*exp(delU3/(8.314*y(kk))))./(1+(b03*x(kk)*exp(delU3/(8.314*y(kk)))))) - fitVals(kk))/(del*delU2);
+                elseif jj == 7
+                    sensitivityMatrix(kk,jj) = ((((qs1)*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                        + qs2*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) ...
+                        + (1+del)*qs3*(b03*x(kk)*exp(delU3/(8.314*y(kk))))./(1+(b03*x(kk)*exp(delU3/(8.314*y(kk)))))) - fitVals(kk))/(del*qs3);
+                elseif jj == 8
+                    sensitivityMatrix(kk,jj) = (((qs1*((b01)*x(kk)*exp(delU1/(8.314*y(kk))))/(1+((b01)*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                        + qs2*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) ...
+                        + qs3*((1+del)*b03*x(kk)*exp(delU3/(8.314*y(kk))))./(1+((1+del)*b03*x(kk)*exp(delU3/(8.314*y(kk)))))) - fitVals(kk))/(del*b03);
+                else
+                    sensitivityMatrix(kk,jj) = ((((qs1)*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                        + qs2*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) ...
+                        + qs3*(b03*x(kk)*exp((1+del)*delU3/(8.314*y(kk))))./(1+(b03*x(kk)*exp((1+del)*delU3/(8.314*y(kk)))))) - fitVals(kk))/(del*delU3);
+                end
+            end
+        end
+        % estimated Hessian Matrix for the data set (Non-linear parameter estimation
+        % by Yonathan Bard (1974) pg. 178
+        hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
+        % Confidence range given by chi squared distribution at Np degrees
+        % of freedom (independent parameter conf intervals)
+        conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
         % for DSS model
     case 'DSS'
         % Number of parameters
