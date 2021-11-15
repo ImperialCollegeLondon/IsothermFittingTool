@@ -77,7 +77,7 @@ nbins = 1;
 % TSL = Triple site Langmuir. DSL = Dual site Langmuir. 
 % SSL = Single site Langmuir. DSS = Dual site. Sips. SSS = Single site Sips. 
 % TOTH = Toth Isotherm. VIRIAL = Virial Equation. Henry-DSL = HDSL. Henry-SSL = HSSL.
-isothermModel = 'TSL';
+isothermModel = 'DSL';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -471,7 +471,7 @@ if ~flagFixQsat
                 parNames = ["qs1" "qs2" "qs3" "b01" "b02" "b03" "delU1" "delU2" "delU3"];
                 units = ["mol/kg" "mol/kg" "mol/kg" "1/bar" "1/bar" "1/bar" "J/mol" "J/mol" "J/mol"];
                 parsDisp = [qs1 qs2 qs3 b01 b02 b03 delU1 delU2 delU3];
-                conRange95Disp = [conRange95(1) conRange95(2) conRange95(7) conRange95(3) conRange95(4) conRange95(8) conRange95(5) conRange95(6) conRange95(9)];
+                conRange95Disp = [conRange95(1) conRange95(2) conRange95(7) conRange95(3) conRange95(4) conRange95(8) conRange95(5) conRange95(6) conRange95(9)]';
                 for ii = 1:length(parsDisp)
                     if parsDisp(ii) == 0
                     else
@@ -1568,7 +1568,7 @@ switch isothermModel
 end
 isothermData.confidenceRegion = outScatter;
 isothermData.confidenceBounds = uncBounds;
-isothermData.isothermParameters = [parsDisp' conRange95Disp'];
+isothermData.isothermParameters = [parsDisp' conRange95Disp];
 isothermData.gitCommitID = gitCommitID;
 if flagConcUnits
     isothermData.isothermFit(2:end,1) = linspace(0,x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x)))))),200)';
