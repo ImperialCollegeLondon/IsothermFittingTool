@@ -17,7 +17,7 @@
 % - 2021-11-15, HA: Add capability to use temperature dependent
 %                   triple site Langmuir (9 param) isotherm model
 % - 2021-11-12, HA: Add capability to use temperature dependent
-%                   Dual (9 param) or Single (6 param) site Henry-Langmuir 
+%                   Dual (9 param) or Single (6 param) site Henry-Langmuir
 %                   isotherm model
 % - 2021-11-11, HA: Add capability to use 4-parameter temperature dependent
 %                   Toth isotherm model
@@ -74,10 +74,10 @@ uiopen
 % IF ERROR --> Reduce number of bins until error is gone
 nbins = 1;
 % Select isotherm model for fitting
-% TSL = Triple site Langmuir. DSL = Dual site Langmuir. 
-% SSL = Single site Langmuir. DSS = Dual site. Sips. SSS = Single site Sips. 
+% TSL = Triple site Langmuir. DSL = Dual site Langmuir.
+% SSL = Single site Langmuir. DSS = Dual site. Sips. SSS = Single site Sips.
 % TOTH = Toth Isotherm. VIRIAL = Virial Equation. Henry-DSL = HDSL. Henry-SSL = HSSL.
-isothermModel = 'DSL';
+isothermModel = 'TSL';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -405,7 +405,7 @@ if ~flagFixQsat
                         optfunc = @(par) generateWSSfun(x, y, z, nbins, 'TSL', isoRef, par(1), par(2), par(3), ...
                             par(4), par(5), par(6), par(7), par(8),  par(9));
                     end
-            end                    
+            end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             if length(unique(y)) == 1 % if only one temperature
@@ -441,7 +441,7 @@ if ~flagFixQsat
                 b03   = parVals(8).*isoRef(8);
                 delU3 = parVals(9).*isoRef(9);
             end
-
+            
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y)))./(1+(b01.*x.*exp(delU1./(8.314.*y)))) ...
@@ -460,7 +460,7 @@ if ~flagFixQsat
                 parNames = ["qs1" "qs2" "qs3" "b01" "b02" "b03" "delU1" "delU2" "delU3"];
                 units = ["mol/kg" "mol/kg" "mol/kg" "1/bar" "1/bar" "1/bar" "J/mol" "J/mol" "J/mol"];
                 parsDisp = [qs1 qs2 qs3 b01 b02 b03 delU1 delU2 delU3];
-                conRange95Disp = [conRange95(1) conRange95(2) conRange95(7) conRange95(3) conRange95(4) conRange95(8) conRange95(5) conRange95(6) conRange95(9)];
+                conRange95Disp = [conRange95(1) conRange95(2) conRange95(7) conRange95(3) conRange95(4) conRange95(8) conRange95(5) conRange95(6) conRange95(9)]';
                 for ii = 1:length(parameters)
                     if parsDisp(ii) == 0
                     else
@@ -506,7 +506,7 @@ if ~flagFixQsat
                         optfunc = @(par) generateWSSfun(x, y, z, nbins, 'HDSL', isoRef, par(1), par(2), par(3), ...
                             par(4), par(5), par(6), par(7), par(8),  par(9));
                     end
-            end                    
+            end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             if length(unique(y)) == 1 % if only one temperature
@@ -542,7 +542,7 @@ if ~flagFixQsat
                 b0H   = parVals(8).*isoRef(8);
                 delUH = parVals(9).*isoRef(9);
             end
-
+            
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y)))./(1+(b01.*x.*exp(delU1./(8.314.*y)))) ...
@@ -607,7 +607,7 @@ if ~flagFixQsat
                         optfunc = @(par) generateWSSfun(x, y, z, nbins, 'HDSL', isoRef, par(1), 0, par(2), ...
                             0, par(3), 0, par(4), par(5),  par(6));
                     end
-            end                    
+            end
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             if length(unique(y)) == 1 % if only one temperature
@@ -643,7 +643,7 @@ if ~flagFixQsat
                 b0H   = parVals(5).*isoRef(8);
                 delUH = parVals(6).*isoRef(9);
             end
-
+            
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y)))./(1+(b01.*x.*exp(delU1./(8.314.*y)))) ...
@@ -890,7 +890,7 @@ if ~flagFixQsat
                     end
                 end
             end
-         case 'VIRIAL'
+        case 'VIRIAL'
             % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
             refValsP = [10e4,10e4,10e4,10e4,10e4,10e4,10e4,10e4];
             refValsC = refValsP;
@@ -1564,18 +1564,20 @@ switch isothermModel
         isothermData.isothermFit = [headerRow;qvals(1,:)' lnPvals];
         isothermData.experiment = [z log(x) y];
     otherwise
-        isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
+        if flagConcUnits
+            isothermData.isothermFit = [];
+            isothermData.isothermFit = [linspace(0,x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x)))))),length(qvals))' qvals];
+            isothermData.confidenceBounds = [uncBounds(:,1)./(1e5./(8.314.*uncBounds(find(x==max(max(x))),4))) uncBounds(:,2) uncBounds(:,3) uncBounds(:,4)];
+            outScatter(:,1) = outScatter(:,1)./(1e5./(8.314.*outScatter(:,3))); 
+            isothermData.confidenceRegion = outScatter;
+        else
+            isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
+            isothermData.confidenceRegion = outScatter;
+            isothermData.confidenceBounds = uncBounds;
+        end
 end
-isothermData.confidenceRegion = outScatter;
-isothermData.confidenceBounds = uncBounds;
 isothermData.isothermParameters = [parsDisp' conRange95Disp];
 isothermData.gitCommitID = gitCommitID;
-if flagConcUnits
-    isothermData.isothermFit(2:end,1) = linspace(0,x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x)))))),200)';
-    isothermData.confidenceBounds(:,1) = uncBounds(:,1)./(1e5./(8.314.*uncBounds(find(x==max(max(x))),4)));
-end
-
-
 
 if ~saveFlag
 else
