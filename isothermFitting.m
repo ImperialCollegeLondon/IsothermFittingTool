@@ -14,6 +14,7 @@
 % and outputs isotherm parameters and independent confidence bounds
 %
 % Last modified:
+% - 2021-11-15, HA: Update confidence region calculation for MLE
 % - 2021-11-15, HA: Add capability to use temperature dependent
 %                   triple site Langmuir (9 param) isotherm model
 % - 2021-11-12, HA: Add capability to use temperature dependent
@@ -46,7 +47,35 @@ clc; clear all; close all;
 % (rename on workspace) and save the data as *.mat file in 3 column format
 % with Pressure (bar), adsorbed amount (-), temperature (K) respectively
 % with any name of your choice.
-% RUN THIS SCRIPT from ERASE OR IsothermFittingTool ONLY!!!!!!!!!!
+% RUN THIS SCRIPT from ERASE OR IsothermFittingTool folder ONLY!
+% Load input experimental data from *.mat or *.csv file via prompt
+uiopen
+%% Select isotherm model for fitting
+% TSL = Triple site Langmuir. DSL = Dual site Langmuir.
+% SSL = Single site Langmuir. DSS = Dual site. Sips. SSS = Single site Sips.
+% TOTH = Toth Isotherm. VIRIAL = Virial Equation. Henry-DSL = HDSL. Henry-SSL = HSSL.
+isothermModel = 'VIRIAL';
+%% Flag for fitting parameters in concentration units
+flagConcUnits = 0;
+%% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)
+saveFlag = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%            dP                                                            oo   dP
+%            88                                                                 88
+%   88d888b. 88 .d8888b. .d8888b. .d8888b. .d8888b.    dP  dP  dP .d8888b. dP d8888P
+%   88'  `88 88 88ooood8 88'  `88 Y8ooooo. 88ooood8    88  88  88 88'  `88 88   88
+%   88.  .88 88 88.  ... 88.  .88       88 88.  ...    88.88b.88' 88.  .88 88   88
+%   88Y888P' dP `88888P' `88888P8 `88888P' `88888P'    8888P Y8P  `88888P8 dP   dP
+%   88
+%   dP
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  isotherm parameters can be found in 'parsDisp' and uncertainties in 'conRange95Disp'  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% GENERATING AND SOLVING GLOBAL OPTIMISATION PROBLEM
 currentDir = strsplit(cd,filesep);
 if strcmp(currentDir(end),'ERASE')
     cd IsothermFittingTool
@@ -66,18 +95,11 @@ catch
         gitCommitID.isotherm = [];
     end
 end
-% Load input experimental data from *.mat or *.csv file via prompt
-uiopen
 % Determine number of bins you want the experimental data to be binned to
 % in terms of the total pressure range
 % (for Weighted sum of squares method ONLY).
 % IF ERROR --> Reduce number of bins until error is gone
 nbins = 1;
-% Select isotherm model for fitting
-% TSL = Triple site Langmuir. DSL = Dual site Langmuir.
-% SSL = Single site Langmuir. DSS = Dual site. Sips. SSS = Single site Sips.
-% TOTH = Toth Isotherm. VIRIAL = Virial Equation. Henry-DSL = HDSL. Henry-SSL = HSSL.
-isothermModel = 'TSL';
 % Select fitting method.
 % WSS = weighted sum of squares, MLE = maximum log-likelihood estimator
 % MLE is preferred for data that is from a single source where the error is
@@ -85,8 +107,6 @@ isothermModel = 'TSL';
 % WSS is preferred for fitting data for cases where the error might not be
 % random and not be normally distributed (data from different sources)
 fittingMethod = 'MLE';
-% Flag for concentration units in parameters
-flagConcUnits = 0;
 % Flag for plotting objective function contour plots for dual site models
 flagContour = 0;
 % Flag for plotting statistical plots (q-q plot and error distribution)
@@ -94,30 +114,10 @@ flagStats = 0;
 % Flag for fixing saturation capacities (0 for CO2 fitting, 1 for other
 % gases)
 flagFixQsat = 0;
-% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN
-% PROMPTED IN COMMAND WINDOW)
-saveFlag = 0;
 % IF YOU ARE FIXING SATURATION CAPACITY ENTER THE CO2 SATURATION CAPACITIES
 % FOR THE RELEVANT MODEL BELOW
 qs1 = 1.9834e+00;
 qs2 = 8.9856e+00;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-%            dP                                                            oo   dP
-%            88                                                                 88
-%   88d888b. 88 .d8888b. .d8888b. .d8888b. .d8888b.    dP  dP  dP .d8888b. dP d8888P
-%   88'  `88 88 88ooood8 88'  `88 Y8ooooo. 88ooood8    88  88  88 88'  `88 88   88
-%   88.  .88 88 88.  ... 88.  .88       88 88.  ...    88.88b.88' 88.  .88 88   88
-%   88Y888P' dP `88888P' `88888P8 `88888P' `88888P'    8888P Y8P  `88888P8 dP   dP
-%   88
-%   dP
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  isotherm parameters can be found in 'parsDisp' and uncertainties in 'conRange95Disp'  %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% GENERATING AND SOLVING GLOBAL OPTIMISATION PROBLEM
 % Pressure (x), adsorbed amount (z), Temperature (y) data from input
 x = fitData(:,1);
 z = fitData(:,2);
@@ -258,7 +258,7 @@ if ~flagFixQsat
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -350,7 +350,7 @@ if ~flagFixQsat
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -451,7 +451,7 @@ if ~flagFixQsat
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2, qs3, b03, delU3];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, 'TSL', qs1, qs2, b01, b02, delU1, delU2, qs3, b03, delU3);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TSL', qs1, qs2, b01, b02, delU1, delU2, qs3, b03, delU3);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -552,7 +552,7 @@ if ~flagFixQsat
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2, qsH, b0H, delUH];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, 'HDSL', qs1, qs2, b01, b02, delU1, delU2, qsH, b0H, delUH);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'HDSL', qs1, qs2, b01, b02, delU1, delU2, qsH, b0H, delUH);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -653,7 +653,7 @@ if ~flagFixQsat
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2, qsH, b0H, delUH];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, 'HDSL', qs1, qs2, b01, b02, delU1, delU2, qsH, b0H, delUH);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'HDSL', qs1, qs2, b01, b02, delU1, delU2, qsH, b0H, delUH);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -723,7 +723,7 @@ if ~flagFixQsat
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2, gamma];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, isothermModel, qs1, qs2, b01, b02, delU1, delU2, gamma);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, isothermModel, qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -793,7 +793,7 @@ if ~flagFixQsat
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2, gamma];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, 'DSS', qs1, qs2, b01, b02, delU1, delU2, gamma);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSS', qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -862,8 +862,9 @@ if ~flagFixQsat
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2, toth];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, 'TOTH', qs1, qs2, b01, b02, delU1, delU2, toth);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TOTH', qs1, qs2, b01, b02, delU1, delU2, toth);
             conRange95(isnan(conRange95))=0;
+            conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7)]';
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
@@ -949,8 +950,9 @@ if ~flagFixQsat
             end
             % Calculate ellipsoidal confidence intervals (delta parameter) for
             % fitted parameters
-            [conRange95] = conrangeEllipse(x, y, z, lnPfit, 'VIRIAL', a0, a1, a2, a3, b0, b1, b2, b3);
+            [conRange95] = conrangeEllipse(x, y, z, lnPfit, fittingMethod,isoRef, 'VIRIAL', a0, a1, a2, a3, b0, b1, b2, b3);
             conRange95(isnan(conRange95))=0;
+            conRange95 = [conRange95(1) conRange95(2) conRange95(3) conRange95(4) conRange95(5) conRange95(6) 0 0]';
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
@@ -1039,7 +1041,7 @@ else
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -1130,7 +1132,7 @@ else
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -1199,7 +1201,7 @@ else
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2, gamma];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, isothermModel, qs1, qs2, b01, b02, delU1, delU2, gamma);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, isothermModel, qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -1268,7 +1270,7 @@ else
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2, gamma];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, 'DSS', qs1, qs2, b01, b02, delU1, delU2, gamma);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSS', qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -1336,7 +1338,7 @@ else
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2, toth];
             parameters(isnan(parameters))=0;
-            [conRange95] = conrangeEllipse(x, y, z, qfit, 'TOTH', qs1, qs2, b01, b02, delU1, delU2, toth);
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TOTH', qs1, qs2, b01, b02, delU1, delU2, toth);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -1568,7 +1570,7 @@ switch isothermModel
             isothermData.isothermFit = [];
             isothermData.isothermFit = [linspace(0,x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x)))))),length(qvals))' qvals];
             isothermData.confidenceBounds = [uncBounds(:,1)./(1e5./(8.314.*uncBounds(find(x==max(max(x))),4))) uncBounds(:,2) uncBounds(:,3) uncBounds(:,4)];
-            outScatter(:,1) = outScatter(:,1)./(1e5./(8.314.*outScatter(:,3))); 
+            outScatter(:,1) = outScatter(:,1)./(1e5./(8.314.*outScatter(:,3)));
             isothermData.confidenceRegion = outScatter;
         else
             isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
@@ -1604,7 +1606,6 @@ if flagConcUnits
     xlabel('Concentration [mol/m3]');
     ylabel('Adsorbed amount [mol/kg]');
 end
-
 
 if strcmp(currentDir(end),'ERASE')
     cd ..
