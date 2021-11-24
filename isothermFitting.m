@@ -75,6 +75,10 @@ saveFlag = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  isotherm parameters can be found in 'parsDisp' and uncertainties in 'conRange95Disp'  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+tic
+isothermFittingFun(isothermModel, flagConcUnits, saveFlag, fitData);
+toc
+function isothermFittingFun(isothermModel, flagConcUnits, saveFlag, fitData)
 %% GENERATING AND SOLVING GLOBAL OPTIMISATION PROBLEM
 currentDir = strsplit(cd,filesep);
 if strcmp(currentDir(end),'ERASE')
@@ -1603,10 +1607,17 @@ if flagConcUnits
     plot(isothermData.experiment(:,1),isothermData.experiment(:,2),'ok')
     scatter(isothermData.confidenceBounds(:,1),isothermData.confidenceBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5);
     scatter(isothermData.confidenceBounds(:,1),isothermData.confidenceBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5);
-    xlabel('Concentration [mol/m3]');
+    xlabel('Pressure [bar]');
     ylabel('Adsorbed amount [mol/kg]');
+    xlim([0 x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x))))))])
+    ylim([0 1.1.*max(z)])
+    % quantile-quantile plot of experimental data vs normal distribution
+    box on
+    set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+    grid on; axis square
 end
 
 if strcmp(currentDir(end),'ERASE')
     cd ..
+end
 end
