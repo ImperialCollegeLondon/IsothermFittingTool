@@ -54,8 +54,8 @@ uiopen
 % TSL = Triple site Langmuir. DSL = Dual site Langmuir.
 % SSL = Single site Langmuir. DSS = Dual site. Sips. SSS = Single site Sips.
 % TOTH = Toth Isotherm. VIRIAL = Virial Equation. Henry-DSL = HDSL. Henry-SSL = HSSL.
-isothermModel = 'VIRIAL';
-%% Flag for fitting parameters in concentration units
+isothermModel = 'SSL';
+%% Flag for fitting parameters in concentration units (NOT for virial)
 flagConcUnits = 0;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)
 saveFlag = 0;
@@ -1601,22 +1601,24 @@ else
 end
 
 if flagConcUnits
-    figure
-    plot(isothermData.isothermFit(:,1),isothermData.isothermFit(:,2:end),'-k','LineWidth',1.5)
-    hold on;
-    plot(isothermData.experiment(:,1),isothermData.experiment(:,2),'ok')
-    scatter(isothermData.confidenceBounds(:,1),isothermData.confidenceBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5);
-    scatter(isothermData.confidenceBounds(:,1),isothermData.confidenceBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5);
-    xlabel('Pressure [bar]');
-    ylabel('Adsorbed amount [mol/kg]');
-    xlim([0 x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x))))))])
-    ylim([0 1.1.*max(z)])
-    % quantile-quantile plot of experimental data vs normal distribution
-    box on
-    set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
-    grid on; axis square
+    switch isothermModel
+        case 'VIRIAL'
+        otherwise
+            figure
+            plot(isothermData.isothermFit(:,1),isothermData.isothermFit(:,2:end),'-k','LineWidth',1.5)
+            hold on;
+            plot(isothermData.experiment(:,1),isothermData.experiment(:,2),'ok')
+            scatter(isothermData.confidenceBounds(:,1),isothermData.confidenceBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5);
+            scatter(isothermData.confidenceBounds(:,1),isothermData.confidenceBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5);
+            xlabel('Pressure [bar]');
+            ylabel('Adsorbed amount [mol/kg]');
+            xlim([0 x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x))))))])
+            ylim([0 1.1.*max(z)])
+            box on
+            set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+            grid on; axis square
+    end
 end
-
 if strcmp(currentDir(end),'ERASE')
     cd ..
 end
