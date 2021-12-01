@@ -54,7 +54,7 @@ uiopen
 % TSL = Triple site Langmuir. DSL = Dual site Langmuir.
 % SSL = Single site Langmuir. DSS = Dual site. Sips. SSS = Single site Sips.
 % TOTH = Toth Isotherm. VIRIAL = Virial Equation. Henry-DSL = HDSL. Henry-SSL = HSSL.
-isothermModel = 'SSL';
+isothermModel = 'VIRIAL';
 %% Flag for fitting parameters in concentration units (NOT for virial)
 flagConcUnits = 0;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)
@@ -1433,8 +1433,8 @@ switch isothermModel
         plot(x,z,'ob');
         xlabel('Pressure [bar]');
         ylabel('Amount adsorbed [mol/kg]');
-        xlim([0 max(x)+1]);
-        ylim([0 max(z)+1]);
+        xlim([0 max(x)*1.1]);
+        ylim([0 max(z)*1.1]);
         box on
         set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
         grid on; axis square
