@@ -25,4 +25,9 @@ Fits input experimental adsorption isotherm data to different isotherm models, a
 - Authors: Hassan Azzan (HA)
 - email: hassan.azzan15@imperial.ac.uk
 
-Last updated: 12/11/2021
+Last updated: 19/01/2022
+
+IsothermFittingTool  Copyright (C) 2022  Azzan, Hassan
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+This is free software, and you are welcome to redistribute it
+under certain conditions; type `show c' for details.
