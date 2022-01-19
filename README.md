@@ -28,6 +28,6 @@ Fits input experimental adsorption isotherm data to different isotherm models, a
 Last updated: 19/01/2022
 
 IsothermFittingTool  Copyright (C) 2022  Azzan, Hassan
-This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+This program comes with ABSOLUTELY NO WARRANTY; for details type 'show w'.
 This is free software, and you are welcome to redistribute it
-under certain conditions; type `show c' for details.
+under certain conditions; type 'show c' for details.
