@@ -1,4 +1,4 @@
-function isothermFittingFun(isothermModel, flagConcUnits, saveFlag, fitData)
+function [varargout] = isothermFittingFun(isothermModel, flagConcUnits, saveFlag, fitData)
 %% GENERATING AND SOLVING GLOBAL OPTIMISATION PROBLEM
 currentDir = strsplit(cd,filesep);
 if strcmp(currentDir(end),'ERASE')
@@ -47,8 +47,8 @@ x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-refValsP = [15,15,1e-1,1e-1,5e4,5e4];
-refValsC = [15,15,1e-5,1e-5,5e4,5e4];
+refValsP = [15,15,1e-1,1e-1,4e4,4e4];
+refValsC = [15,15,1e-5,1e-5,4e4,5e4];
 switch isothermModel
     case 'DSL'
         % Reference isotherm parameters for non-dimensionalisation
@@ -1539,6 +1539,8 @@ if flagConcUnits
             grid on; axis square
     end
 end
+
+varargout{1} = isothermData;
 if strcmp(currentDir(end),'ERASE')
     cd ..
 end

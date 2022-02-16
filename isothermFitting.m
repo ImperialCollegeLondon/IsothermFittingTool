@@ -54,7 +54,7 @@ uiopen
 % TSL = Triple site Langmuir. DSL = Dual site Langmuir.
 % SSL = Single site Langmuir. DSS = Dual site. Sips. SSS = Single site Sips.
 % TOTH = Toth Isotherm. VIRIAL = Virial Equation. Henry-DSL = HDSL. Henry-SSL = HSSL.
-isothermModel = 'VIRIAL';
+isothermModel = 'DSL';
 %% Flag for fitting parameters in concentration units (NOT for virial)
 flagConcUnits = 0;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)
@@ -76,5 +76,5 @@ saveFlag = 0;
 %  isotherm parameters can be found in 'parsDisp' and uncertainties in 'conRange95Disp'  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tic
-isothermFittingFun(isothermModel, flagConcUnits, saveFlag, fitData);
+isothermData = isothermFittingFun(isothermModel, flagConcUnits, saveFlag, fitData);
 toc
