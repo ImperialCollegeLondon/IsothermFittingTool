@@ -562,5 +562,96 @@ switch isothermModel
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
         end
+    case 'VIRIAL2'
+        % Number of parameters
+        Np = length(cell2mat(varargin));
+        % Calculate standard deviation of the data (not needed)
+        stDevData = sqrt(1/(length(x)-length(Np)) * sum((log(x)-fitVals').^2));
+        % degree of variation of parameter to calculate sensitivity
+        del = 0.000001;
+        % Generate and solve global optimisation problem for confidence regions
+        % based on isotherm model
+        a0 = varargin{1};
+        a1 = varargin{2};
+        a2 = varargin{3};
+        a3 = varargin{4};
+        b0 = varargin{5};
+        b1 = varargin{6};
+        b2 = varargin{7};
+        b3 = varargin{8};
+        
+        parameters = [a0, a1, a2, a3, b0, b1, b2, b3];
+        switch fittingMethod
+            case 'WSS'
+                % Create empty sensitivity matrix
+                sensitivityMatrix = zeros(length(x),8);
+                % Calculate sensitivity at every data point for each parameter
+                for jj = 1:8
+                    for kk = 1:length(x)
+                        if jj == 1
+                            sensitivityMatrix(kk,jj) = (log(z(kk)) + 1/y(kk).*((1+del)*parameters(1) + parameters(2)*z(kk) + ...
+                                parameters(3)*z(kk)^2 + parameters(4)*z(kk)^3)  + parameters(5) ...
+                                + parameters(6)*z(kk)+ parameters(7)*z(kk).^2+ parameters(8)*z(kk).^3 - fitVals(kk))/(del*parameters(1));
+                        elseif jj == 2
+                            sensitivityMatrix(kk,jj) = (log(z(kk)) + 1/y(kk).*(parameters(1) + (1+del)*parameters(2)*z(kk) + ...
+                                parameters(3)*z(kk)^2 + parameters(4)*z(kk)^3)  + parameters(5) ...
+                                + parameters(6)*z(kk)+ parameters(7)*z(kk).^2+ parameters(8)*z(kk).^3 - fitVals(kk))/(del*parameters(2));
+                        elseif jj == 3
+                            sensitivityMatrix(kk,jj) = (log(z(kk)) + 1/y(kk).*(parameters(1) + parameters(2)*z(kk) + ...
+                                (1+del)*parameters(3)*z(kk)^2 + parameters(4)*z(kk)^3)  + parameters(5) ...
+                                + parameters(6)*z(kk)+ parameters(7)*z(kk).^2+ parameters(8)*z(kk).^3 - fitVals(kk))/(del*parameters(3));
+                        elseif jj == 4
+                            sensitivityMatrix(kk,jj) = (log(z(kk)) + 1/y(kk).*(parameters(1) + parameters(2)*z(kk) + ...
+                                parameters(3)*z(kk)^2 + (1+del)*parameters(4)*z(kk)^3)  + parameters(5) ...
+                                + parameters(6)*z(kk)+ parameters(7)*z(kk).^2+ parameters(8)*z(kk).^3 - fitVals(kk))/(del*parameters(4));
+                        elseif jj == 5
+                            sensitivityMatrix(kk,jj) = (log(z(kk)) + 1/y(kk).*(parameters(1) + parameters(2)*z(kk) + ...
+                                parameters(3)*z(kk)^2 + parameters(4)*z(kk)^3)  + (1+del)*parameters(5) ...
+                                + parameters(6)*z(kk)+ parameters(7)*z(kk).^2+ parameters(8)*z(kk).^3 - fitVals(kk))/(del*parameters(5));
+                        elseif jj == 6
+                            sensitivityMatrix(kk,jj) = (log(z(kk)) + 1/y(kk).*(parameters(1) + parameters(2)*z(kk) + ...
+                                parameters(3)*z(kk)^2 + parameters(4)*z(kk)^3)  + parameters(5) ...
+                                + (1+del)*parameters(6)*z(kk)+ parameters(7)*z(kk).^2+ parameters(8)*z(kk).^3 - fitVals(kk))/(del*parameters(6));
+                        elseif jj == 7
+                            sensitivityMatrix(kk,jj) = (log(z(kk)) + 1/y(kk).*(parameters(1) + parameters(2)*z(kk) + ...
+                                parameters(3)*z(kk)^2 + parameters(4)*z(kk)^3)  + parameters(5) ...
+                                + parameters(6)*z(kk)+ (1+del)*parameters(7)*z(kk).^2+ parameters(8)*z(kk).^3 - fitVals(kk))/(del*parameters(7));
+                        else
+                            sensitivityMatrix(kk,jj) = (log(z(kk)) + 1/y(kk).*(parameters(1) + parameters(2)*z(kk) + ...
+                                parameters(3)*z(kk)^2 + parameters(4)*z(kk)^3)  + parameters(5) ...
+                                + parameters(6)*z(kk)+ parameters(7)*z(kk).^2+ (1+del)*parameters(8)*z(kk).^3 - fitVals(kk))/(del*parameters(8));
+                        end
+                    end
+                end
+                % Hessian Matrix for the data set (Non-linear parameter estimation
+                % by Yonathan Bard (1974) pg. 178)
+                hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
+                % Confidence range given by chi squared distribution at Np degrees
+                % of freedom (independent parameter conf intervals)
+                conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+            case 'MLE'
+                Nt = length(x);
+                del = 1e-6;
+                dlogMLE = [];
+                d2logMLE = [];
+                deltaplus1mat = eye(Np).*(del);
+                deltamat = eye(Np).*(del);
+                partemp = [a0./isoRef(1), a1./isoRef(2),a2./isoRef(3),a3./isoRef(4),b0./isoRef(5),b1./isoRef(6),b2./isoRef(7),b3./isoRef(8)];
+                logMLE = @(par) -generateMLEfun(x, y, z, 1, 'VIRIAL2', isoRef, par(1), par(2), par(3), ...
+                    par(4), par(5), par(6), par(7), par(8));
+                
+                for jj = 1:Np
+                    for kk = 1:Np
+                        partempnumj = partemp.*(1+deltaplus1mat(jj,:));
+                        partempdenj = partemp.*deltamat(jj,:);
+                        partempnumk = partemp.*(1+deltaplus1mat(kk,:));
+                        partempdenk = partemp.*deltamat(kk,:);
+                        partempnumjk = partemp.*(1+deltaplus1mat(jj,:) + deltaplus1mat(kk,:));
+                        d2logMLE(jj,kk) = ((logMLE(partempnumjk)-logMLE(partempnumk))-(logMLE(partempnumj)-logMLE(partemp)))./(partempdenj(jj).*isoRef(jj).*partempdenk(kk).*isoRef(kk));
+                    end
+                end
+                hessianMatrix =  -d2logMLE;
+                conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+        end
 end
 end

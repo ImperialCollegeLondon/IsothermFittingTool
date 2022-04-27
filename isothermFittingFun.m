@@ -47,8 +47,8 @@ x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-refValsP = [15,15,1e-1,1e-1,4e4,4e4];
-refValsC = [15,15,1e-5,1e-5,4e4,5e4];
+refValsP = [10,10,1e-1,1e-1,4e4,4e4];
+refValsC = [10,10,1e-5,1e-5,4e4,5e4];
 switch isothermModel
     case 'DSL'
         % Reference isotherm parameters for non-dimensionalisation
@@ -114,7 +114,7 @@ if ~flagFixQsat
     end
     rng default % For reproducibility
     % Create gs, a GlobalSearch solver with its properties set to the defaults.
-    gs = GlobalSearch('NumTrialPoints',2400,'NumStageOnePoints',2000,'Display','off');
+    gs = GlobalSearch('NumTrialPoints',4000,'NumStageOnePoints',200,'Display','off');
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'DSL'
@@ -817,7 +817,7 @@ if ~flagFixQsat
             end
         case 'VIRIAL'
             % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-            refValsP = [10e4,10e4,10e4,10e4,10e4,10e4,10e4,10e4];
+            refValsP = [10e3,10e3,10e3,10e3,10e3,10e3,10e3,10e3];
             refValsC = refValsP;
             isoRef = refValsC;
             % Set objective function based on fitting method
@@ -877,6 +877,82 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, lnPfit, fittingMethod,isoRef, 'VIRIAL', a0, a1, a2, a3, b0, b1, b2, b3);
             conRange95(isnan(conRange95))=0;
             conRange95 = [conRange95(1) conRange95(2) conRange95(3) conRange95(4) conRange95(5) conRange95(6) 0 0]';
+            % Convert confidence intervals to percentage error
+            percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
+            parNames = ["a0" "a1" "a2" "a3" "b0" "b1" "b2" "b3"];
+            units = ["K" "K/mol" "K/mol^2" "K/mol^3" " " "1/mol" "1/mol^2" "1/mol^3"];
+            parsDisp = parameters;
+            conRange95Disp = conRange95;
+            for ii = 1:length(parameters)
+                if parsDisp(ii) == 0
+                else
+                    fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
+                end
+            end
+            
+        case 'VIRIAL2'
+            % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
+            refValsP = [10e3,10e3,10e3,10e3,10e3,10e3,10e3,10e3];
+            refValsC = refValsP;
+            isoRef = refValsC;
+            % Set objective function based on fitting method
+            switch fittingMethod
+                case 'MLE'
+                    % Number of bins is automatically set to 1 for MLE as
+                    % weights cannot be assigned in MLE
+                    nbins =1;
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'VIRIAL2', isoRef, par(1), par(2), ...
+                        par(3), par(4), par(5), par(6), par(7), par(8));
+                case 'WSS'
+                    % Generate objective function for WSS method
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'VIRIAL2', isoRef, par(1), par(2), ...
+                        par(3), par(4), par(5), par(6), par(7), par(8));
+            end
+            % Initial conditions, lower bounds, and upper bounds for parameters
+            % in DSL isotherm model
+            x0 = [0,0.0,0.0,0.0,0.0,0.0,0.0,0.0];
+            lb = [-1,-1,-1,-1,-1,-1,-1,-1];
+            ub = [1,1,1,1,1,1,1,1];
+            % Create global optimisation problem with solver 'fmincon' and
+            % other bounds
+            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+            [parVals, fval]= run(gs,problem);
+            % Set fitted parameter values for isotherm model calculation
+            a0   = parVals(1).*isoRef(1);
+            a1   = parVals(2).*isoRef(2);
+            a2   = parVals(3).*isoRef(3);
+            a3   = parVals(4).*isoRef(4);
+            b0   = parVals(5).*isoRef(5);
+            b1   = parVals(6).*isoRef(6);
+            b2   = parVals(7).*isoRef(7);
+            b3   = parVals(8).*isoRef(8);
+            parameters = [a0, a1, a2, a3, b0, b1, b2, b3];
+            parameters(isnan(parameters))=0;
+            % Calculate fitted isotherm loadings for conditions (P,T)
+            % corresponding to experimental data
+            lnPfit = [];
+            expData = [x,z,y];
+            expData = sortrows(expData,1);
+            expData = expData(length(unique(y))+1:end,:);
+            
+            x = expData(:,1);
+            z = expData(:,2);
+            y = expData(:,3);
+            for kk = 1:length(x)
+                lnPfit(kk)  = log(z(kk)) + 1/y(kk).*(parameters(1) + parameters(2)*z(kk) + ...
+                    parameters(3)*z(kk)^2 + parameters(4)*z(kk)^3)  + parameters(5) ...
+                    + parameters(6)*z(kk)+ parameters(7)*z(kk).^2 ...
+                    + parameters(8)*z(kk).^3;
+            end
+            % Calculate ellipsoidal confidence intervals (delta parameter) for
+            % fitted parameters
+            [conRange95] = conrangeEllipse(x, y, z, lnPfit, fittingMethod,isoRef, 'VIRIAL2', a0, a1, a2, a3, b0, b1, b2, b3);
+            conRange95(isnan(conRange95))=0;
+            conRange95 = [conRange95(1) conRange95(2) conRange95(3) conRange95(4) conRange95(5) conRange95(6) conRange95(7) conRange95(8)]';
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
@@ -1313,9 +1389,11 @@ switch isothermModel
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'TOTH',parameters,conRange95);
     case 'VIRIAL'
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'VIRIAL',parameters,conRange95);
+    case 'VIRIAL2'
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'VIRIAL2',parameters,conRange95);
 end
 switch isothermModel
-    case 'VIRIAL'
+    case {'VIRIAL','VIRIAL2'}
         qvals = linspace(0,max(z),500);
         Tvals = unique(y);
         lnPvals = zeros(length(qvals),length(Tvals));
@@ -1486,9 +1564,10 @@ else
 end
 headerRow = [NaN unique(y)'];
 switch isothermModel
-    case 'VIRIAL'
+    case {'VIRIAL','VIRIAL2'}
         isothermData.isothermFit = [headerRow;qvals(1,:)' lnPvals];
         isothermData.experiment = [z log(x) y];
+        isothermData.heatAdsorption = [qvals delH];
     otherwise
         if flagConcUnits
             isothermData.isothermFit = [];
@@ -1522,7 +1601,7 @@ end
 
 if flagConcUnits
     switch isothermModel
-        case 'VIRIAL'
+        case {'VIRIAL','VIRIAL2'}
         otherwise
             figure
             plot(isothermData.isothermFit(:,1),isothermData.isothermFit(:,2:end),'-k','LineWidth',1.5)
