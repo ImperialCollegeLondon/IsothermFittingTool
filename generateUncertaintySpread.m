@@ -33,14 +33,17 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,isothermModel,parVals,conRange95)
+% Decide number of samplint points for q at each pressure point
+nPoints = 100;
+% Decide the range of pressure for the uncertainty spread calculation
+Pvals = linspace(0,max(x),10000);
+% Decide the range of loading for the uncertainty spread calculation
+% (virial only)
+qvals = linspace(0,max(z),8000);
 % Calculate the uncertainty spread for q in the pressure range
 switch isothermModel
     % for the dual-site langmuir model
     case 'DSL'
-        % Decide number of samplint points for q at each pressure point
-        nPoints = 100;
-        % Decide the range of pressure for the uncertainty spread calculation
-        Pvals = linspace(0,max(x),800);
         % Obtain a vector of the temperatures present in the input data
         Tvals = unique(y);
         uncBounds = [];
@@ -104,10 +107,6 @@ switch isothermModel
         % Transpose of the output
         outScatter=outScatter';
     case 'HDSL'
-        % Decide number of samplint points for q at each pressure point
-        nPoints = 40;
-        % Decide the range of pressure for the uncertainty spread calculation
-        Pvals = linspace(0,max(x),800);
         % Obtain a vector of the temperatures present in the input data
         Tvals = unique(y);
         uncBounds = [];
@@ -178,10 +177,6 @@ switch isothermModel
         % Transpose of the output
         outScatter=outScatter';
     case 'TSL'
-        % Decide number of samplint points for q at each pressure point
-        nPoints = 40;
-        % Decide the range of pressure for the uncertainty spread calculation
-        Pvals = linspace(0,max(x),800);
         % Obtain a vector of the temperatures present in the input data
         Tvals = unique(y);
         uncBounds = [];
@@ -253,10 +248,6 @@ switch isothermModel
         outScatter=outScatter';
         % For sips model
     case 'DSS'
-        % Decide number of samplint points for q at each pressure point
-        nPoints = 40;
-        % Decide the range of pressure for the uncertainty spread calculation
-        Pvals = linspace(0,max(x),800);
         % Obtain a vector of the temperatures present in the input data
         Tvals = unique(y);
         uncBounds = [];
@@ -304,10 +295,6 @@ switch isothermModel
         outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
         outScatter=outScatter';
     case 'TOTH'
-        % Decide number of samplint points for q at each pressure point
-        nPoints = 40;
-        % Decide the range of pressure for the uncertainty spread calculation
-        Pvals = linspace(0,max(x),800);
         % Obtain a vector of the temperatures present in the input data
         Tvals = unique(y);
         uncBounds = [];
@@ -355,10 +342,6 @@ switch isothermModel
         outScatter=outScatter';
         % for the virial model
     case 'VIRIAL'
-        % Decide number of samplint points for q at each pressure point
-        nPoints = 40;
-        % Decide the range of pressure for the uncertainty spread calculation
-        qvals = linspace(0,max(z),800);
         % Obtain a vector of the temperatures present in the input data
         Tvals = unique(y);
         uncBounds = [];
@@ -427,10 +410,6 @@ switch isothermModel
         % Transpose of the output
         outScatter=outScatter';
     case 'VIRIAL2'
-        % Decide number of samplint points for q at each pressure point
-        nPoints = 40;
-        % Decide the range of pressure for the uncertainty spread calculation
-        qvals = linspace(0,max(z),800);
         % Obtain a vector of the temperatures present in the input data
         Tvals = unique(y);
         uncBounds = [];

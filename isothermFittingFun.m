@@ -47,8 +47,8 @@ x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-refValsP = [10,10,1e-1,1e-1,4e4,4e4];
-refValsC = [10,10,1e-5,1e-5,4e4,5e4];
+refValsP = [10,10,1e-1,1e-1,5e4,5e4];
+refValsC = [10,10,1e-5,1e-5,5e4,5e4];
 switch isothermModel
     case 'DSL'
         % Reference isotherm parameters for non-dimensionalisation
