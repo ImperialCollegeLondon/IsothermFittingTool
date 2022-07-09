@@ -114,7 +114,7 @@ if ~flagFixQsat
     end
     rng default % For reproducibility
     % Create gs, a GlobalSearch solver with its properties set to the defaults.
-    gs = GlobalSearch('NumTrialPoints',4000,'NumStageOnePoints',200,'Display','off');
+    gs = GlobalSearch('NumTrialPoints',2000,'NumStageOnePoints',200,'Display','off');
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'DSL'
@@ -1567,7 +1567,7 @@ switch isothermModel
     case {'VIRIAL','VIRIAL2'}
         isothermData.isothermFit = [headerRow;qvals(1,:)' lnPvals];
         isothermData.experiment = [z log(x) y];
-        isothermData.heatAdsorption = [qvals delH];
+        isothermData.heatAdsorption = [qvals' delH'];
     otherwise
         if flagConcUnits
             isothermData.isothermFit = [];
