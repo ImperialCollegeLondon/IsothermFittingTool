@@ -8,11 +8,12 @@ Fits input experimental adsorption isotherm data to different isotherm models, a
 ## Main features
 
 - Fit adsorption isotherms to dual/single-site Langmuir (DSL/SSL), dual/single-site Sips (DSS/SSS), Toth (TOTH), Henry-(dual/single) Langmuir (HDSL/HSSL) and Virial (VIRIAL) isotherms
-- Isotherm fitting can be done using either maximum log-likelihood estimation (MLE) or weight least sum of squares (WSS)
+- Isotherm fitting will done using either maximum log-likelihood estimation (MLE)
 - Determines individual confidence intervals based on the diagonal covariance matrix of the of the model to fitted parameters
 - Generates contour plots for combinations of parameter pairs to identify correlation between parameters (for Sips and Langmuir models)
 - Generates plot of uncertainty in isotherm (solid loading) with respect to pressure based on uncertainty in fitted parameters
 - Calculate heat of adsorption as a function of loading using the Virial isotherm fit
+- Statistical isotherm model for zeolites included
 - Save fitted parameters and confidence regions in a .mat file
 
 ### Other details
@@ -42,4 +43,4 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-Last updated: 19/01/2022
+Last updated: 08/08/2022

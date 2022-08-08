@@ -76,7 +76,7 @@ saveFlag = 0;
 %   dP
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  isotherm parameters can be found in 'parsDisp' and uncertainties in 'conRange95Disp'  %
+%         isotherm parameters can be found in 'isothermData.isothermParameters'          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 tic
 isothermData = isothermFittingFun(isothermModel, flagConcUnits, saveFlag, fitData);
