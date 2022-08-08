@@ -156,7 +156,7 @@ if ~flagFixQsat
             intcon = 1;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            options = optimoptions('ga','Display','diagnose','PopulationSize',400,'CrossoverFraction',0.4,'MaxGenerations',400);
+            options = optimoptions('ga','Display','iter','PopulationSize',400,'CrossoverFraction',0.4,'MaxGenerations',400);
             [parVals, fval]= ga(optfunc,4,[],[],[],[],lb,ub,[],intcon,options);
             % Set fitted parameter values for isotherm model calculation
             omega  = parVals(1).*isoRef(1);
@@ -1518,7 +1518,7 @@ switch isothermModel
         box on
         set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
         grid on; axis square
-        set(gcf,'units','inch','position',[0,0,10,4])
+        set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized')
         outFit = [qvals' lnPvals];
     case 'STATZ'
         % plot of experimental data and fitted data (q vs P)
@@ -1533,6 +1533,7 @@ switch isothermModel
             end
         end
         figure(1)
+        subplot(2,2,1)
         scatter(uncBounds(:,1),uncBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
         hold on
         scatter(uncBounds(:,1),uncBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
@@ -1545,6 +1546,62 @@ switch isothermModel
         ylabel('Amount adsorbed [molecules/supercage]');
         xlim([0 max(x)])
         ylim([0 1.1.*max(z)])
+        box on
+        set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+        grid on; axis square
+        set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized')
+        subplot(2,2,2)
+        scatter(uncBounds(:,1),uncBounds(:,2)./((nsc.*vc.*Na)./(nsc.*vm)),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+        hold on
+        scatter(uncBounds(:,1),uncBounds(:,3)./((nsc.*vc.*Na)./(nsc.*vm)),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+        for kk = 1:length(Tvals)
+            plot(Pvals,qvals(:,kk)./((nsc.*vc.*Na)./(nsc.*vm)),'-k','LineWidth',1.5);
+        end
+        outFit = [Pvals' qvals];
+        plot(x,z./((nsc.*vc.*Na)./(nsc.*vm)),'ob');
+        xlabel('Pressure [bar]');
+        ylabel('Amount adsorbed [mol/kg]');
+        xlim([0 max(x)])
+        ylim([0 1.1.*max(z)./((nsc.*vc.*Na)./(nsc.*vm))])
+        box on
+        set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+        grid on; axis square
+        set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized')
+        subplot(2,2,3)
+        scatter(uncBounds(:,1),uncBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+        hold on
+        scatter(uncBounds(:,1),uncBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+        for kk = 1:length(Tvals)
+            plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
+        end
+        outFit = [Pvals' qvals];
+        plot(x,z,'ob');
+        xlabel('Pressure [bar]');
+        ylabel('Amount adsorbed [molecules/supercage]');
+        xlim([0.1 max(x)])
+        ylim([0 1.1.*max(z)])
+        box on
+        set(gca,'YScale','linear','XScale','log','FontSize',15,'LineWidth',1)
+        grid on; axis square
+        set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized')
+        subplot(2,2,4)
+        scatter(uncBounds(:,1),uncBounds(:,2)./((nsc.*vc.*Na)./(nsc.*vm)),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+        hold on
+        scatter(uncBounds(:,1),uncBounds(:,3)./((nsc.*vc.*Na)./(nsc.*vm)),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+        for kk = 1:length(Tvals)
+            plot(Pvals,qvals(:,kk)./((nsc.*vc.*Na)./(nsc.*vm)),'-k','LineWidth',1.5);
+        end
+        outFit = [Pvals' qvals];
+        plot(x,z./((nsc.*vc.*Na)./(nsc.*vm)),'ob');
+        xlabel('Pressure [bar]');
+        ylabel('Amount adsorbed [mol/kg]');
+        xlim([0.1 max(x)])
+        ylim([0 1.1.*max(z)./((nsc.*vc.*Na)./(nsc.*vm))])
+        box on
+        set(gca,'YScale','linear','XScale','log','FontSize',15,'LineWidth',1)
+        grid on; axis square
+        set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized')
+        
     otherwise
         % plot of experimental data and fitted data (q vs P)
         Pvals = linspace(0,max(x),500);
@@ -1666,6 +1723,7 @@ switch isothermModel
         isothermData.heatAdsorption = [qvals' delH'];
     case 'STATZ'
             isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
+            isothermData.isothermFitmolkg = [headerRow;Pvals(1,:)' qvals./((nsc.*vc.*Na)./(nsc.*vm))];
             isothermData.confidenceRegion = outScatter;
             isothermData.confidenceBounds = uncBounds;
             isothermData.CageVolume = vc;
