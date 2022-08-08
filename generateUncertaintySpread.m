@@ -32,17 +32,77 @@
 % - outScatter:          Matrix of points for uncertainty bound plots
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,isothermModel,parVals,conRange95)
+function [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,isothermModel,parVals,conRange95,varargin)
 % Decide number of samplint points for q at each pressure point
 nPoints = 100;
 % Decide the range of pressure for the uncertainty spread calculation
-Pvals = linspace(0,max(x),10000);
+Pvals = linspace(0,max(x),1000);
 % Decide the range of loading for the uncertainty spread calculation
 % (virial only)
 qvals = linspace(0,max(z),8000);
 % Calculate the uncertainty spread for q in the pressure range
 switch isothermModel
     % for the dual-site langmuir model
+    case 'STATZ'
+        % Obtain a vector of the temperatures present in the input data
+        Tvals = unique(y);
+        uncBounds = [];
+        uncBounds(:,1) = repmat(Pvals',length(Tvals),1);
+        
+        % obtain optimal parameter values from the input
+        omega = parVals(1);
+        beta = parVals(2);
+        b01 = parVals(3);
+        delU1 = parVals(4);
+        vc = varargin{1};
+        
+        % create 3 dimensional array for the output data
+        qeqUnc=zeros(3,nPoints*length(Pvals),length(Tvals));
+        % populate the first and second rows of the output array with the
+        % temperature and pressure range
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj+1))
+                    qeqUnc(1,kk,mm) = Pvals(jj);
+                    qeqUnc(2,kk,mm) = Tvals(mm);
+                end
+            end
+        end
+        % Generate a random set of numbers between -1 and 1 using
+        % latin-hypercube sampling in a matrix with nPoints rows and a
+        % column for each variable
+        lhsMat = 2*lhsdesign(nPoints,4)-1;
+        % Populate the third row of the output array with the q values
+        % calculated using the the values of parameters within their
+        % respective uncertainty bounds
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                hh = 0;
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj))
+                    hh=hh+1;
+                    % Determine values for each parameter within it's
+                    % respective bounds
+                    omega_unc = omega;
+                    beta_unc = beta+conRange95(2)*lhsMat(hh,2);
+                    b01_unc = b01+conRange95(3)*lhsMat(hh,3);
+                    delU1_unc = delU1+conRange95(4)*lhsMat(hh,4);
+                    % Obtain P and T values corresponding to this data
+                    % point
+                    P = qeqUnc(1,kk,mm);
+                    T = qeqUnc(2,kk,mm);
+                    % Calculate q corresponding to the parameter values
+                    % obtained above
+                    qeqUnc(3,kk,mm) = computeStatZLoading(P,T,b01_unc,delU1_unc,beta_unc,omega_unc,vc);
+                end
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,2)= min(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,3)= max(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,4)= Tvals(mm);
+            end
+        end
+        % Obtain the output in a matrix [nPoints*length(Pvals) x 3]
+        outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
+        % Transpose of the output
+        outScatter=outScatter';
     case 'DSL'
         % Obtain a vector of the temperatures present in the input data
         Tvals = unique(y);

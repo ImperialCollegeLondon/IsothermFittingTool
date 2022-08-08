@@ -14,6 +14,8 @@
 % and outputs isotherm parameters and independent confidence bounds
 %
 % Last modified:
+% - 2022-08-08, HA: Add capability to use temperature dependent
+%                   statistical model for Zeolites (Ruthven 1982)
 % - 2021-11-15, HA: Update confidence region calculation for MLE
 % - 2021-11-15, HA: Add capability to use temperature dependent
 %                   triple site Langmuir (9 param) isotherm model
@@ -54,8 +56,8 @@ uiopen
 % TSL = Triple site Langmuir. DSL = Dual site Langmuir.
 % SSL = Single site Langmuir. DSS = Dual site. Sips. SSS = Single site Sips.
 % TOTH = Toth Isotherm. VIRIAL = Virial Equation (4a, 2b). VIRIAL2 = Virial Equation (4a, 4b)
-% Henry-DSL = HDSL. Henry-SSL = HSSL.
-isothermModel = 'DSL';
+% Henry-DSL = HDSL. Henry-SSL = HSSL, Statistical Zeolite Model = STATZ.
+isothermModel = 'STATZ';
 %% Flag for fitting parameters in concentration units (NOT for virial)
 flagConcUnits = 0;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)

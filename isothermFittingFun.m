@@ -106,6 +106,8 @@ switch isothermModel
         else
             isoRef = [refValsP refValsP([1 3 5])];
         end
+    case  'STATZ'
+        isoRef = [1 80 1e-2 4e4];
 end
 % for concentration units, convert pressure to concentration
 if ~flagFixQsat
@@ -114,9 +116,76 @@ if ~flagFixQsat
     end
     rng default % For reproducibility
     % Create gs, a GlobalSearch solver with its properties set to the defaults.
-    gs = GlobalSearch('NumTrialPoints',2000,'NumStageOnePoints',200,'Display','off');
+    gs = GlobalSearch('NumTrialPoints',3000,'NumStageOnePoints',200,'Display','off');
     % Set fitting procedure based on isotherm model
     switch isothermModel
+        case 'STATZ'
+        if flagConcUnits
+            error('Error. Statistical model for Zeolites can only be used with pressure units. Change flagConcUnits to false.')
+        end
+            Na = 6.022e20; % Avogadros constant [molecules/mmol]
+            
+            prompt = {'Enter micropore volume [cc/g]:'};
+            dlgtitle = 'Micropore volume';
+            dims = [1 35];
+            definput = {'0','hsv'};
+            vm = 1e24.*str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
+            
+            prompt = {['Enter cage volume [',char(197),char(179),']']};
+            dlgtitle = 'Cage volume';
+            dims = [1 35];
+            definput = {'0','hsv'};
+            vc = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
+            
+            prompt = {['Enter supercages per unit cell (8 for X and Y Zeolites)']};
+            dlgtitle = 'Supercages per unit cell';
+            dims = [1 35];
+            definput = {'0','hsv'};
+            nsc = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
+            
+            z = ((nsc.*vc.*Na)./(nsc.*vm)).*z;
+            
+            optfunc = @(par) generateMLEfun(x, y, z, nbins, 'STATZ', isoRef, par(1), par(2), par(3),par(4), vc);
+            
+            % Initial conditions, lower bounds, and upper bounds for parameters
+            x0 = [5,0.5,0.5,0.5];
+            lb = [1,0,0,0];
+            ub = [25,1,1,1];
+            % Create global optimisation problem with solver 'fmincon' and
+            % other bounds
+            intcon = 1;
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+            options = optimoptions('ga','Display','diagnose','PopulationSize',400,'CrossoverFraction',0.4,'MaxGenerations',400);
+            [parVals, fval]= ga(optfunc,4,[],[],[],[],lb,ub,[],intcon,options);
+            % Set fitted parameter values for isotherm model calculation
+            omega  = parVals(1).*isoRef(1);
+            beta   = parVals(2).*isoRef(2);
+            b01    = parVals(3).*isoRef(3);
+            delU1  = parVals(4).*isoRef(4);
+            % Calculate fitted isotherm loadings for conditions (P,T)
+            % corresponding to experimental data
+            qfit  = computeStatZLoading(x,y,b01,delU1,beta,omega,vc);
+            % Calculate ellipsoidal confidence intervals (delta parameter) for
+            % fitted parameters
+            parameters = [omega, beta, b01, delU1];
+            parameters(isnan(parameters))=0;
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'STATZ', omega, beta, b01, delU1, vc);
+            conRange95(isnan(conRange95))=0;
+            % Convert confidence intervals to percentage error
+            percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
+            parNames = ["omega" "beta" "b01" "delU1"];
+            units = ["molecules/supercage" "A3" "1/bar" "J/mol"];
+            parsDisp = parameters;
+            conRange95Disp = conRange95;
+            for ii = 1:length(parameters)
+                if parsDisp(ii) == 0
+                else
+                    fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
+                end
+            end
+            
         case 'DSL'
             % Set objective function based on fitting method
             switch fittingMethod
@@ -1371,6 +1440,8 @@ end
 fprintf('%s %5.4e \n','objective function:',fval);
 %% PLOT RESULTING OUTPUTS
 switch isothermModel
+    case 'STATZ'
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'STATZ',parameters,conRange95,vc);
     case 'DSL'
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'DSL',parameters,conRange95);
     case 'SSL'
@@ -1449,6 +1520,31 @@ switch isothermModel
         grid on; axis square
         set(gcf,'units','inch','position',[0,0,10,4])
         outFit = [qvals' lnPvals];
+    case 'STATZ'
+        % plot of experimental data and fitted data (q vs P)
+        Pvals = linspace(0,max(x),500);
+        Tvals = unique(y);
+        qvals = zeros(length(Pvals),length(Tvals));
+        for jj = 1:length(Pvals)
+            for kk = 1:length(Tvals)
+                P = Pvals(jj);
+                T = Tvals(kk);
+                qvals(jj,kk) = computeStatZLoading(P,T,b01,delU1,beta,omega,vc);
+            end
+        end
+        figure(1)
+        scatter(uncBounds(:,1),uncBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+        hold on
+        scatter(uncBounds(:,1),uncBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+        for kk = 1:length(Tvals)
+            plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
+        end
+        outFit = [Pvals' qvals];
+        plot(x,z,'ob');
+        xlabel('Pressure [bar]');
+        ylabel('Amount adsorbed [molecules/supercage]');
+        xlim([0 max(x)])
+        ylim([0 1.1.*max(z)])
     otherwise
         % plot of experimental data and fitted data (q vs P)
         Pvals = linspace(0,max(x),500);
@@ -1568,6 +1664,13 @@ switch isothermModel
         isothermData.isothermFit = [headerRow;qvals(1,:)' lnPvals];
         isothermData.experiment = [z log(x) y];
         isothermData.heatAdsorption = [qvals' delH'];
+    case 'STATZ'
+            isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
+            isothermData.confidenceRegion = outScatter;
+            isothermData.confidenceBounds = uncBounds;
+            isothermData.CageVolume = vc;
+            isothermData.MicroporeVolume = vm;
+            isothermData.SupercagePerUnitCell = nsc;
     otherwise
         if flagConcUnits
             isothermData.isothermFit = [];
@@ -1601,7 +1704,7 @@ end
 
 if flagConcUnits
     switch isothermModel
-        case {'VIRIAL','VIRIAL2'}
+        case {'VIRIAL','VIRIAL2','STATZ'}
         otherwise
             figure
             plot(isothermData.isothermFit(:,1),isothermData.isothermFit(:,2:end),'-k','LineWidth',1.5)
