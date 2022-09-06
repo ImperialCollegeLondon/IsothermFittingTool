@@ -50,14 +50,15 @@ clc; clear all; close all;
 % with Pressure (bar), adsorbed amount (-), temperature (K) respectively
 % with any name of your choice.
 % RUN THIS SCRIPT from ERASE OR IsothermFittingTool folder ONLY!
-% Load input experimental data from *.mat or *.csv file via prompt  ddd
+% Load input experimental data from *.mat or *.csv file via prompt
 uiopen
 %% Select isotherm model for fitting
 % TSL = Triple site Langmuir. DSL = Dual site Langmuir.
 % SSL = Single site Langmuir. DSS = Dual site. Sips. SSS = Single site Sips.
-% TOTH = Toth Isotherm. VIRIAL = Virial Equation (4a, 2b). VIRIAL2 = Virial Equation (4a, 4b)
+% TOTH = Toth Isotherm. TOTH2 = Toth Isotherm (Temp dependent tau). TOTH3 = Toth Isotherm (Temp dependent qsat).
+% VIRIAL = Virial Equation (4a, 2b). VIRIAL2 = Virial Equation (4a, 4b)
 % Henry-DSL = HDSL. Henry-SSL = HSSL, Statistical Zeolite Model = STATZ.
-isothermModel = 'STATZ';
+isothermModel = 'TOTH3';
 %% Flag for fitting parameters in concentration units (NOT for virial)
 flagConcUnits = 0;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)

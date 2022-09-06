@@ -507,6 +507,174 @@ switch isothermModel
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95, length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
         end
+    case 'TOTH2'
+        % Number of parameters
+        Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
+        % Calculate standard deviation of the data (not needed)
+        stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
+        % degree of variation of parameter to calculate sensitivity
+        del = 0.000001;
+        % Generate and solve global optimisation problem for confidence regions
+        % based on isotherm model
+        qs1 = varargin{1};
+        qs2 = varargin{2};
+        b01 = varargin{3};
+        b02 = varargin{4};
+        delU1 = varargin{5};
+        delU2 = varargin{6};
+        toth0 = varargin{7};
+        totha = varargin{8};
+        switch fittingMethod
+            case 'MLE'
+                % Create empty sensitivity matrix
+                sensitivityMatrix = zeros(length(x),8);
+                % Calculate sensitivity at every data point for each parameter
+                for jj = 1:8
+                    for kk = 1:length(x)
+                        if jj == 1
+                            sensitivityMatrix(kk,jj) = ((((1+del)*qs1)*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*qs1);
+                        elseif jj == 2
+                            sensitivityMatrix(kk,jj) = (((1+del)*qs1*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*qs1);
+                        elseif jj == 3
+                            sensitivityMatrix(kk,jj) = ((qs1*(1+del)*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*b01);
+                        elseif jj == 4
+                            sensitivityMatrix(kk,jj) = ((qs1*(1+del)*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*b01);
+                        elseif jj == 5
+                            sensitivityMatrix(kk,jj) = ((qs1*b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*delU1);
+                        elseif jj == 6
+                            sensitivityMatrix(kk,jj) = ((qs1*b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*delU1);
+                        elseif jj == 7
+                            sensitivityMatrix(kk,jj) = ((qs1*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^((1+del)*toth0 + totha.*(1-298/y(kk)))).^(1./((1+del)*toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*toth0);
+                        else
+                            sensitivityMatrix(kk,jj) = ((qs1*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + (1+del)*totha.*(1-298/y(kk)))).^(1./(toth0 + (1+del)*totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*totha);
+                        end
+                    end
+                end
+                % Hessian Matrix for the data set (Non-linear parameter estimation
+                % by Yonathan Bard (1974) pg. 178)
+                hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
+                % Confidence range given by chi squared distribution at Np degrees
+                % of freedom (independent parameter conf intervals)
+                conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+            case 'WSS'
+                Np = 7;
+                Nt = length(x);
+                del = 1e-6;
+                dlogMLE = [];
+                d2logMLE = [];
+                deltaplus1mat = eye(Np).*(del);
+                deltamat = eye(Np).*(del);
+                partemp = [qs1./isoRef(1), b01./isoRef(3), delU1./isoRef(5), toth./isoRef(7)];
+                logMLE = @(par) -generateMLEfun(x, y, z, 1, 'TOTH', isoRef, par(1), 0, par(2), ...
+                    0, par(3), 0, par(4));
+                
+                for jj = 1:Np
+                    for kk = 1:Np
+                        partempnumj = partemp.*(1+deltaplus1mat(jj,:));
+                        partempdenj = partemp.*deltamat(jj,:);
+                        partempnumk = partemp.*(1+deltaplus1mat(kk,:));
+                        partempdenk = partemp.*deltamat(kk,:);
+                        partempnumjk = partemp.*(1+deltaplus1mat(jj,:) + deltaplus1mat(kk,:));
+                        d2logMLE(jj,kk) = ((logMLE(partempnumjk)-logMLE(partempnumk))-(logMLE(partempnumj)-logMLE(partemp)))./(partempdenj(jj).*isoRef(jj).*partempdenk(kk).*isoRef(kk));
+                    end
+                end
+                hessianMatrix =  -d2logMLE;
+                conRange95 = sqrt(chi2inv(0.95, length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
+        end
+    case 'TOTH3'
+        % Number of parameters
+        Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
+        % Calculate standard deviation of the data (not needed)
+        stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
+        % degree of variation of parameter to calculate sensitivity
+        del = 0.000001;
+        % Generate and solve global optimisation problem for confidence regions
+        % based on isotherm model
+        qs10 = varargin{1};
+        qs2 = varargin{2};
+        b01 = varargin{3};
+        b02 = varargin{4};
+        delU1 = varargin{5};
+        delU2 = varargin{6};
+        toth0 = varargin{7};
+        totha = varargin{8};
+        chi = varargin{9};
+        switch fittingMethod
+            case 'MLE'
+                % Create empty sensitivity matrix
+                sensitivityMatrix = zeros(length(x),9);
+                % Calculate sensitivity at every data point for each parameter
+                for jj = 1:9
+                    for kk = 1:length(x)
+                        if jj == 1
+                            sensitivityMatrix(kk,jj) = ((((1+del)*qs10.*exp(chi*(1-y(kk)./298)))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*qs10);
+                        elseif jj == 2
+                            sensitivityMatrix(kk,jj) = (((1+del)*qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*qs10);
+                        elseif jj == 3
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*(1+del)*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*b01);
+                        elseif jj == 4
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*(1+del)*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*b01);
+                        elseif jj == 5
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*delU1);
+                        elseif jj == 6
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*delU1);
+                        elseif jj == 7
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^((1+del)*toth0 + totha.*(1-298/y(kk)))).^(1./((1+del)*toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*toth0);
+                        elseif jj == 8
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + (1+del)*totha.*(1-298/y(kk)))).^(1./(toth0 + (1+del)*totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*totha);
+                        else
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp((1+del)*chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                - fitVals(kk))/(del*chi);
+                        end
+                    end
+                end
+                % Hessian Matrix for the data set (Non-linear parameter estimation
+                % by Yonathan Bard (1974) pg. 178)
+                hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
+                % Confidence range given by chi squared distribution at Np degrees
+                % of freedom (independent parameter conf intervals)
+                conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+            case 'WSS'
+                Np = 7;
+                Nt = length(x);
+                del = 1e-6;
+                dlogMLE = [];
+                d2logMLE = [];
+                deltaplus1mat = eye(Np).*(del);
+                deltamat = eye(Np).*(del);
+                partemp = [qs1./isoRef(1), b01./isoRef(3), delU1./isoRef(5), toth./isoRef(7)];
+                logMLE = @(par) -generateMLEfun(x, y, z, 1, 'TOTH', isoRef, par(1), 0, par(2), ...
+                    0, par(3), 0, par(4));
+                
+                for jj = 1:Np
+                    for kk = 1:Np
+                        partempnumj = partemp.*(1+deltaplus1mat(jj,:));
+                        partempdenj = partemp.*deltamat(jj,:);
+                        partempnumk = partemp.*(1+deltaplus1mat(kk,:));
+                        partempdenk = partemp.*deltamat(kk,:);
+                        partempnumjk = partemp.*(1+deltaplus1mat(jj,:) + deltaplus1mat(kk,:));
+                        d2logMLE(jj,kk) = ((logMLE(partempnumjk)-logMLE(partempnumk))-(logMLE(partempnumj)-logMLE(partemp)))./(partempdenj(jj).*isoRef(jj).*partempdenk(kk).*isoRef(kk));
+                    end
+                end
+                hessianMatrix =  -d2logMLE;
+                conRange95 = sqrt(chi2inv(0.95, length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
+        end
         % for Virial model
     case 'VIRIAL'
         % Number of parameters
