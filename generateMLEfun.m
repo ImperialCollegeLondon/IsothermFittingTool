@@ -141,6 +141,61 @@ switch isothermModel
             end
             err(jj) = err(jj);
         end
+        case 'DSL2'
+        % Discretize the data range into 'nbins' evenly spaced bins of pressure
+        % ranges ('nbins = 1' for MLE')
+        [bins] = discretize(x,nbins);
+        % Create vector for storing sum of error for each bin
+        err = zeros(nbins,1);
+        % Number of data points
+        Nt = length(bins);
+        
+        expData = [x,z,y];
+        expData = sortrows(expData,3);
+        
+        x = expData(:,1);
+        z = expData(:,2);
+        y = expData(:,3);
+        
+        temperatureValues = unique(y);
+        qRefIndexTemp = zeros(length(temperatureValues),1);
+        for ii = 1:length(temperatureValues)
+            qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
+            qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
+        end
+        
+        % Find qref for the experimental data
+        qRefMax = max(z(qRefIndexTemp(:,2)));
+        qRefTemp = z(qRefIndexTemp(:,2));
+        normalizationFactorTemp = qRefMax./qRefTemp;
+        normalizationFactor = zeros(length(x),1);
+        
+        for ii = 1:length(temperatureValues)
+            normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
+        end
+        
+        qs1a = varargin{1}.*isoRef(1);
+        qs2a = varargin{2}.*isoRef(2);
+        qs1b = varargin{3}.*isoRef(3);
+        qs2b = varargin{4}.*isoRef(4);
+        b01 = varargin{5}.*isoRef(5);
+        b02 = varargin{6}.*isoRef(6);
+        delU1 = varargin{7}.*isoRef(7);
+        delU2 = varargin{8}.*isoRef(8);
+        
+        % Loop for calculating the sum of errors for each bin
+        for jj = 1:length(err)
+            for kk = 1:length(bins)
+                qs1 = qs1a + qs1b./y(kk);
+                qs2 = qs2a + qs2b./y(kk);
+                qfun = qs1*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                    + qs2*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))));
+                if bins(kk) == jj
+                    err(jj) = (err(jj) + (normalizationFactor(kk).*(z(kk) - qfun))^2);
+                end
+            end
+            err(jj) = err(jj);
+        end
         % Calculate error for DSL model
     case 'HDSL'
         % Discretize the data range into 'nbins' evenly spaced bins of pressure

@@ -58,7 +58,7 @@ uiopen
 % TOTH = Toth Isotherm. TOTH2 = Toth Isotherm (Temp dependent tau). TOTH3 = Toth Isotherm (Temp dependent qsat and tau).
 % VIRIAL = Virial Equation (4a, 2b). VIRIAL2 = Virial Equation (4a, 4b)
 % Henry-DSL = HDSL. Henry-SSL = HSSL, Statistical Zeolite Model = STATZ.
-isothermModel = 'TOTH3';
+isothermModel = 'DSL2';
 %% Flag for fitting parameters in concentration units (NOT for virial)
 flagConcUnits = 0;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)
@@ -67,7 +67,7 @@ saveFlag = 0;
 %                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%            dP                                                            oo   dP
+%            dP             `                                              oo   dP
 %            88                                                                 88
 %   88d888b. 88 .d8888b. .d8888b. .d8888b. .d8888b.    dP  dP  dP .d8888b. dP d8888P
 %   88'  `88 88 88ooood8 88'  `88 Y8ooooo. 88ooood8    88  88  88 88'  `88 88   88

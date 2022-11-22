@@ -156,6 +156,92 @@ switch isothermModel
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
         end
+    case 'DSL2'
+        % Number of parameters
+        Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
+        % Calculate standard deviation of the data (not needed)
+        stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
+        % degree of variation of parameter to calculate sensitivity
+        del = 0.000001;
+        % Generate and solve global optimisation problem for confidence regions
+        % based on isotherm model
+        qs1a = varargin{1};
+        qs2a = varargin{2};
+        qs1b = varargin{3};
+        qs2b = varargin{4};
+        b01 = varargin{5};
+        b02 = varargin{6};
+        delU1 = varargin{7};
+        delU2 = varargin{8};
+        
+        switch fittingMethod
+            case 'MLE'
+                % Create empty sensitivity matrix
+                sensitivityMatrix = zeros(length(x),8);
+                % Calculate sensitivity at every data point for each parameter
+                for jj = 1:8
+                    for kk = 1:length(x)
+                        if jj == 1
+                            sensitivityMatrix(kk,jj) = (((((1+del)*qs1a+qs1b./y(kk)))*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                                + (qs2a+qs2b./y(kk))*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) - fitVals(kk))/(del*qs1a);
+                        elseif jj == 2
+                            sensitivityMatrix(kk,jj) = (((qs1a+qs1b./y(kk))*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                                + ((1+del)*qs2a+qs2b./y(kk))*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) - fitVals(kk))/(del*qs2a);
+                        elseif jj == 3
+                            sensitivityMatrix(kk,jj) = ((((qs1a+(1+del)*qs1b./y(kk)))*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                                + (qs2a+qs2b./y(kk))*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) - fitVals(kk))/(del*qs1b);
+                        elseif jj == 4
+                            sensitivityMatrix(kk,jj) = (((qs1a+qs1b./y(kk))*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                                + (qs2a+(1+del).*qs2b./y(kk))*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) - fitVals(kk))/(del*qs2b);
+                        elseif jj == 5
+                            sensitivityMatrix(kk,jj) = (((qs1a+qs1b./y(kk))*(((1+del)*b01)*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(((1+del)*b01)*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                                + (qs2a+qs2b./y(kk))*(b02*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(b02*x(kk)*exp(delU2/(8.314*y(kk)))))) - fitVals(kk))/(del*b01);
+                        elseif jj == 6
+                            sensitivityMatrix(kk,jj) = (((qs1a+qs1b./y(kk))*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                                + (qs2a+qs2b./y(kk))*(((1+del)*b02)*x(kk)*exp(delU2/(8.314*y(kk))))/(1+(((1+del)*b02)*x(kk)*exp(delU2/(8.314*y(kk)))))) - fitVals(kk))/(del*b02);
+                        elseif jj == 7
+                            sensitivityMatrix(kk,jj) = (((qs1a+qs1b./y(kk))*(b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))) ...
+                                + (qs2a+qs2b./y(kk))*((b02)*x(kk)*exp(delU2/(8.314*y(kk))))/(1+((b02)*x(kk)*exp(delU2/(8.314*y(kk)))))) - fitVals(kk))/(del*delU1);
+                        else
+                            sensitivityMatrix(kk,jj) = (((qs1a+qs1b./y(kk))*(b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))) ...
+                                + (qs2a+qs2b./y(kk))*((b02)*x(kk)*exp((1+del)*delU2/(8.314*y(kk))))/(1+((b02)*x(kk)*exp((1+del)*delU2/(8.314*y(kk)))))) - fitVals(kk))/(del*delU2);
+                        end
+                    end
+                end
+                % estimated Hessian Matrix for the data set (Non-linear parameter estimation
+                % by Yonathan Bard (1974) pg. 178
+                hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
+                % Confidence range given by chi squared distribution at Np degrees
+                % of freedom (independent parameter conf intervals)
+                conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+            case 'WSS'
+                Np = 8;
+                Nt = length(x);
+                del = 1e-6;
+                dlogMLE = [];
+                d2logMLE = [];
+                deltaplus1mat = eye(Np).*(del);
+                deltamat = eye(Np).*(del);
+                partemp = [qs1a./isoRef(1), qs2a./isoRef(2),qs1b./isoRef(3), qs2b./isoRef(4),b01./isoRef(5),b02./isoRef(6),delU1./isoRef(7),delU2./isoRef(8)];
+                logMLE = @(par) -generateMLEfun(x, y, z, 1, 'DSL2', isoRef, par(1), par(2), par(3), ...
+                    par(4), par(5), par(6), par(7), par(8));
+                
+                for jj = 1:Np
+                    for kk = 1:Np
+                        partempnumj = partemp.*(1+deltaplus1mat(jj,:));
+                        partempdenj = partemp.*deltamat(jj,:);
+                        partempnumk = partemp.*(1+deltaplus1mat(kk,:));
+                        partempdenk = partemp.*deltamat(kk,:);
+                        partempnumjk = partemp.*(1+deltaplus1mat(jj,:) + deltaplus1mat(kk,:));
+                        % Compute second derivative of logL for jj and kk
+                        d2logMLE(jj,kk) = ((logMLE(partempnumjk)-logMLE(partempnumk))-(logMLE(partempnumj)-logMLE(partemp)))./(partempdenj(jj).*isoRef(jj).*partempdenk(kk).*isoRef(kk));
+                    end
+                end
+                % estimated Hessian Matrix for the data set (Non-linear parameter estimation
+                % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
+                hessianMatrix =  -d2logMLE;
+                conRange95 = sqrt(chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
+        end
         % For DSL model
     case 'HDSL'
         % Number of parameters
