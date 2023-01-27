@@ -32,7 +32,7 @@ clc; clear all; close all;
 % RUN THIS SCRIPT from ERASE OR IsothermFittingTool folder ONLY!
 % Load input experimental data from *.mat or *.csv file via prompt
 uiopen
-isothermModels = {'SSL';'DSL';'TSL';'SSS';'DSS';'TOTH';'HDSL';'HSSL'};
+isothermModels = {'SSL';'DSL';'TSL';'SSS';'DSS';'TOTH';'TOTH2';'HDSL';'HSSL';'DSL2'};
 %% Flag for fitting parameters in concentration units (NOT for virial)
 flagConcUnits = 0;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)

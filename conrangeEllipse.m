@@ -40,14 +40,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [conRange95] = conrangeEllipse(x,y,z,fitVals,fittingMethod,isoRef,isothermModel,varargin)
+% degree of variation of parameter to calculate sensitivity
+del = 1e-6;
 switch isothermModel
     % Calculate error for Statistical isotherm model for zeolites
     case 'STATZ'
         % Calculate standard deviation of the data (not needed)
         Np =4;
         stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.0001;
         omega = varargin{1};
         beta = varargin{2};
         b01 = varargin{3};
@@ -77,14 +77,14 @@ switch isothermModel
         % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
         hessianMatrix =  -d2logMLE;
         conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+%         chi2inv95 = chi2inv(0.95,Np);
+%         conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         % For DSL model
     case 'DSL'
         % Number of parameters
         Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
         % Calculate standard deviation of the data (not needed)
         stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.000001;
         % Generate and solve global optimisation problem for confidence regions
         % based on isotherm model
         qs1 = varargin{1};
@@ -128,10 +128,17 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 6
+%                 else
+%                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5);
+%                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5);
+%                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5)];
+%                 end
+%                     conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
             case 'MLE'
                 Np = 6;
                 Nt = length(x);
-                del = 1e-6;
                 dlogMLE = [];
                 d2logMLE = [];
                 deltaplus1mat = eye(Np).*(del);
@@ -155,14 +162,20 @@ switch isothermModel
                 % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
+%                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 6
+%                 else
+%                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5);
+%                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5);
+%                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5)];
+%                 end
+%                     conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
     case 'DSL2'
         % Number of parameters
         Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
         % Calculate standard deviation of the data (not needed)
         stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.000001;
         % Generate and solve global optimisation problem for confidence regions
         % based on isotherm model
         qs1a = varargin{1};
@@ -214,10 +227,11 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
             case 'WSS'
                 Np = 8;
                 Nt = length(x);
-                del = 1e-6;
                 dlogMLE = [];
                 d2logMLE = [];
                 deltaplus1mat = eye(Np).*(del);
@@ -248,8 +262,6 @@ switch isothermModel
         Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
         % Calculate standard deviation of the data (not needed)
         stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.001;
         % Generate and solve global optimisation problem for confidence regions
         % based on isotherm model
         qs1 = varargin{1};
@@ -316,7 +328,6 @@ switch isothermModel
             case 'MLE'
                 Np = 9;
                 Nt = length(x);
-                del = 1e-6;
                 dlogMLE = [];
                 d2logMLE = [];
                 deltaplus1mat = eye(Np).*(del);
@@ -338,14 +349,14 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
     case 'TSL'
         % Number of parameters
         Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
         % Calculate standard deviation of the data (not needed)
         stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.001;
         % Generate and solve global optimisation problem for confidence regions
         % based on isotherm model
         qs1 = varargin{1};
@@ -411,7 +422,6 @@ switch isothermModel
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
             case 'MLE'
                 Nt = length(x);
-                del = 1e-6;
                 dlogMLE = [];
                 d2logMLE = [];
                 deltaplus1mat = eye(Np).*(del);
@@ -433,6 +443,8 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
         % for DSS model
     case 'DSS'
@@ -440,8 +452,6 @@ switch isothermModel
         Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
         % Calculate standard deviation of the data (not needed)
         stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.000001;
         % Generate and solve global optimisation problem for confidence regions
         % based on isotherm model
         qs1 = varargin{1};
@@ -491,7 +501,6 @@ switch isothermModel
             case 'MLE'
                 Np = 7;
                 Nt = length(x);
-                del = 1e-6;
                 dlogMLE = [];
                 d2logMLE = [];
                 deltaplus1mat = eye(Np).*(del);
@@ -513,6 +522,15 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
+%                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 7
+%                 else
+%                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7);
+%                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7);
+%                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7);
+%                                      hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7)];
+%                 end
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
         % for DSS model
     case 'TOTH'
@@ -520,8 +538,6 @@ switch isothermModel
         Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
         % Calculate standard deviation of the data (not needed)
         stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.000001;
         % Generate and solve global optimisation problem for confidence regions
         % based on isotherm model
         qs1 = varargin{1};
@@ -532,7 +548,7 @@ switch isothermModel
         delU2 = varargin{6};
         toth = varargin{7};
         switch fittingMethod
-            case 'MLE'
+            case 'WSS'
                 % Create empty sensitivity matrix
                 sensitivityMatrix = zeros(length(x),7);
                 % Calculate sensitivity at every data point for each parameter
@@ -568,17 +584,25 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-            case 'WSS'
+%                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
+%                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 7
+%                 else
+%                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7);
+%                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7);
+%                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7);
+%                                      hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7)];
+%                 end
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+            case 'MLE'
                 Np = 7;
                 Nt = length(x);
-                del = 1e-6;
                 dlogMLE = [];
                 d2logMLE = [];
                 deltaplus1mat = eye(Np).*(del);
                 deltamat = eye(Np).*(del);
-                partemp = [qs1./isoRef(1), b01./isoRef(3), delU1./isoRef(5), toth./isoRef(7)];
-                logMLE = @(par) -generateMLEfun(x, y, z, 1, 'TOTH', isoRef, par(1), 0, par(2), ...
-                    0, par(3), 0, par(4));
+                partemp = [qs1./isoRef(1), 0, b01./isoRef(3), 0, delU1./isoRef(5), 0, toth./isoRef(7)];
+                logMLE = @(par) -generateMLEfun(x, y, z, 1, 'TOTH', isoRef, par(1), par(2), par(3), ...
+                    par(4), par(5), par(6), par(7));
                 
                 for jj = 1:Np
                     for kk = 1:Np
@@ -592,14 +616,21 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95, length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
+%                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 7
+%                 else
+%                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7);
+%                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7);
+%                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7);
+%                                      hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7)];
+%                 end
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
     case 'TOTH2'
         % Number of parameters
         Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
         % Calculate standard deviation of the data (not needed)
         stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.000001;
         % Generate and solve global optimisation problem for confidence regions
         % based on isotherm model
         qs1 = varargin{1};
@@ -650,10 +681,16 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+%                 hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7) hessianMatrix(1,8);
+%                     hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7) hessianMatrix(3,8);
+%                     hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7) hessianMatrix(5,8);
+%                     hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7) hessianMatrix(7,8);
+%                     hessianMatrix(8,1) hessianMatrix(8,3) hessianMatrix(8,5) hessianMatrix(8,7) hessianMatrix(8,8)];
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
             case 'WSS'
-                Np = 7;
+                Np = 8;
                 Nt = length(x);
-                del = 1e-6;
                 dlogMLE = [];
                 d2logMLE = [];
                 deltaplus1mat = eye(Np).*(del);
@@ -674,14 +711,14 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95, length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
     case 'TOTH3'
         % Number of parameters
         Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
         % Calculate standard deviation of the data (not needed)
         stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.000001;
         % Generate and solve global optimisation problem for confidence regions
         % based on isotherm model
         qs10 = varargin{1};
@@ -736,10 +773,11 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
             case 'WSS'
                 Np = 7;
                 Nt = length(x);
-                del = 1e-6;
                 dlogMLE = [];
                 d2logMLE = [];
                 deltaplus1mat = eye(Np).*(del);
@@ -760,6 +798,8 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95, length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
+                chi2inv95 = chi2inv(0.95,Np);
+                conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
         % for Virial model
     case 'VIRIAL'
@@ -767,8 +807,6 @@ switch isothermModel
         Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
         % Calculate standard deviation of the data (not needed)
         stDevData = sqrt(1/(length(x)-Np) * sum((log(x)-fitVals').^2));
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.000001;
         % Generate and solve global optimisation problem for confidence regions
         % based on isotherm model
         a0 = varargin{1};
@@ -782,11 +820,11 @@ switch isothermModel
         
         parameters = [a0, a1, a2, a3, b0, b1, b2, b3];
         switch fittingMethod
-            case 'WSS'
+            case 'MLE'
                 % Create empty sensitivity matrix
                 sensitivityMatrix = zeros(length(x),8);
                 % Calculate sensitivity at every data point for each parameter
-                for jj = 1:8
+                for jj = 1:Np
                     for kk = 1:length(x)
                         if jj == 1
                             sensitivityMatrix(kk,jj) = (log(z(kk)) + 1/y(kk).*((1+del)*parameters(1) + parameters(2)*z(kk) + ...
@@ -828,10 +866,12 @@ switch isothermModel
                 hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
+                hessianMatrix = hessianMatrix(1:Np,1:Np);
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-            case 'MLE'
+                chi2inv95 = chi2inv(0.95,Np);
+                conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+            case 'WSS'
                 Nt = length(x);
-                del = 1e-6;
                 dlogMLE = [];
                 d2logMLE = [];
                 deltaplus1mat = eye(Np).*(del);
@@ -852,14 +892,14 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
     case 'VIRIAL2'
         % Number of parameters
         Np = length(cell2mat(varargin));
         % Calculate standard deviation of the data (not needed)
         stDevData = sqrt(1/(length(x)-Np) * sum((log(x)-fitVals').^2));
-        % degree of variation of parameter to calculate sensitivity
-        del = 0.000001;
         % Generate and solve global optimisation problem for confidence regions
         % based on isotherm model
         a0 = varargin{1};
@@ -873,7 +913,7 @@ switch isothermModel
         
         parameters = [a0, a1, a2, a3, b0, b1, b2, b3];
         switch fittingMethod
-            case 'WSS'
+            case 'MLE'
                 % Create empty sensitivity matrix
                 sensitivityMatrix = zeros(length(x),8);
                 % Calculate sensitivity at every data point for each parameter
@@ -920,9 +960,10 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-            case 'MLE'
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+            case 'WSS'
                 Nt = length(x);
-                del = 1e-6;
                 dlogMLE = [];
                 d2logMLE = [];
                 deltaplus1mat = eye(Np).*(del);
@@ -943,6 +984,8 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
 end
 end

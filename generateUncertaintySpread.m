@@ -36,7 +36,7 @@ function [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,isothermModel,pa
 % Decide number of samplint points for q at each pressure point
 nPoints = 100;
 % Decide the range of pressure for the uncertainty spread calculation
-Pvals = linspace(0,max(x),1000);
+Pvals = linspace(0,max(x),5000);
 % Decide the range of loading for the uncertainty spread calculation
 % (virial only)
 qvals = linspace(0,max(z),8000);

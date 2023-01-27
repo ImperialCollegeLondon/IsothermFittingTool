@@ -47,8 +47,8 @@ x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-refValsP = [10,10,1e-5,1e-5,15e4,15e4];
-refValsC = [10,10,1e-5,1e-5,15e4,15e4];
+refValsP = [50,50,1e-2,1e-2,15e4,15e4];
+refValsC = [50,50,1e-4,1e-4,15e4,15e4];
 switch isothermModel
     case 'DSL'
         % Reference isotherm parameters for non-dimensionalisation
@@ -95,9 +95,9 @@ switch isothermModel
     case  'TOTH'
         % Reference isotherm parameters for non-dimensionalisation
         if flagConcUnits
-            isoRef = [refValsC 2];
+            isoRef = [refValsC 10];
         else
-            isoRef = [refValsP 2];
+            isoRef = [refValsP 10];
         end
     case  'TOTH2'
         % Reference isotherm parameters for non-dimensionalisation
@@ -465,6 +465,7 @@ if ~flagFixQsat
             parameters = [qs1, qs2, b01, b02, delU1, delU2];
             parameters(isnan(parameters))=0;
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
+%             conRange95 = [conRange95(1); 0; conRange95(2); 0; conRange95(3); 0];
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
@@ -909,6 +910,7 @@ if ~flagFixQsat
             parameters(isnan(parameters))=0;
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSS', qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
+%             conRange95 = [conRange95(1); 0; conRange95(2); 0; conRange95(3); 0;conRange95(4)];
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
@@ -1050,7 +1052,7 @@ if ~flagFixQsat
             parameters(isnan(parameters))=0;
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TOTH2', qs1, qs2, b01, b02, delU1, delU2, toth0, totha);
             conRange95(isnan(conRange95))=0;
-            conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7) conRange95(8)]';
+            conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7) conRange95(8)]';            
             % Convert confidence intervals to percentage error
             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
@@ -1773,6 +1775,8 @@ switch isothermModel
             plot(exp(lnPvals(:,kk)),qvals,'-k','LineWidth',1.5);
         end
         plot(x,z,'ob');
+        scatter(exp(uncBounds(:,2)),uncBounds(:,1),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
+        scatter(exp(uncBounds(:,3)),uncBounds(:,1),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
         xlabel('Pressure [bar]');
         ylabel('Amount adsorbed [mol/kg]');
         xlim([0 max(x)*1.1]);
@@ -1795,7 +1799,7 @@ switch isothermModel
         outFit = [qvals' lnPvals];
     case 'STATZ'
         % plot of experimental data and fitted data (q vs P)
-        Pvals = linspace(0,max(x),500);
+        Pvals = linspace(0,max(x),1000);
         Tvals = unique(y);
         qvals = zeros(length(Pvals),length(Tvals));
         for jj = 1:length(Pvals)
@@ -1877,7 +1881,7 @@ switch isothermModel
         
     otherwise
         % plot of experimental data and fitted data (q vs P)
-        Pvals = linspace(0,max(x),500);
+        Pvals = linspace(0,max(x),1200);
         Tvals = unique(y);
         qvals = zeros(length(Pvals),length(Tvals));
         for jj = 1:length(Pvals)
