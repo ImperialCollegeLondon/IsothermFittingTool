@@ -44,7 +44,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% INITIALISATION and INPUTS
 % Clear command window and workspace
-clc; clear all; close all;
+clc; clear; close all;
 % For new data create a new variable (HOME -> New Variable) named 'fitData'
 % (rename on workspace) and save the data as *.mat file in 3 column format
 % with Pressure (bar), adsorbed amount (-), temperature (K) respectively
@@ -58,9 +58,9 @@ uiopen
 % TOTH = Toth Isotherm. TOTH2 = Toth Isotherm (Temp dependent tau). TOTH3 = Toth Isotherm (Temp dependent qsat and tau).
 % VIRIAL = Virial Equation (4a, 2b). VIRIAL2 = Virial Equation (4a, 4b)
 % Henry-DSL = HDSL. Henry-SSL = HSSL, Statistical Zeolite Model = STATZ.
-isothermModel = 'DSL';
+isothermModel = 'VIRIAL2';
 %% Flag for fitting parameters in concentration units (NOT for virial)
-flagConcUnits = 0;
+flagConcUnits = 1;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)
 saveFlag = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

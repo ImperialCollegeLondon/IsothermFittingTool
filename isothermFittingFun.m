@@ -47,8 +47,8 @@ x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-refValsP = [50,50,1e-2,1e-2,15e4,15e4];
-refValsC = [50,50,1e-4,1e-4,15e4,15e4];
+refValsP = [10,10,1e-2,1e-2,15e4,15e4];
+refValsC = [10,10,1e-4,1e-4,15e4,15e4];
 switch isothermModel
     case 'DSL'
         % Reference isotherm parameters for non-dimensionalisation
@@ -158,7 +158,7 @@ if ~flagFixQsat
             definput = {'0','hsv'};
             vc = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
             
-            prompt = {['Enter supercages per unit cell (8 for X and Y Zeolites)']};
+            prompt = {'Enter supercages per unit cell (8 for X and Y Zeolites)'};
             dlgtitle = 'Supercages per unit cell';
             dims = [1 35];
             definput = {'0','hsv'};
@@ -197,7 +197,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'STATZ', omega, beta, b01, delU1, vc);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             parNames = ["omega" "beta" "b01" "delU1"];
             units = ["molecules/supercage" "A3" "1/bar" "J/mol"];
@@ -278,7 +278,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
@@ -375,7 +375,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL2', qs1a, qs2a, qs1b, qs2b, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1a" "qs2a" "qs1b" "qs2b" "b01" "b02" "delU1" "delU2"];
@@ -468,7 +468,7 @@ if ~flagFixQsat
 %             conRange95 = [conRange95(1); 0; conRange95(2); 0; conRange95(3); 0];
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
@@ -569,7 +569,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TSL', qs1, qs2, b01, b02, delU1, delU2, qs3, b03, delU3);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "qs3" "b01" "b02" "b03" "delU1" "delU2" "delU3"];
@@ -670,7 +670,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'HDSL', qs1, qs2, b01, b02, delU1, delU2, qsH, b0H, delUH);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "qsH" "b0H" "delUH" ];
@@ -771,7 +771,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'HDSL', qs1, qs2, b01, b02, delU1, delU2, qsH, b0H, delUH);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "qsH" "b0H" "delUH" ];
@@ -841,7 +841,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, isothermModel, qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
@@ -912,7 +912,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
 %             conRange95 = [conRange95(1); 0; conRange95(2); 0; conRange95(3); 0;conRange95(4)];
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
@@ -982,7 +982,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7)]';
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "toth"];
@@ -1054,7 +1054,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7) conRange95(8)]';            
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "tau0" "alpha"];
@@ -1128,7 +1128,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7) conRange95(8) conRange95(9)]';
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+% %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs10" "qs2" "b01" "b02" "delU1" "delU2" "tau0" "alpha" "chi"];
@@ -1196,7 +1196,6 @@ if ~flagFixQsat
             parameters(isnan(parameters))=0;
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
-            lnPfit = [];
             expData = [x,z,y];
             expData = sortrows(expData,1);
             expData = expData(length(unique(y))+1:end,:);
@@ -1204,6 +1203,7 @@ if ~flagFixQsat
             x = expData(:,1);
             z = expData(:,2);
             y = expData(:,3);
+            lnPfit = zeros(1,length(x));
             for kk = 1:length(x)
                 lnPfit(kk)  = log(z(kk)) + 1/y(kk).*(parameters(1) + parameters(2)*z(kk) + ...
                     parameters(3)*z(kk)^2 + parameters(4)*z(kk)^3)  + parameters(5) ...
@@ -1216,7 +1216,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             conRange95 = [conRange95(1) conRange95(2) conRange95(3) conRange95(4) conRange95(5) conRange95(6) 0 0]';
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             parNames = ["a0" "a1" "a2" "a3" "b0" "b1" "b2" "b3"];
             units = ["K" "K/mol" "K/mol^2" "K/mol^3" " " "1/mol" "1/mol^2" "1/mol^3"];
@@ -1272,14 +1272,13 @@ if ~flagFixQsat
             parameters(isnan(parameters))=0;
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
-            lnPfit = [];
             expData = [x,z,y];
             expData = sortrows(expData,1);
             expData = expData(length(unique(y))+1:end,:);
-            
             x = expData(:,1);
             z = expData(:,2);
             y = expData(:,3);
+            lnPfit = zeros(1,length(x));
             for kk = 1:length(x)
                 lnPfit(kk)  = log(z(kk)) + 1/y(kk).*(parameters(1) + parameters(2)*z(kk) + ...
                     parameters(3)*z(kk)^2 + parameters(4)*z(kk)^3)  + parameters(5) ...
@@ -1292,7 +1291,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             conRange95 = [conRange95(1) conRange95(2) conRange95(3) conRange95(4) conRange95(5) conRange95(6) conRange95(7) conRange95(8)]';
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             parNames = ["a0" "a1" "a2" "a3" "b0" "b1" "b2" "b3"];
             units = ["K" "K/mol" "K/mol^2" "K/mol^3" " " "1/mol" "1/mol^2" "1/mol^3"];
@@ -1360,8 +1359,6 @@ else
             % for the fit
             [parVals, fval]= run(gs,problem);
             % Set fitted parameter values for isotherm model calculation
-            qs1   = qs1;
-            qs2   = qs2;
             b01   = parVals(1).*isoRef(3);
             b02   = parVals(2).*isoRef(4);
             if length(unique(y)) == 1 % if only one temperature
@@ -1382,7 +1379,7 @@ else
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
@@ -1437,9 +1434,9 @@ else
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             if length(unique(y)) == 1 % if only one temperature
-                x0 = [0.5];
-                lb = [0];
-                ub = [1];
+                x0 = 0.5;
+                lb = 0;
+                ub = 1;
             else
                 x0 = [0.5,0.5];
                 lb = [0,0];
@@ -1452,7 +1449,6 @@ else
             % for the fit
             [parVals, fval]= run(gs,problem);
             % Set fitted parameter values for isotherm model calculation
-            qs1   = qs1;
             qs2   = 0;
             b01   = parVals(1).*isoRef(3);
             b02   = 0;
@@ -1473,7 +1469,7 @@ else
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
@@ -1524,8 +1520,6 @@ else
             % for the fit
             [parVals, fval]= run(gs,problem);
             % Set fitted parameter values for isotherm model calculation
-            qs1   = qs1;
-            qs2   = qs2;
             b01   = parVals(1).*isoRef(3);
             b02   = parVals(2).*isoRef(4);
             delU1 = parVals(3).*isoRef(5);
@@ -1542,7 +1536,7 @@ else
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, isothermModel, qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
@@ -1593,7 +1587,6 @@ else
             % for the fit
             [parVals, fval]= run(gs,problem);
             % Set fitted parameter values for isotherm model calculation
-            qs1   = qs1;
             qs2   = 0;
             b01   = parVals(1).*isoRef(3);
             b02   = 0;
@@ -1611,7 +1604,7 @@ else
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSS', qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
@@ -1662,7 +1655,6 @@ else
             % for the fit
             [parVals, fval]= run(gs,problem);
             % Set fitted parameter values for isotherm model calculation
-            qs1   = qs1;
             qs2   = 0;
             b01   = parVals(1).*isoRef(3);
             b02   = 0;
@@ -1679,7 +1671,7 @@ else
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TOTH', qs1, qs2, b01, b02, delU1, delU2, toth);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-            percentageError = conRange95./parameters' *100;
+%             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "toth"];
@@ -1796,7 +1788,7 @@ switch isothermModel
         set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
         grid on; axis square
         set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized')
-        outFit = [qvals' lnPvals];
+%         outFit = [qvals' lnPvals];
     case 'STATZ'
         % plot of experimental data and fitted data (q vs P)
         Pvals = linspace(0,max(x),1000);
@@ -1817,7 +1809,7 @@ switch isothermModel
         for kk = 1:length(Tvals)
             plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
         end
-        outFit = [Pvals' qvals];
+%         outFit = [Pvals' qvals];
         plot(x,z,'ob');
         xlabel('Pressure [bar]');
         ylabel('Amount adsorbed [molecules/supercage]');
@@ -1834,7 +1826,7 @@ switch isothermModel
         for kk = 1:length(Tvals)
             plot(Pvals,qvals(:,kk)./((nsc.*vc.*Na)./(nsc.*vm)),'-k','LineWidth',1.5);
         end
-        outFit = [Pvals' qvals];
+%         outFit = [Pvals' qvals];
         plot(x,z./((nsc.*vc.*Na)./(nsc.*vm)),'ob');
         xlabel('Pressure [bar]');
         ylabel('Amount adsorbed [mol/kg]');
@@ -1851,7 +1843,7 @@ switch isothermModel
         for kk = 1:length(Tvals)
             plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
         end
-        outFit = [Pvals' qvals];
+%         outFit = [Pvals' qvals];
         plot(x,z,'ob');
         xlabel('Pressure [bar]');
         ylabel('Amount adsorbed [molecules/supercage]');
@@ -1868,7 +1860,7 @@ switch isothermModel
         for kk = 1:length(Tvals)
             plot(Pvals,qvals(:,kk)./((nsc.*vc.*Na)./(nsc.*vm)),'-k','LineWidth',1.5);
         end
-        outFit = [Pvals' qvals];
+%         outFit = [Pvals' qvals];
         plot(x,z./((nsc.*vc.*Na)./(nsc.*vm)),'ob');
         xlabel('Pressure [bar]');
         ylabel('Amount adsorbed [mol/kg]');
@@ -1932,17 +1924,17 @@ switch isothermModel
         end
         if ~flagConcUnits
             figure(1)
-            if flagStats
-                subplot(1,3,1)
-            else
-            end
+%             if flagStats
+%                 subplot(1,3,1)
+%             else
+%             end
             scatter(uncBounds(:,1),uncBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
             hold on
             scatter(uncBounds(:,1),uncBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
             for kk = 1:length(Tvals)
                 plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
             end
-            outFit = [Pvals' qvals];
+%             outFit = [Pvals' qvals];
             plot(x,z,'ob');
             xlabel('Pressure [bar]');
             ylabel('Amount adsorbed [mol/kg]');
@@ -1986,12 +1978,12 @@ switch isothermModel
                     case 'DSL'
                         if length(unique(y)) == 1
                         else
-                            Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
+%                             Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
                         end
                     case 'DSS'
                         if length(unique(y)) == 1
                         else
-                            Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
+%                             Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
                         end
                 end
             end
@@ -2023,8 +2015,8 @@ switch isothermModel
     otherwise
         if flagConcUnits
             isothermData.isothermFit = [];
-            isothermData.isothermFit = [linspace(0,x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x)))))),length(qvals))' qvals];
-            isothermData.confidenceBounds = [uncBounds(:,1)./(1e5./(8.314.*uncBounds(find(x==max(max(x))),4))) uncBounds(:,2) uncBounds(:,3) uncBounds(:,4)];
+            isothermData.isothermFit = [linspace(0,x((x==max(max(x))))./(1e5./(8.314.*y((x==max(max(x)))))),length(qvals))' qvals];
+            isothermData.confidenceBounds = [uncBounds(:,1)./(1e5./(8.314.*uncBounds((x==max(max(x))),4))) uncBounds(:,2) uncBounds(:,3) uncBounds(:,4)];
             outScatter(:,1) = outScatter(:,1)./(1e5./(8.314.*outScatter(:,3)));
             isothermData.confidenceRegion = outScatter;
         else
@@ -2039,14 +2031,14 @@ isothermData.gitCommitID = gitCommitID;
 if ~saveFlag
 else
     filename = input('Enter file name: ','s');
-    currentDate=datestr(date,'mmddyy');
+    currentDate=datetime('today','Format','MMddyy');
     if exist(['..',filesep,'IsothermFittingTool',filesep','fittingResults'],'dir') == 7
         % Save the fitting results for further use
         save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate],'isothermData');
     else
         % Create the fitting results folder if it does not exist
         mkdir(['..',filesep,'IsothermFittingTool',filesep','fittingResults'])
-        % Save the calibration data for further use
+        % Save the fitting results for further use
         save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate],'isothermData');
     end
 end
@@ -2063,7 +2055,7 @@ if flagConcUnits
             scatter(isothermData.confidenceBounds(:,1),isothermData.confidenceBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.5);
             xlabel('Pressure [bar]');
             ylabel('Adsorbed amount [mol/kg]');
-            xlim([0 x(find(x==max(max(x))))./(1e5./(8.314.*y(find(x==max(max(x))))))])
+            xlim([0 x((x==max(max(x))))./(1e5./(8.314.*y((x==max(max(x))))))])
             ylim([0 1.1.*max(z)])
             box on
             set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
