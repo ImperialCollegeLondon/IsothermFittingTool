@@ -55,12 +55,14 @@ uiopen
 %% Select isotherm model for fitting
 % TSL = Triple site Langmuir. DSL = Dual site Langmuir.
 % SSL = Single site Langmuir. DSS = Dual site. Sips. SSS = Single site Sips.
-% TOTH = Toth Isotherm. TOTH2 = Toth Isotherm (Temp dependent tau). TOTH3 = Toth Isotherm (Temp dependent qsat and tau).
+% TOTH = Toth Isotherm. TOTH2 = Toth Isotherm (Temp dependent tau). TOTH3 =
+% Toth Isotherm (Temp dependent qsat and tau). TOTHCHEM = Toth with
+% chemisorption.
 % VIRIAL = Virial Equation (4a, 2b). VIRIAL2 = Virial Equation (4a, 4b)
 % Henry-DSL = HDSL. Henry-SSL = HSSL, Statistical Zeolite Model = STATZ.
-isothermModel = 'VIRIAL2';
+isothermModel = 'TOTHCHEM';
 %% Flag for fitting parameters in concentration units (NOT for virial)
-flagConcUnits = 1;
+flagConcUnits = 0;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)
 saveFlag = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

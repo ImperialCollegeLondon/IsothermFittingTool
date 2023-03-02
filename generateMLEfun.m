@@ -510,6 +510,63 @@ switch isothermModel
             end
             err(jj) = err(jj);
         end
+    case 'TOTHCHEM'
+        % Discretize the data range into 'nbins' evenly spaced bins of pressure
+        % ranges ('nbins = 1' for MLE')
+        [bins] = discretize(x,nbins);
+        % Create vector for storing sum of error for each bin
+        err = zeros(nbins,1);
+        % Number of data points
+        Nt = length(bins);
+        
+        expData = [x,z,y];
+        expData = sortrows(expData,3);
+        
+        x = expData(:,1);
+        z = expData(:,2);
+        y = expData(:,3);
+        
+        temperatureValues = unique(y);
+        qRefIndexTemp = zeros(length(temperatureValues),1);
+        for ii = 1:length(temperatureValues)
+            qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
+            qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
+        end
+        
+        % Find qref for the experimental data
+        qRefMax = max(z(qRefIndexTemp(:,2)));
+        qRefTemp = z(qRefIndexTemp(:,2));
+        normalizationFactorTemp = qRefMax./qRefTemp;
+        normalizationFactor = zeros(length(x),1);
+        
+        for ii = 1:length(temperatureValues)
+            normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
+        end
+        
+        qs10 = varargin{1}.*isoRef(1);
+        b01 = varargin{3}.*isoRef(3);
+        delU1 = varargin{5}.*isoRef(5);
+        toth0 = varargin{7}.*isoRef(7);
+        totha = varargin{8}.*isoRef(8);
+        chi = varargin{9}.*isoRef(9);
+        qsC = varargin{10}.*isoRef(10);
+        b0C = varargin{11}.*isoRef(11);
+        delUC = varargin{12}.*isoRef(12);
+        EaC = varargin{13}.*isoRef(13);
+        
+        % Loop for calculating the sum of errors for each bin
+        for jj = 1:length(err)
+            for kk = 1:length(bins)
+                toth = toth0 + totha.*(1-298./y(kk));
+                qs1 = qs10.*exp(chi*(1-y(kk)./298));
+                qfun = qs1.*b01.*x(kk).*exp(delU1./(8.314.*y(kk)))/(1+(b01.*x(kk).*exp(delU1./(8.314.*y(kk)))).^toth).^(1./toth) ...
+                    + exp(-EaC./(8.314.*y(kk))).*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk))));
+                if bins(kk) == jj
+                    err(jj) = (err(jj) + (normalizationFactor(kk).*(z(kk) - qfun))^2);
+                end
+            end
+            err(jj) = err(jj);
+        end
         % for Virial model
     case 'VIRIAL'
         expData = [x,z,y];

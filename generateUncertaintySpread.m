@@ -567,6 +567,61 @@ switch isothermModel
         end
         outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
         outScatter=outScatter';
+    case 'TOTHCHEM'
+        % Obtain a vector of the temperatures present in the input data
+        Tvals = unique(y);
+        uncBounds = [];
+        uncBounds(:,1) = repmat(Pvals',length(Tvals),1);
+        
+        qs10 = parVals(1);
+        qs2 = parVals(2);
+        b01 =  parVals(3);
+        b02 =  parVals(4);
+        delU1 = parVals(5);
+        delU2 = parVals(6);
+        toth0 = parVals(7);
+        totha = parVals(8);
+        chi = parVals(9);
+        qsC = parVals(10);
+        b0C = parVals(11);
+        delUC = parVals(12);
+        EaC = parVals(13);
+        qeqUnc=zeros(3,nPoints*length(Pvals),length(Tvals));
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj+1))
+                    qeqUnc(1,kk,mm)=Pvals(jj);
+                    qeqUnc(2,kk,mm)=Tvals(mm);
+                end
+            end
+        end
+        lhsMat = 2*lhsdesign(nPoints,9)-1;
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                hh = 0;
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj))
+                    hh=hh+1;
+                    qs10_unc = qs10+conRange95(1)*lhsMat(hh,1);
+                    qs2_unc = qs2+conRange95(2)*lhsMat(hh,2);
+                    b01_unc = b01+conRange95(3)*lhsMat(hh,3);
+                    b02_unc = b02+conRange95(4)*lhsMat(hh,4);
+                    delU1_unc = delU1+conRange95(5)*lhsMat(hh,5);
+                    delU2_unc = delU2+conRange95(6)*lhsMat(hh,6);
+                    toth0_unc = toth0+conRange95(7)*lhsMat(hh,7);
+                    totha_unc = totha+conRange95(8)*lhsMat(hh,8);
+                    chi_unc = chi+conRange95(9)*lhsMat(hh,9);
+                    P = qeqUnc(1,kk,mm);
+                    T = qeqUnc(2,kk,mm);
+                    qeqUnc(3,kk,mm)=qs10_unc.*exp(chi_unc*(1-T./298)).*b01_unc.*P.*exp(delU1_unc./(8.314.*T))./(1+(b01_unc.*P.*exp(delU1_unc./(8.314.*T))).^(toth0_unc + totha_unc.*(1-298./T))).^(1./(toth0_unc + totha_unc.*(1-298/T))) ...
+                        + exp(-EaC/(8.314.*T))*qsC.*b0C.*P.*exp(delUC./(8.314.*T))./(1+b0C.*P.*exp(delUC./(8.314.*T)));
+                end
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,2)= min(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,3)= max(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,4)= Tvals(mm);
+            end
+        end
+        outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
+        outScatter=outScatter';
         % for the virial model
     case 'VIRIAL'
         % Obtain a vector of the temperatures present in the input data

@@ -801,6 +801,97 @@ switch isothermModel
                 chi2inv95 = chi2inv(0.95,Np);
                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
+    case 'TOTHCHEM'
+        % Number of parameters
+        Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
+        % Calculate standard deviation of the data (not needed)
+        stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
+        % Generate and solve global optimisation problem for confidence regions
+        % based on isotherm model
+        qs10 = varargin{1};
+        qs2 = varargin{2};
+        b01 = varargin{3};
+        b02 = varargin{4};
+        delU1 = varargin{5};
+        delU2 = varargin{6};
+        toth0 = varargin{7};
+        totha = varargin{8};
+        chi = varargin{9};
+        qsC = varargin{10};
+        b0C = varargin{11};
+        delUC = varargin{12};
+        EaC = varargin{13};
+        switch fittingMethod
+            case 'MLE'
+                % Create empty sensitivity matrix
+                sensitivityMatrix = zeros(length(x),9);
+                % Calculate sensitivity at every data point for each parameter
+                for jj = 1:13
+                    for kk = 1:length(x)
+                        if jj == 1
+                            sensitivityMatrix(kk,jj) = ((((1+del)*qs10.*exp(chi*(1-y(kk)./298)))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*qs10);
+                        elseif jj == 2
+                            sensitivityMatrix(kk,jj) = (((1+del)*qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*qs10);
+                        elseif jj == 3
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*(1+del)*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*b01);
+                        elseif jj == 4
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*(1+del)*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*b01);
+                        elseif jj == 5
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*delU1);
+                        elseif jj == 6
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp((1+del)*delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*delU1);
+                        elseif jj == 7
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^((1+del)*toth0 + totha.*(1-298/y(kk)))).^(1./((1+del)*toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*toth0);
+                        elseif jj == 8
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + (1+del)*totha.*(1-298/y(kk)))).^(1./(toth0 + (1+del)*totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*totha);
+                        elseif jj == 9
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp((1+del)*chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*chi);
+                        elseif jj == 10
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*(1+del)*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*qsC);
+                        elseif jj == 11
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*qsC.*(1+del).*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*b0C);
+                        elseif jj == 12
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-EaC/(8.314.*y(kk)))*qsC.*b0C.*x(kk).*exp((1+del)*delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*delUC);
+                        else
+                            sensitivityMatrix(kk,jj) = ((qs10.*exp(chi*(1-y(kk)./298))*b01*x(kk)*exp(delU1/(8.314*y(kk))))/(1+(b01*x(kk)*exp(delU1/(8.314*y(kk))))^(toth0 + totha.*(1-298/y(kk)))).^(1./(toth0 + totha.*(1-298/y(kk)))) ...
+                                + exp(-(1+del)*EaC/(8.314.*y(kk)))*qsC.*b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))./(1+b0C.*x(kk).*exp(delUC./(8.314.*y(kk)))) ...
+                                - fitVals(kk))/(del*EaC);
+                        end
+                    end
+                end
+                % Hessian Matrix for the data set (Non-linear parameter estimation
+                % by Yonathan Bard (1974) pg. 178)
+                hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
+                % Confidence range given by chi squared distribution at Np degrees
+                % of freedom (independent parameter conf intervals)
+                conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2))
+        end
         % for Virial model
     case 'VIRIAL'
         % Number of parameters

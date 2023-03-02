@@ -48,7 +48,7 @@ z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
 refValsP = [10,10,1e-2,1e-2,15e4,15e4];
-refValsC = [10,10,1e-4,1e-4,15e4,15e4];
+refValsC = [20,20,1e-4,1e-4,15e4,15e4];
 switch isothermModel
     case 'DSL'
         % Reference isotherm parameters for non-dimensionalisation
@@ -112,6 +112,13 @@ switch isothermModel
             isoRef = [refValsC 10 10 10];
         else
             isoRef = [refValsP 10 10 10];
+        end
+    case  'TOTHCHEM'
+        % Reference isotherm parameters for non-dimensionalisation
+        if flagConcUnits
+            isoRef = [refValsC 10 10 10 refValsC([1 3 5]) refValsC(5)];
+        else
+            isoRef = [refValsP 10 10 10 refValsP([1 3 5]) refValsP(5)];
         end
     case  'HDSL'
         % Reference isotherm parameters for non-dimensionalisation
@@ -1153,6 +1160,87 @@ if ~flagFixQsat
                     end
                 end
             end
+    case 'TOTHCHEM'
+            % Set objective function based on fitting method
+            switch fittingMethod
+                case 'MLE'
+                    % Number of bins is automatically set to 1 for MLE as
+                    % weights cannot be assigned in MLE
+                    nbins =1;
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'TOTHCHEM', isoRef, par(1), 0, par(2), ...
+                        0, par(3), 0, par(4), par(5), par(6), par(7), par(8), par(9), par(10));
+                case 'WSS'
+                    % Generate objective function for WSS method
+                    optfunc = @(par) generateWSSfun(x, y, z, nbins, 'TOTHCHEM', isoRef, par(1), 0, par(2), ...
+                        0, par(3), 0, par(4), par(5), par(6), par(7), par(8), par(9), par(10));
+            end
+            % Initial conditions, lower bounds, and upper bounds for parameters
+            % in DSL isotherm model
+            x0 = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5];
+            lb = [0,0,0,0,0,-1,0,0,0,0];
+            ub = [1,1,1,1,1,1,1,1,1,1];
+            % Create global optimisation problem with solver 'fmincon' and
+            % other bounds
+            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+            [parVals, fval]= run(gs,problem);
+            % Set fitted parameter values for isotherm model calculation
+            qs10   = parVals(1).*isoRef(1);
+            qs2   = 0;
+            b01   = parVals(2).*isoRef(3);
+            b02   = 0;
+            delU1 = parVals(3).*isoRef(5);
+            delU2 = 0;
+            toth0 = parVals(4).*isoRef(7);
+            totha = parVals(5).*isoRef(8);
+            chi = parVals(6).*isoRef(9);
+            qsC = parVals(7).*isoRef(10);
+            b0C = parVals(8).*isoRef(11);
+            delUC = parVals(9).*isoRef(12);
+            EaC = parVals(10).*isoRef(13);
+
+            toth = toth0 + totha.*(1-298./y);
+            qs1 = qs10.*exp(chi*(1-y./298));
+            
+            % Calculate fitted isotherm loadings for conditions (P,T)
+            % corresponding to experimental data
+            qfit  = qs1.*b01.*x.*exp(delU1./(8.314.*y))./(1+(b01.*x.*exp(delU1./(8.314.*y))).^toth).^(1./toth) ...
+                + exp(-EaC./(8.314.*y)).*qsC.*b0C.*x.*exp(delUC./(8.314.*y))./(1+b0C.*x.*exp(delUC./(8.314.*y)));
+            % Calculate ellipsoidal confidence intervals (delta parameter) for
+            % fitted parameters
+            parameters = [qs10, qs2, b01, b02, delU1, delU2, toth0, totha, chi, qsC, b0C, delUC, EaC];
+            parameters(isnan(parameters))=0;
+            [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TOTHCHEM', qs10, qs2, b01, b02, delU1, delU2, toth0, totha, chi, qsC, b0C, delUC, EaC);
+            conRange95(isnan(conRange95))=0;
+            conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7) conRange95(8) conRange95(9)  conRange95(10)  conRange95(11)  conRange95(12)  conRange95(13)]';
+            % Convert confidence intervals to percentage error
+% %             percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
+            if ~flagConcUnits
+                parNames = ["qs10" "qs2" "b01" "b02" "delU1" "delU2" "tau0" "alpha" "chi" "qsC" "b0C" "delUC" "EaC"];
+                units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " " " " " " "mol/kg"  "1/bar" "J/mol" "J/mol"];
+                parsDisp = parameters;
+                conRange95Disp = conRange95;
+                for ii = 1:length(parameters)
+                    if parsDisp(ii) == 0
+                    else
+                        fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
+                    end
+                end
+            else
+                parNames = ["qs10" "qs2" "b01" "b02" "delU1" "delU2"  "tau0" "alpha" "chi" "qsC" "b0C" "delUC" "EaC"];
+                units = ["mol/kg" "mol/kg" "m3/mol" "m3/mol" "J/mol" "J/mol"  " " " " " " "mol/kg"  "m3/mol" "J/mol" "J/mol"];
+                parsDisp = parameters;
+                conRange95Disp = conRange95;
+                for ii = 1:length(parsDisp)
+                    if parsDisp(ii) == 0
+                    else
+                        fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
+                    end
+                end
+            end
         case 'VIRIAL'
             % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
             refValsP = [10e3,10e3,10e3,10e3,10e3,10e3,10e3,10e3];
@@ -1725,6 +1813,8 @@ switch isothermModel
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'TOTH2',parameters,conRange95);
     case 'TOTH3'
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'TOTH3',parameters,conRange95);
+    case 'TOTHCHEM'
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'TOTHCHEM',parameters,conRange95);
     case 'VIRIAL'
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'VIRIAL',parameters,conRange95);
     case 'VIRIAL2'
@@ -1919,6 +2009,11 @@ switch isothermModel
                         toth = (toth0 + totha.*(1-298/T));
                         qs1 = qs10.*exp(chi*(1-T./298));
                         qvals(jj,kk) = qs1.*b01.*P.*exp(delU1./(8.314.*T))/(1+(b01.*P.*exp(delU1./(8.314.*T))).^toth).^(1./toth);
+                    case 'TOTHCHEM'
+                        toth = (toth0 + totha.*(1-298/T));
+                        qs1 = qs10.*exp(chi*(1-T./298));
+                        qvals(jj,kk) = qs1.*b01.*P.*exp(delU1./(8.314.*T))/(1+(b01.*P.*exp(delU1./(8.314.*T))).^toth).^(1./toth) ...
+                            + exp(-EaC/(8.314.*T))*qsC.*b0C.*P.*exp(delUC./(8.314.*T))./(1+b0C.*P.*exp(delUC./(8.314.*T)));
                 end
             end
         end
@@ -2031,7 +2126,7 @@ isothermData.gitCommitID = gitCommitID;
 if ~saveFlag
 else
     filename = input('Enter file name: ','s');
-    currentDate=datetime('today','Format','MMddyy');
+    currentDate=char(datetime('today','Format','MMddyy'));
     if exist(['..',filesep,'IsothermFittingTool',filesep','fittingResults'],'dir') == 7
         % Save the fitting results for further use
         save(['..',filesep,'IsothermFittingTool',filesep','fittingResults',filesep,filename,'_',currentDate],'isothermData');
