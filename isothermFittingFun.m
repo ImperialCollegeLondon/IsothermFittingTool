@@ -47,8 +47,8 @@ x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-refValsP = [10,10,1e-2,1e-2,15e4,15e4];
-refValsC = [20,20,1e-4,1e-4,15e4,15e4];
+refValsP = [10,10,1e-2,1e-2,10e4,10e4];
+refValsC = [20,20,1e-4,1e-4,5e4,5e4];
 switch isothermModel
     case 'DSL'
         % Reference isotherm parameters for non-dimensionalisation
@@ -1867,10 +1867,12 @@ switch isothermModel
         set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
         grid on; axis square
         subplot(1,3,3)
-        for kk = 1:length(Tvals)
-            delH = -8.314.*(a0 +a1.*qvals+a2.*qvals.^2+a3.*qvals.^3)./1000;
-            plot(qvals,delH,'-k','LineWidth',1.5);
-        end
+        delH = -8.314.*(a0 +a1.*qvals+a2.*qvals.^2+a3.*qvals.^3)./1000;
+        [delHoutScatter,delHuncBounds] = generateUncertaintydelH(x,y,z,isothermModel,parameters,conRange95);
+        plot(qvals,delH,'-k','LineWidth',1.5);
+        hold on
+        plot(delHuncBounds(:,1),delHuncBounds(:,2)./1000,'Color','b')
+        plot(delHuncBounds(:,1),delHuncBounds(:,3)./1000,'Color','b') 
         xlabel('Amount adsorbed [mol/kg]');
         ylabel('-\Delta H_{ads} [kJ/mol]');
         ylim([0 max(delH)+5]);
@@ -2099,6 +2101,7 @@ switch isothermModel
             isothermData.heatAdsorption = [qvals' delH'];
             isothermData.confidenceRegion = outScatter;
             isothermData.confidenceBounds = uncBounds;
+            isothermData.delHConfidenceBounds = delHuncBounds;
     case 'STATZ'
             isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
             isothermData.isothermFitmolkg = [headerRow;Pvals(1,:)' qvals./((nsc.*vc.*Na)./(nsc.*vm))];

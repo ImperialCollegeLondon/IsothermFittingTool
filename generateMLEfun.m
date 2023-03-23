@@ -79,13 +79,14 @@ switch isothermModel
         
         for jj = 1:length(err)
             for kk = 1:length(bins)
-                qfun = computeStatZLoading(x(kk),y(kk),b01,delU1,beta,omega,vc);
+                if omega > vc/beta
+                    qfun = 0;
+                else
+                    qfun = computeStatZLoading(x(kk),y(kk),b01,delU1,beta,omega,vc);
+                end
                 if bins(kk) == jj
                     err(jj) = (err(jj) + (normalizationFactor(kk).*(z(kk) - qfun))^2);
                 end
-            end
-            if vc./beta < omega
-                error(jj) = 100;
             end
         end
         
