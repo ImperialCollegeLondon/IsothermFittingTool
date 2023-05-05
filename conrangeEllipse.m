@@ -53,6 +53,7 @@ switch isothermModel
         b01 = varargin{3};
         delU1 = varargin{4};
         vc = varargin{5};
+        vm = varargin{6};
         Nt = length(x);
         
         dlogMLE = [];
@@ -60,7 +61,7 @@ switch isothermModel
         deltaplus1mat = eye(Np).*(del);
         deltamat = eye(Np).*(del);
         partemp = [omega./isoRef(1), beta./isoRef(2),b01./isoRef(3),delU1./isoRef(4)];
-        logMLE = @(par) -generateMLEfun(x, y, z, 1, 'STATZ', isoRef, par(1), par(2), par(3), par(4), vc);
+        logMLE = @(par) -generateMLEfun(x, y, z, 1, 'STATZ', isoRef, par(1), par(2), par(3), par(4), vc, vm);
         
         for jj = 1:Np
             for kk = 1:Np
@@ -77,9 +78,75 @@ switch isothermModel
         % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
         hessianMatrix =  -d2logMLE;
         conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%         chi2inv95 = chi2inv(0.95,Np);
-%         conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
-        % For DSL model
+
+        % Calculate error for Statistical isotherm model for zeolites
+    case 'STATZGATE'
+        % Calculate standard deviation of the data (not needed)
+        Np = 7;
+        stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
+        omega = varargin{1};
+        beta = varargin{2};
+        b01 = varargin{3};
+        delU1 = varargin{4};
+        kgate = varargin{5};
+        cgate = varargin{6};
+        gamma = varargin{7};
+        vc1 = varargin{8};
+        vc2 = varargin{9};
+        vm = varargin{10};
+        
+        Nt = length(x);
+        dlogMLE = [];
+        d2logMLE = [];
+        deltaplus1mat = eye(Np).*(del);
+        deltamat = eye(Np).*(del);
+        partemp = [omega./isoRef(1), beta./isoRef(2),b01./isoRef(3),delU1./isoRef(4), kgate./isoRef(5), cgate./isoRef(6), gamma./isoRef(7)];
+        logMLE = @(par) -generateMLEfun(x, y, z, 1, 'STATZGATE', isoRef, par(1), par(2), par(3), par(4), par(5), par(6), par(7), vc1, vc2, vm);
+        for jj = 1:Np
+            for kk = 1:Np
+                partempnumj = partemp.*(1+deltaplus1mat(jj,:));
+                partempdenj = partemp.*deltamat(jj,:);
+                partempnumk = partemp.*(1+deltaplus1mat(kk,:));
+                partempdenk = partemp.*deltamat(kk,:);
+                partempnumjk = partemp.*(1+deltaplus1mat(jj,:) + deltaplus1mat(kk,:));
+                % Compute second derivative of logL for jj and kk
+                d2logMLE(jj,kk) = ((logMLE(partempnumjk)-logMLE(partempnumk))-(logMLE(partempnumj)-logMLE(partemp)))./(partempdenj(jj).*isoRef(jj).*partempdenk(kk).*isoRef(kk));
+            end
+        end
+        % estimated Hessian Matrix for the data set (Non-linear parameter estimation
+        % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
+        hessianMatrix =  -d2logMLE;
+        conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+%                 chi2inv95 = chi2inv(0.95,Np);
+%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+%         For DSL model
+%         Create empty sensitivity matrix
+%         sensitivityMatrix = zeros(length(x),Np);
+%         del = 1e-6;
+%         % Calculate sensitivity at every data point for each parameter
+%         for jj = 1:Np
+%             for kk = 1:length(x)
+%                 if jj == 1
+%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,beta,(1+del)*omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*omega);
+%                 elseif jj == 2
+%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,(1+del)*beta,omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*beta);
+%                 elseif jj == 3
+%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),(1+del)*b01,delU1,beta,omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*b01);
+%                 elseif jj == 4
+%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,(1+del)*delU1,beta,omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*delU1);
+%                 elseif jj == 5
+%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,beta,omega,kgate,(1+del)*cgate,gamma,vc1,vc2) - fitVals(kk))/(del*cgate);
+%                 else
+%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,beta,omega,kgate,cgate,(1+del)*gamma,vc1,vc2) - fitVals(kk))/(del*gamma);
+%                 end
+%             end
+%         end
+%         % estimated Hessian Matrix for the data set (Non-linear parameter estimation
+%         % by Yonathan Bard (1974) pg. 178
+%         hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
+%         % Confidence range given by chi squared distribution at Np degrees
+%         % of freedom (independent parameter conf intervals)
+%         conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
     case 'DSL'
         % Number of parameters
         Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
@@ -128,14 +195,6 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 6
-%                 else
-%                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5);
-%                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5);
-%                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5)];
-%                 end
-%                     conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
             case 'MLE'
                 Np = 6;
                 Nt = length(x);

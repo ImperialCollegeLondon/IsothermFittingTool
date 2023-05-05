@@ -59,8 +59,9 @@ uiopen
 % Toth Isotherm (Temp dependent qsat and tau). TOTHCHEM = Toth with
 % chemisorption.
 % VIRIAL = Virial Equation (4a, 2b). VIRIAL2 = Virial Equation (4a, 4b)
-% Henry-DSL = HDSL. Henry-SSL = HSSL, Statistical Zeolite Model = STATZ.
-isothermModel = 'VIRIAL';
+% Henry-DSL = HDSL. Henry-SSL = HSSL, Statistical Zeolite Model = STATZ,
+% Statistical Zeolite Model for flexible frameworks= STATZGATE
+isothermModel = 'TOTHCHEM';
 %% Flag for fitting parameters in concentration units (NOT for virial)
 flagConcUnits = 0;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)
