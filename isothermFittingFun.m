@@ -146,37 +146,37 @@ if ~flagFixQsat
     end
     rng default % For reproducibility
     % Create gs, a GlobalSearch solver with its properties set to the defaults.
-    gs = GlobalSearch('NumTrialPoints',4000,'NumStageOnePoints',500,'Display','off');
+%     gs = GlobalSearch('NumTrialPoints',4000,'NumStageOnePoints',500,'Display','off');
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'STATZ'
-        if flagConcUnits
-            error('Error. Statistical model for Zeolites can only be used with pressure units. Change flagConcUnits to false.')
-        end
+            if flagConcUnits
+                error('Error. Statistical model for Zeolites can only be used with pressure units. Change flagConcUnits to false.')
+            end
             Na = 6.022e20; % Avogadros constant [molecules/mmol]
-            
+
             prompt = {'Enter micropore volume [cc/g]:'};
             dlgtitle = 'Micropore volume';
             dims = [1 35];
             definput = {'0','hsv'};
             vm = 1e24.*str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
-            
+
             prompt = {['Enter cage volume [',char(197),char(179),']']};
             dlgtitle = 'Cage volume';
             dims = [1 35];
             definput = {'0','hsv'};
             vc = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
-            
-%             prompt = {'Enter supercages per unit cell (8 for X and Y Zeolites)'};
-%             dlgtitle = 'Supercages per unit cell';
-%             dims = [1 35];
-%             definput = {'0','hsv'};
-%             nsc = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
+
+            %             prompt = {'Enter supercages per unit cell (8 for X and Y Zeolites)'};
+            %             dlgtitle = 'Supercages per unit cell';
+            %             dims = [1 35];
+            %             definput = {'0','hsv'};
+            %             nsc = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
             nsc = 1; % This is cancelled out/not needed
             z = ((nsc.*vc.*Na)./(nsc.*vm)).*z;
-            
+
             optfunc = @(par) generateMLEfun(x, y, z, nbins, 'STATZ', isoRef, par(1), par(2), par(3),par(4), vc, vm);
-            
+
             % Initial conditions, lower bounds, and upper bounds for parameters
             x0 = [5,0.5,0.5,0.5];
             lb = [1,0,0,0];
@@ -185,7 +185,7 @@ if ~flagFixQsat
             % other bounds
             intcon = 1;
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -207,7 +207,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'STATZ', omega, beta, b01, delU1, vc, vm);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             parNames = ["omega" "beta" "b01" "delU1"];
             units = ["molecules/supercage" "A3" "1/bar" "J/mol"];
@@ -220,38 +220,38 @@ if ~flagFixQsat
                 end
             end
         case 'STATZGATE'
-        if flagConcUnits
-            error('Error. Statistical model for Zeolites can only be used with pressure units. Change flagConcUnits to false.')
-        end
+            if flagConcUnits
+                error('Error. Statistical model for Zeolites can only be used with pressure units. Change flagConcUnits to false.')
+            end
             Na = 6.022e20; % Avogadros constant [molecules/mmol]
-            
+
             prompt = {'Enter micropore volume [cc/g]:'};
             dlgtitle = 'Micropore volume';
             dims = [1 35];
             definput = {'0','hsv'};
             vm = 1e24.*str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
-            
+
             prompt = {['Enter cage volume (LOW PRESSURE) [',char(197),char(179),']']};
             dlgtitle = 'Cage volume 1';
             dims = [1 35];
             definput = {'0','hsv'};
             vc1 = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
-            
+
             prompt = {['Enter cage volume  (HIGH PRESSURE)[',char(197),char(179),']']};
             dlgtitle = 'Cage volume 2';
             dims = [1 35];
             definput = {'0','hsv'};
             vc2 = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
-%             prompt = {'Enter supercages per unit cell (8 for X and Y Zeolites)'};
-%             dlgtitle = 'Supercages per unit cell';
-%             dims = [1 35];
-%             definput = {'0','hsv'};
-%             nsc = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
+            %             prompt = {'Enter supercages per unit cell (8 for X and Y Zeolites)'};
+            %             dlgtitle = 'Supercages per unit cell';
+            %             dims = [1 35];
+            %             definput = {'0','hsv'};
+            %             nsc = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
             nsc = 1; % This is cancelled out/not needed
             z = ((vc2.*Na)./(vm)).*z;
-%             kgate = 3;
+            %             kgate = 3;
             optfunc = @(par) generateMLEfun(x, y, z, nbins, 'STATZGATE', isoRef, par(1), par(2), par(3),par(4), par(5), par(6), par(7), vc1, vc2, vm);
-            
+
             % Initial conditions, lower bounds, and upper bounds for parameters
             x0 = [5,0.5,0.5,0.5,0.5,0.5,0.5];
             lb = [1,0,0,0,0,0,0];
@@ -260,7 +260,7 @@ if ~flagFixQsat
             % other bounds
             intcon = 1;
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -286,7 +286,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             conRange95 = real(conRange95);
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             parNames = ["omega" "beta" "b01" "delU1" "kgate" "cgate"  "toth"];
             units = ["molecules/supercage" "A3" "1/bar" "J/mol" "-" "-" "-"];
@@ -297,7 +297,7 @@ if ~flagFixQsat
                 else
                     fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
                 end
-            end    
+            end
         case 'DSL'
             % Set objective function based on fitting method
             switch fittingMethod
@@ -340,7 +340,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -370,7 +370,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
@@ -437,7 +437,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -471,7 +471,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL2', qs1a, qs2a, qs1b, qs2b, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1a" "qs2a" "qs1b" "qs2b" "b01" "b02" "delU1" "delU2"];
@@ -538,7 +538,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -565,10 +565,10 @@ if ~flagFixQsat
             parameters = [qs1, qs2, b01, b02, delU1, delU2];
             parameters(isnan(parameters))=0;
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
-%             conRange95 = [conRange95(1); 0; conRange95(2); 0; conRange95(3); 0];
+            %             conRange95 = [conRange95(1); 0; conRange95(2); 0; conRange95(3); 0];
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
@@ -635,7 +635,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -660,7 +660,7 @@ if ~flagFixQsat
                 b03   = parVals(8).*isoRef(8);
                 delU3 = parVals(9).*isoRef(9);
             end
-            
+
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y)))./(1+(b01.*x.*exp(delU1./(8.314.*y)))) ...
@@ -673,7 +673,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TSL', qs1, qs2, b01, b02, delU1, delU2, qs3, b03, delU3);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "qs3" "b01" "b02" "b03" "delU1" "delU2" "delU3"];
@@ -740,7 +740,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -765,7 +765,7 @@ if ~flagFixQsat
                 b0H   = parVals(8).*isoRef(8);
                 delUH = parVals(9).*isoRef(9);
             end
-            
+
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y)))./(1+(b01.*x.*exp(delU1./(8.314.*y)))) ...
@@ -778,7 +778,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'HDSL', qs1, qs2, b01, b02, delU1, delU2, qsH, b0H, delUH);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "qsH" "b0H" "delUH" ];
@@ -845,7 +845,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -870,7 +870,7 @@ if ~flagFixQsat
                 b0H   = parVals(5).*isoRef(8);
                 delUH = parVals(6).*isoRef(9);
             end
-            
+
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*(b01.*x.*exp(delU1./(8.314.*y)))./(1+(b01.*x.*exp(delU1./(8.314.*y)))) ...
@@ -883,7 +883,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'HDSL', qs1, qs2, b01, b02, delU1, delU2, qsH, b0H, delUH);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "qsH" "b0H" "delUH" ];
@@ -931,7 +931,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -957,7 +957,7 @@ if ~flagFixQsat
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, isothermModel, qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
@@ -1005,7 +1005,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -1030,9 +1030,9 @@ if ~flagFixQsat
             parameters(isnan(parameters))=0;
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSS', qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
-%             conRange95 = [conRange95(1); 0; conRange95(2); 0; conRange95(3); 0;conRange95(4)];
+            %             conRange95 = [conRange95(1); 0; conRange95(2); 0; conRange95(3); 0;conRange95(4)];
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
@@ -1080,7 +1080,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -1106,7 +1106,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7)]';
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "toth"];
@@ -1154,7 +1154,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -1180,9 +1180,9 @@ if ~flagFixQsat
             parameters(isnan(parameters))=0;
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TOTH2', qs1, qs2, b01, b02, delU1, delU2, toth0, totha);
             conRange95(isnan(conRange95))=0;
-            conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7) conRange95(8)]';            
+            conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7) conRange95(8)]';
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "tau0" "alpha"];
@@ -1230,7 +1230,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -1260,7 +1260,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             conRange95 = [conRange95(1) 0 conRange95(2) 0 conRange95(3) 0 conRange95(4) conRange95(5) conRange95(6)]';
             % Convert confidence intervals to percentage error
-% %             percentageError = conRange95./parameters' *100;
+            % %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs10" "qs2" "b01" "b02" "delU1" "delU2" "tau0" "alpha" "chi"];
@@ -1285,7 +1285,7 @@ if ~flagFixQsat
                     end
                 end
             end
-    case 'TOTHCHEM'
+        case 'TOTHCHEM'
             % Set objective function based on fitting method
             switch fittingMethod
                 case 'MLE'
@@ -1303,7 +1303,7 @@ if ~flagFixQsat
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             x0 = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5];
-            lb = [0,0,0,0,0,0,0,0,0,0];
+            lb = [0,2,0,0,0,0,0,2,0,0];
             ub = [1,7,1,1,1,1,1,7,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds\
@@ -1313,12 +1313,12 @@ if ~flagFixQsat
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament','SelectionFcn','selectiontournament');
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PlotFcn', @gaplotbestf,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400);
             [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
-%             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            %             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-%             [parVals, fval]= run(gs,problem);
+            %             [parVals, fval]= run(gs,problem);
             % Set fitted parameter values for isotherm model calculation
             qs10   = parVals(1).*isoRef(1);
             qs2   = 0;
@@ -1336,7 +1336,7 @@ if ~flagFixQsat
 
             toth = toth0 + totha.*(1-298.15./y);
             qs1 = qs10.*exp(chi*(1-y./298.15));
-            
+
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*b01.*x.*exp(delU1./(8.314.*y))./(1+(b01.*x.*exp(delU1./(8.314.*y))).^toth).^(1./toth) ...
@@ -1349,7 +1349,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             conRange95 = [conRange95(1) 0 conRange95(2) 0 conRange95(3) 0 conRange95(4) conRange95(5) conRange95(6)  conRange95(7)  conRange95(8)  conRange95(9)  conRange95(10)]';
             % Convert confidence intervals to percentage error
-% %             percentageError = conRange95./parameters' *100;
+            % %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs10" "qs2" "b01" "b02" "delU1" "delU2" "tau0" "alpha" "chi" "qsC" "b0C" "delUC" "EaC"];
@@ -1401,7 +1401,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -1424,7 +1424,7 @@ if ~flagFixQsat
             expData = [x,z,y];
             expData = sortrows(expData,1);
             expData = expData(length(unique(y))+1:end,:);
-            
+
             x = expData(:,1);
             z = expData(:,2);
             y = expData(:,3);
@@ -1441,7 +1441,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             conRange95 = [conRange95(1) conRange95(2) conRange95(3) conRange95(4) conRange95(5) conRange95(6) 0 0]';
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             parNames = ["a0" "a1" "a2" "a3" "b0" "b1" "b2" "b3"];
             units = ["K" "K/mol" "K/mol^2" "K/mol^3" " " "1/mol" "1/mol^2" "1/mol^3"];
@@ -1453,7 +1453,7 @@ if ~flagFixQsat
                     fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
                 end
             end
-            
+
         case 'VIRIAL2'
             % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
             refValsP = [30e3,30e3,30e3,30e3,30e3,30e3,30e3,30e3];
@@ -1481,7 +1481,7 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -1520,7 +1520,7 @@ if ~flagFixQsat
             conRange95(isnan(conRange95))=0;
             conRange95 = [conRange95(1) conRange95(2) conRange95(3) conRange95(4) conRange95(5) conRange95(6) conRange95(7) conRange95(8)]';
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             parNames = ["a0" "a1" "a2" "a3" "b0" "b1" "b2" "b3"];
             units = ["K" "K/mol" "K/mol^2" "K/mol^3" " " "1/mol" "1/mol^2" "1/mol^3"];
@@ -1532,7 +1532,85 @@ if ~flagFixQsat
                     fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
                 end
             end
+        case 'GAB'
+            % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
+            refValsP = [10,1e5,0.1,1e5,-200];
+            isoRef = refValsP;
+            % Set objective function based on fitting method
+            switch fittingMethod
+                case 'MLE'
+                    % Number of bins is automatically set to 1 for MLE as
+                    % weights cannot be assigned in MLE
+                    nbins =1;
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'GAB', isoRef, par(1), par(2), ...
+                        par(3), par(4), par(5));
+                case 'WSS'
+                    % Generate objective function for WSS method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'GAB', isoRef, par(1), par(2), ...
+                        par(3), par(4), par(5));
+            end
+            % Initial conditions, lower bounds, and upper bounds for parameters
+            % in DSL isotherm model
+            x0 = [0.5,0.5,0.5,0.5,0.5];
+            lb = [0,0,0,0,0];
+            ub = [1,1,1,1,1];
+            % Create global optimisation problem with solver 'fmincon' and
+            % other bounds
+            popSize = length(x0)*150;
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',1000,'SelectionFcn','selectiontournament','MaxStallGenerations',100);
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
+            %             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            %             % Solve the optimisation problem to obtain the isotherm parameters
+            %             % for the fit
+            %             [parVals, fval]= run(gs,problem);
+            % Set fitted parameter values for isotherm model calculation
+            qs1  = parVals(1).*isoRef(1);
+            parC = parVals(2).*isoRef(2);
+            parD = parVals(3).*isoRef(3);
+            parF = parVals(4).*isoRef(4);
+            parG = parVals(5).*isoRef(5);
+            parameters = [qs1, parC, parD, parF, parG];
+            parameters(isnan(parameters))=0;
+            parameters = real(parameters);
+            % Calculate fitted isotherm loadings for conditions (P,T)
+            % corresponding to experimental data
+            expData = [x,z,y];
+            expData = sortrows(expData,1);
+            expData = expData(length(unique(y))+1:end,:);
+            x = expData(:,1);
+            z = expData(:,2);
+            y = expData(:,3);
+            qfit = zeros(1,length(x));
+            for kk = 1:length(x)
+                qfit(kk)  = computeGABLoading(x(kk),y(kk),qs1,parC,parD,parF,parG);
+            end
+            % Calculate ellipsoidal confidence intervals (delta parameter) for
+            % fitted parameters
+            [conRange95] = conrangeEllipse(x, y, z, qfit, fittingMethod,isoRef, 'GAB',qs1,parC,parD,parF,parG);
+            conRange95(isnan(conRange95))=0;
+            conRange95 = real(conRange95);
+            conRange95 = [conRange95(1) conRange95(2) conRange95(3) conRange95(4) conRange95(5)]';
+            % Convert confidence intervals to percentage error
+            %             percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
+            parNames = ["qm" "C" "D" "F" "G"];
+            units = ["mol/kg" "J/mol" "1/K" "J/mol" "J/molK"];
+            parsDisp = parameters;
+            conRange95Disp = conRange95;
+            for ii = 1:length(parameters)
+                if parsDisp(ii) == 0
+                else
+                    fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
+                end
+            end
     end
+
 else
     if flagConcUnits
         x = 1e5*x./(8.314.*y);
@@ -1584,7 +1662,7 @@ else
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -1612,7 +1690,7 @@ else
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
@@ -1678,7 +1756,7 @@ else
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -1706,7 +1784,7 @@ else
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol"];
@@ -1753,7 +1831,7 @@ else
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -1777,7 +1855,7 @@ else
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, isothermModel, qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
@@ -1824,7 +1902,7 @@ else
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e2);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
@@ -1849,7 +1927,7 @@ else
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSS', qs1, qs2, b01, b02, delU1, delU2, gamma);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "gamma"];
                 units = ["mol/kg" "mol/kg" "1/bar" "1/bar" "J/mol" "J/mol" " "];
@@ -1916,7 +1994,7 @@ else
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TOTH', qs1, qs2, b01, b02, delU1, delU2, toth);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
-%             percentageError = conRange95./parameters' *100;
+            %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2" "toth"];
@@ -1978,6 +2056,8 @@ switch isothermModel
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'VIRIAL',parameters,conRange95);
     case 'VIRIAL2'
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'VIRIAL2',parameters,conRange95);
+    case 'GAB'
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'GAB',parameters,conRange95);
 end
 switch isothermModel
     case {'VIRIAL','VIRIAL2'}
@@ -1994,7 +2074,7 @@ switch isothermModel
                     + parameters(8).*qeq.^3;
             end
         end
-        
+
         figure(1)
         subplot(1,3,1)
         scatter(uncBounds(:,1),uncBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
@@ -2027,11 +2107,11 @@ switch isothermModel
         grid on; axis square
         subplot(1,3,3)
         delH = -8.314.*(a0 +a1.*qvals+a2.*qvals.^2+a3.*qvals.^3)./1000;
-        [delHoutScatter,delHuncBounds] = generateUncertaintydelH(x,y,z,isothermModel,parameters,conRange95);
+        [~,delHuncBounds] = generateUncertaintydelH(x,y,z,isothermModel,parameters,conRange95);
         plot(qvals,delH,'-k','LineWidth',1.5);
         hold on
         plot(delHuncBounds(:,1),delHuncBounds(:,2)./1000,'Color','b')
-        plot(delHuncBounds(:,1),delHuncBounds(:,3)./1000,'Color','b') 
+        plot(delHuncBounds(:,1),delHuncBounds(:,3)./1000,'Color','b')
         xlabel('Amount adsorbed [mol/kg]');
         ylabel('-\Delta H_{ads} [kJ/mol]');
         ylim([0 max(delH)+5]);
@@ -2039,7 +2119,7 @@ switch isothermModel
         set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
         grid on; axis square
         set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized')
-%         outFit = [qvals' lnPvals];
+        %         outFit = [qvals' lnPvals];
     case 'STATZ'
         % plot of experimental data and fitted data (q vs P)
         Pvals = linspace(0,max(x)*1.5,1000);
@@ -2060,7 +2140,7 @@ switch isothermModel
         for kk = 1:length(Tvals)
             plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
         end
-%         outFit = [Pvals' qvals];
+        %         outFit = [Pvals' qvals];
         plot(x,z,'ob');
         xlabel('Pressure [bar]');
         ylabel('Amount adsorbed [molecules/supercage]');
@@ -2077,7 +2157,7 @@ switch isothermModel
         for kk = 1:length(Tvals)
             plot(Pvals,qvals(:,kk)./((nsc.*vc.*Na)./(nsc.*vm)),'-k','LineWidth',1.5);
         end
-%         outFit = [Pvals' qvals];
+        %         outFit = [Pvals' qvals];
         plot(x,z./((nsc.*vc.*Na)./(nsc.*vm)),'ob');
         xlabel('Pressure [bar]');
         ylabel('Amount adsorbed [mol/kg]');
@@ -2094,7 +2174,7 @@ switch isothermModel
         for kk = 1:length(Tvals)
             plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
         end
-%         outFit = [Pvals' qvals];
+        %         outFit = [Pvals' qvals];
         plot(x,z,'ob');
         xlabel('Pressure [bar]');
         ylabel('Amount adsorbed [molecules/supercage]');
@@ -2111,7 +2191,7 @@ switch isothermModel
         for kk = 1:length(Tvals)
             plot(Pvals,qvals(:,kk)./((nsc.*vc.*Na)./(nsc.*vm)),'-k','LineWidth',1.5);
         end
-%         outFit = [Pvals' qvals];
+        %         outFit = [Pvals' qvals];
         plot(x,z./((nsc.*vc.*Na)./(nsc.*vm)),'ob');
         xlabel('Pressure [bar]');
         ylabel('Amount adsorbed [mol/kg]');
@@ -2197,7 +2277,7 @@ switch isothermModel
         box on
         set(gca,'YScale','linear','XScale','log','FontSize',15,'LineWidth',1)
         grid on; axis square
-        set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized')  
+        set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized')
 
         figure(2)
         plot(Pvals, (vc1+vc2)./2 + (vc2-vc1)./2.*tanh(kgate.*Pvals - cgate),'-k','LineWidth',1.5);
@@ -2208,7 +2288,7 @@ switch isothermModel
         box on
         set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
         grid on; axis square
-        set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized') 
+        set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized')
     otherwise
         % plot of experimental data and fitted data (q vs P)
         Pvals = linspace(0,max(x)*1.5,9000);
@@ -2262,24 +2342,31 @@ switch isothermModel
                         qs1 = qs10.*exp(chi*(1-T./298.15));
                         qvals(jj,kk) = qs1.*b01.*P.*exp(delU1./(8.314.*T))/(1+(b01.*P.*exp(delU1./(8.314.*T))).^toth).^(1./toth) ...
                             + exp(-EaC/(8.314.*T))*qsC.*b0C.*P.*exp(delUC./(8.314.*T))./(1+b0C.*P.*exp(delUC./(8.314.*T)));
+                    case 'GAB'
+                        qvals(jj,kk) = computeGABLoading(P,T,qs1,parC,parD,parF,parG);
                 end
             end
         end
         if ~flagConcUnits
             figure
-%             if flagStats
-%                 subplot(1,3,1)
-%             else
-%             end
+            %             if flagStats
+            %                 subplot(1,3,1)
+            %             else
+            %             end
             scatter(uncBounds(:,1),uncBounds(:,2),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
             hold on
             scatter(uncBounds(:,1),uncBounds(:,3),0.5,'MarkerEdgeColor','b','MarkerEdgeAlpha',0.2)
             for kk = 1:length(Tvals)
                 plot(Pvals,qvals(:,kk),'-k','LineWidth',1.5);
             end
-%             outFit = [Pvals' qvals];
+            %             outFit = [Pvals' qvals];
             plot(x,z,'ob');
-            xlabel('Pressure [bar]');
+            switch isothermModel
+                case 'GAB'
+                    xlabel('Relative Humidity [-]');
+                otherwise
+                    xlabel('Pressure [bar]');
+            end
             ylabel('Amount adsorbed [mol/kg]');
             xlim([0 max(x)])
             ylim([0 1.1.*max(z)])
@@ -2321,12 +2408,12 @@ switch isothermModel
                     case 'DSL'
                         if length(unique(y)) == 1
                         else
-%                             Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
+                            %                             Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
                         end
                     case 'DSS'
                         if length(unique(y)) == 1
                         else
-%                             Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
+                            %                             Z = generateObjfunContour(x,y,z,nbins,isothermModel,fittingMethod, isoRef,parameters);
                         end
                 end
             end
@@ -2342,29 +2429,29 @@ end
 headerRow = [NaN unique(y)'];
 switch isothermModel
     case {'VIRIAL','VIRIAL2'}
-            isothermData.isothermFit = [headerRow;qvals(1,:)' lnPvals];
-            isothermData.experiment = [z log(x) y];
-            isothermData.heatAdsorption = [qvals' delH'];
-            isothermData.confidenceRegion = outScatter;
-            isothermData.confidenceBounds = uncBounds;
-            isothermData.delHConfidenceBounds = delHuncBounds;
+        isothermData.isothermFit = [headerRow;qvals(1,:)' lnPvals];
+        isothermData.experiment = [z log(x) y];
+        isothermData.heatAdsorption = [qvals' delH'];
+        isothermData.confidenceRegion = outScatter;
+        isothermData.confidenceBounds = uncBounds;
+        isothermData.delHConfidenceBounds = delHuncBounds;
     case 'STATZ'
-            isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
-            isothermData.isothermFitmolkg = [headerRow;Pvals(1,:)' qvals./((nsc.*vc.*Na)./(nsc.*vm))];
-            isothermData.confidenceRegion = outScatter;
-            isothermData.confidenceBounds = uncBounds;
-            isothermData.CageVolume = vc;
-            isothermData.MicroporeVolume = vm;
-            isothermData.SupercagePerUnitCell = nsc;
+        isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
+        isothermData.isothermFitmolkg = [headerRow;Pvals(1,:)' qvals./((nsc.*vc.*Na)./(nsc.*vm))];
+        isothermData.confidenceRegion = outScatter;
+        isothermData.confidenceBounds = uncBounds;
+        isothermData.CageVolume = vc;
+        isothermData.MicroporeVolume = vm;
+        isothermData.SupercagePerUnitCell = nsc;
     case 'STATZGATE'
-            isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
-            isothermData.isothermFitmolkg = [headerRow;Pvals(1,:)' qvals./((nsc.*vc1.*Na)./(nsc.*vm))];
-            isothermData.confidenceRegion = outScatter;
-            isothermData.confidenceBounds = uncBounds;
-            isothermData.CageVolume1 = vc1;
-            isothermData.CageVolume2 = vc2;
-            isothermData.MicroporeVolume = vm;
-            isothermData.SupercagePerUnitCell = nsc;
+        isothermData.isothermFit = [headerRow;Pvals(1,:)' qvals];
+        isothermData.isothermFitmolkg = [headerRow;Pvals(1,:)' qvals./((nsc.*vc1.*Na)./(nsc.*vm))];
+        isothermData.confidenceRegion = outScatter;
+        isothermData.confidenceBounds = uncBounds;
+        isothermData.CageVolume1 = vc1;
+        isothermData.CageVolume2 = vc2;
+        isothermData.MicroporeVolume = vm;
+        isothermData.SupercagePerUnitCell = nsc;
     otherwise
         if flagConcUnits
             isothermData.isothermFit = [];

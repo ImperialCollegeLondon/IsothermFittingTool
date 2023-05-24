@@ -41,7 +41,7 @@
 
 function [conRange95] = conrangeEllipse(x,y,z,fitVals,fittingMethod,isoRef,isothermModel,varargin)
 % degree of variation of parameter to calculate sensitivity
-del = 1e-4;
+del = 1e-6;
 switch isothermModel
     % Calculate error for Statistical isotherm model for zeolites
     case 'STATZ'
@@ -62,6 +62,40 @@ switch isothermModel
         deltamat = eye(Np).*(del);
         partemp = [omega./isoRef(1), beta./isoRef(2),b01./isoRef(3),delU1./isoRef(4)];
         logMLE = @(par) -generateMLEfun(x, y, z, 1, 'STATZ', isoRef, par(1), par(2), par(3), par(4), vc, vm);
+        
+        for jj = 1:Np
+            for kk = 1:Np
+                partempnumj = partemp.*(1+deltaplus1mat(jj,:));
+                partempdenj = partemp.*deltamat(jj,:);
+                partempnumk = partemp.*(1+deltaplus1mat(kk,:));
+                partempdenk = partemp.*deltamat(kk,:);
+                partempnumjk = partemp.*(1+deltaplus1mat(jj,:) + deltaplus1mat(kk,:));
+                % Compute second derivative of logL for jj and kk
+                d2logMLE(jj,kk) = ((logMLE(partempnumjk)-logMLE(partempnumk))-(logMLE(partempnumj)-logMLE(partemp)))./(partempdenj(jj).*isoRef(jj).*partempdenk(kk).*isoRef(kk));
+            end
+        end
+        % estimated Hessian Matrix for the data set (Non-linear parameter estimation
+        % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
+        hessianMatrix =  -d2logMLE;
+        conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+
+    case 'GAB'
+        % Calculate standard deviation of the data (not needed)
+        Np =5;
+        stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
+        qs1  = varargin{1};
+        parC = varargin{2};
+        parD = varargin{3};
+        parF = varargin{4};
+        parG = varargin{5};
+        Nt = length(x);
+        
+        dlogMLE = [];
+        d2logMLE = [];
+        deltaplus1mat = eye(Np).*(del);
+        deltamat = eye(Np).*(del);
+        partemp = [qs1./isoRef(1), parC./isoRef(2),parD./isoRef(3),parF./isoRef(4),parG./isoRef(5)];
+        logMLE = @(par) -generateMLEfun(x, y, z, 1, 'GAB', isoRef, par(1), par(2), par(3), par(4), par(5));
         
         for jj = 1:Np
             for kk = 1:Np
