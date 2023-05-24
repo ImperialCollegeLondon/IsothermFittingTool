@@ -47,7 +47,7 @@ x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-refValsP = [15,15,1e-5,1e-5,10e4,10e4];
+refValsP = [10,10,1e-3,1e-3,10e4,10e4];
 refValsC = [20,20,1e-4,1e-4,5e4,5e4];
 switch isothermModel
     case 'DSL'
@@ -118,7 +118,7 @@ switch isothermModel
         if flagConcUnits
             isoRef = [refValsC 10 10 10 refValsC([1 3 5]) refValsC(5)];
         else
-            isoRef = [15,15,1e-5,1e-5,10e4,10e4 10 10 10 25 1e-5 10e4 10e4];
+            isoRef = [10,10,log(1e-3),log(1e-3),13e4,13e4 10 10 10 25 log(1e-3) 13e4 13e4];
         end
     case  'HDSL'
         % Reference isotherm parameters for non-dimensionalisation
@@ -146,7 +146,7 @@ if ~flagFixQsat
     end
     rng default % For reproducibility
     % Create gs, a GlobalSearch solver with its properties set to the defaults.
-    gs = GlobalSearch('NumTrialPoints',5000,'NumStageOnePoints',500,'Display','off');
+    gs = GlobalSearch('NumTrialPoints',4000,'NumStageOnePoints',500,'Display','off');
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'STATZ'
@@ -184,9 +184,10 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             intcon = 1;
-            popSize = 200;
-            initPop = (lhsdesign(popSize,length(x0))).*(ub-lb);
-            initPop(:,1) = round(initPop(:,1));
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',400);
@@ -258,9 +259,10 @@ if ~flagFixQsat
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             intcon = 1;
-            popSize = 300;
-            initPop = (lhsdesign(popSize,length(x0))).*(ub-lb);
-            initPop(:,1) = round(initPop(:,1));
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.2,'MaxGenerations',800);
@@ -337,10 +339,14 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs1   = parVals(1).*isoRef(1);
             qs2   = parVals(2).*isoRef(2);
@@ -430,10 +436,14 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs1a   = parVals(1).*isoRef(1);
             qs2a   = parVals(2).*isoRef(2);
@@ -527,10 +537,14 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs1   = parVals(1).*isoRef(1);
             qs2   = 0;
@@ -620,10 +634,14 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs1   = parVals(1).*isoRef(1);
             qs2   = parVals(2).*isoRef(2);
@@ -721,10 +739,14 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs1   = parVals(1).*isoRef(1);
             qs2   = parVals(2).*isoRef(2);
@@ -822,10 +844,14 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs1   = parVals(1).*isoRef(1);
             qs2   = 0;
@@ -904,10 +930,14 @@ if ~flagFixQsat
             ub = [1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs1   = parVals(1).*isoRef(1);
             qs2   = parVals(2).*isoRef(2);
@@ -974,10 +1004,14 @@ if ~flagFixQsat
             ub = [1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs1   = parVals(1).*isoRef(1);
             qs2   = 0;
@@ -1045,10 +1079,14 @@ if ~flagFixQsat
             ub = [1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs1   = parVals(1).*isoRef(1);
             qs2   = 0;
@@ -1115,10 +1153,14 @@ if ~flagFixQsat
             ub = [1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs1   = parVals(1).*isoRef(1);
             qs2   = 0;
@@ -1128,7 +1170,7 @@ if ~flagFixQsat
             delU2 = 0;
             toth0 = parVals(4).*isoRef(7);
             totha = parVals(5).*isoRef(8);
-            toth = toth0 + totha.*(1-298./y);
+            toth = toth0 + totha.*(1-298.15./y);
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*b01.*x.*exp(delU1./(8.314.*y))./(1+(b01.*x.*exp(delU1./(8.314.*y))).^toth).^(1./toth);
@@ -1183,14 +1225,18 @@ if ~flagFixQsat
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             x0 = [0.5,0.5,0.5,0.5,0.5,0.5];
-            lb = [0,0,0,0,0,-1];
+            lb = [0,0,0,0,0,0];
             ub = [1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs10   = parVals(1).*isoRef(1);
             qs2   = 0;
@@ -1201,8 +1247,8 @@ if ~flagFixQsat
             toth0 = parVals(4).*isoRef(7);
             totha = parVals(5).*isoRef(8);
             chi = parVals(6).*isoRef(9);
-            toth = toth0 + totha.*(1-298./y);
-            qs1 = qs10.*exp(chi*(1-y./298));
+            toth = toth0 + totha.*(1-298.15./y);
+            qs1 = qs10.*exp(chi*(1-y./298.15));
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = qs1.*b01.*x.*exp(delU1./(8.314.*y))./(1+(b01.*x.*exp(delU1./(8.314.*y))).^toth).^(1./toth);
@@ -1212,7 +1258,7 @@ if ~flagFixQsat
             parameters(isnan(parameters))=0;
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TOTH3', qs10, qs2, b01, b02, delU1, delU2, toth0, totha, chi);
             conRange95(isnan(conRange95))=0;
-            conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7) conRange95(8) conRange95(9)]';
+            conRange95 = [conRange95(1) 0 conRange95(2) 0 conRange95(3) 0 conRange95(4) conRange95(5) conRange95(6)]';
             % Convert confidence intervals to percentage error
 % %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
@@ -1257,18 +1303,26 @@ if ~flagFixQsat
             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             x0 = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5];
-            lb = [0,0,0,0,0,-1,0,0,0,0];
-            ub = [1,1,1,1,1,1,1,1,1,1];
+            lb = [0,0,0,0,0,0,0,0,0,0];
+            ub = [1,7,1,1,1,1,1,7,1,1];
             % Create global optimisation problem with solver 'fmincon' and
-            % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            % other bounds\
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament','SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
+%             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+%             [parVals, fval]= run(gs,problem);
             % Set fitted parameter values for isotherm model calculation
             qs10   = parVals(1).*isoRef(1);
             qs2   = 0;
-            b01   = parVals(2).*isoRef(3);
+            b01   = exp(parVals(2).*isoRef(3));
             b02   = 0;
             delU1 = parVals(3).*isoRef(5);
             delU2 = 0;
@@ -1276,12 +1330,12 @@ if ~flagFixQsat
             totha = parVals(5).*isoRef(8);
             chi = parVals(6).*isoRef(9);
             qsC = parVals(7).*isoRef(10);
-            b0C = parVals(8).*isoRef(11);
+            b0C = exp(parVals(8).*isoRef(11));
             delUC = parVals(9).*isoRef(12);
             EaC = parVals(10).*isoRef(13);
 
-            toth = toth0 + totha.*(1-298./y);
-            qs1 = qs10.*exp(chi*(1-y./298));
+            toth = toth0 + totha.*(1-298.15./y);
+            qs1 = qs10.*exp(chi*(1-y./298.15));
             
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
@@ -1293,7 +1347,7 @@ if ~flagFixQsat
             parameters(isnan(parameters))=0;
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'TOTHCHEM', qs10, qs2, b01, b02, delU1, delU2, toth0, totha, chi, qsC, b0C, delUC, EaC);
             conRange95(isnan(conRange95))=0;
-            conRange95 = [conRange95(1) 0 conRange95(3) 0 conRange95(5) 0 conRange95(7) conRange95(8) conRange95(9)  conRange95(10)  conRange95(11)  conRange95(12)  conRange95(13)]';
+            conRange95 = [conRange95(1) 0 conRange95(2) 0 conRange95(3) 0 conRange95(4) conRange95(5) conRange95(6)  conRange95(7)  conRange95(8)  conRange95(9)  conRange95(10)]';
             % Convert confidence intervals to percentage error
 % %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
@@ -1322,7 +1376,7 @@ if ~flagFixQsat
             end
         case 'VIRIAL'
             % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-            refValsP = [10e3,10e3,10e3,10e3,10e3,10e3,10e3,10e3];
+            refValsP = [30e3,30e3,30e3,30e3,30e3,30e3,30e3,30e3];
             refValsC = refValsP;
             isoRef = refValsC;
             % Set objective function based on fitting method
@@ -1346,10 +1400,14 @@ if ~flagFixQsat
             ub = [1,1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.2,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             a0   = parVals(1).*isoRef(1);
             a1   = parVals(2).*isoRef(2);
@@ -1398,7 +1456,7 @@ if ~flagFixQsat
             
         case 'VIRIAL2'
             % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-            refValsP = [10e3,10e3,10e3,10e3,10e3,10e3,10e3,10e3];
+            refValsP = [30e3,30e3,30e3,30e3,30e3,30e3,30e3,30e3];
             refValsC = refValsP;
             isoRef = refValsC;
             % Set objective function based on fitting method
@@ -1422,10 +1480,14 @@ if ~flagFixQsat
             ub = [1,1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             a0   = parVals(1).*isoRef(1);
             a1   = parVals(2).*isoRef(2);
@@ -1521,10 +1583,14 @@ else
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             b01   = parVals(1).*isoRef(3);
             b02   = parVals(2).*isoRef(4);
@@ -1611,10 +1677,14 @@ else
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs2   = 0;
             b01   = parVals(1).*isoRef(3);
@@ -1682,10 +1752,14 @@ else
             ub = [1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             b01   = parVals(1).*isoRef(3);
             b02   = parVals(2).*isoRef(4);
@@ -1749,10 +1823,14 @@ else
             ub = [1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            popSize = length(x0)*100;
+            p = sobolset(length(x0),'Skip',1e3,'Leap',1e2);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            [parVals, fval]= run(gs,problem);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',length(x0)*400,'SelectionFcn','selectiontournament');
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             % Set fitted parameter values for isotherm model calculation
             qs2   = 0;
             b01   = parVals(1).*isoRef(3);
@@ -2133,7 +2211,7 @@ switch isothermModel
         set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized') 
     otherwise
         % plot of experimental data and fitted data (q vs P)
-        Pvals = linspace(0,max(x)*1.5,2000);
+        Pvals = linspace(0,max(x)*1.5,9000);
         Tvals = unique(y);
         qvals = zeros(length(Pvals),length(Tvals));
         for jj = 1:length(Pvals)
@@ -2173,22 +2251,22 @@ switch isothermModel
                     case 'TOTH'
                         qvals(jj,kk) = qs1.*b01.*P.*exp(delU1./(8.314.*T))/(1+(b01.*P.*exp(delU1./(8.314.*T))).^toth).^(1./toth);
                     case 'TOTH2'
-                        toth = (toth0 + totha.*(1-298/T));
+                        toth = (toth0 + totha.*(1-298.15/T));
                         qvals(jj,kk) = qs1.*b01.*P.*exp(delU1./(8.314.*T))/(1+(b01.*P.*exp(delU1./(8.314.*T))).^toth).^(1./toth);
                     case 'TOTH3'
-                        toth = (toth0 + totha.*(1-298/T));
-                        qs1 = qs10.*exp(chi*(1-T./298));
+                        toth = (toth0 + totha.*(1-298.15/T));
+                        qs1 = qs10.*exp(chi*(1-T./298.15));
                         qvals(jj,kk) = qs1.*b01.*P.*exp(delU1./(8.314.*T))/(1+(b01.*P.*exp(delU1./(8.314.*T))).^toth).^(1./toth);
                     case 'TOTHCHEM'
-                        toth = (toth0 + totha.*(1-298/T));
-                        qs1 = qs10.*exp(chi*(1-T./298));
+                        toth = (toth0 + totha.*(1-298.15/T));
+                        qs1 = qs10.*exp(chi*(1-T./298.15));
                         qvals(jj,kk) = qs1.*b01.*P.*exp(delU1./(8.314.*T))/(1+(b01.*P.*exp(delU1./(8.314.*T))).^toth).^(1./toth) ...
                             + exp(-EaC/(8.314.*T))*qsC.*b0C.*P.*exp(delUC./(8.314.*T))./(1+b0C.*P.*exp(delUC./(8.314.*T)));
                 end
             end
         end
         if ~flagConcUnits
-            figure(1)
+            figure
 %             if flagStats
 %                 subplot(1,3,1)
 %             else
