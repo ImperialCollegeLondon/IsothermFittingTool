@@ -1534,7 +1534,7 @@ if ~flagFixQsat
             end
         case 'GAB'
             % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-            refValsP = [10,1e5,0.1,1e5,-200];
+            refValsP = [7,1e5,0.05,1e5,-50];
             isoRef = refValsP;
             % Set objective function based on fitting method
             switch fittingMethod
@@ -1550,7 +1550,7 @@ if ~flagFixQsat
                     optfunc = @(par) generateMLEfun(x, y, z, nbins, 'GAB', isoRef, par(1), par(2), ...
                         par(3), par(4), par(5));
             end
-            % Initial conditions, lower bounds, and upper bounds for parameters
+%             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             x0 = [0.5,0.5,0.5,0.5,0.5];
             lb = [0,0,0,0,0];
@@ -1563,7 +1563,7 @@ if ~flagFixQsat
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',1000,'SelectionFcn','selectiontournament','MaxStallGenerations',100);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.4,'MaxGenerations',2000,'SelectionFcn','selectiontournament','MaxStallGenerations',100);
             [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             %             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
             %             % Solve the optimisation problem to obtain the isotherm parameters
@@ -1581,8 +1581,6 @@ if ~flagFixQsat
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             expData = [x,z,y];
-            expData = sortrows(expData,1);
-            expData = expData(length(unique(y))+1:end,:);
             x = expData(:,1);
             z = expData(:,2);
             y = expData(:,3);
