@@ -4,6 +4,7 @@ currentDir = strsplit(cd,filesep);
 if strcmp(currentDir(end),'ERASE')
     cd IsothermFittingTool
 end
+addpath 'C:\Users\azxan\Documents\GitHub\mcmcstat'
 % Obtain git commit ID if submodule of ERASE
 try
     gitCommitID.ERASE = getGitCommit('..');
@@ -118,7 +119,7 @@ switch isothermModel
         if flagConcUnits
             isoRef = [refValsC 10 10 10 refValsC([1 3 5]) refValsC(5)];
         else
-            isoRef = [10,10,log(1e-1),log(1e-1),13e4,13e4 10 10 10 40 log(1e-1) 13e4 5e4];
+            isoRef = [10,10,log(1e-1),log(1e-1),13e4,13e4 10 10 10 200 log(1e-1) 13e4 5e4];
         end
     case  'HDSL'
         % Reference isotherm parameters for non-dimensionalisation
@@ -147,7 +148,7 @@ if ~flagFixQsat
     rng default % For reproducibility
     rng(1,'twister') % for reproducibility
     % Create gs, a GlobalSearch solver with its properties set to the defaults.
-    gs = GlobalSearch('NumTrialPoints',3000,'NumStageOnePoints',500,'Display','iter');
+    gs = GlobalSearch('NumTrialPoints',3000,'NumStageOnePoints',400,'Display','iter');
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'STATZ'
@@ -181,7 +182,7 @@ if ~flagFixQsat
             % Initial conditions, lower bounds, and upper bounds for parameters
             x0 = [5,0.5,0.5,0.5];
             lb = [1,0,0,0];
-            ub = [50,1,1,1];
+            ub = [80,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             intcon = 1;
@@ -191,8 +192,8 @@ if ~flagFixQsat
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PlotFcn', @gaplotbestf,'PopulationSize',popSize,'CrossoverFraction',0.2,'MaxGenerations',length(x0)*400,'SelectionFcn',{'selectiontournament',2});
-            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.3,'MaxGenerations',length(x0)*400,'SelectionFcn',{'selectiontournament',2});
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],1,options);
             % Set fitted parameter values for isotherm model calculation
             omega  = parVals(1).*isoRef(1);
             beta   = parVals(2).*isoRef(2);
@@ -261,13 +262,14 @@ if ~flagFixQsat
             % other bounds
             intcon = 1;
             popSize = length(x0)*100;
+            popSize = 250;
             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PlotFcn', @gaplotbestf,'PopulationSize',popSize,'CrossoverFraction',0.2,'MaxGenerations',length(x0)*400,'SelectionFcn',{'selectiontournament',2});
-            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
+            options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PlotFcn', @gaplotbestf,'PopulationSize',popSize,'CrossoverFraction',0.2,'MaxGenerations',250,'SelectionFcn',{'selectiontournament',2});
+            [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],1,options);
             % Set fitted parameter values for isotherm model calculation
             omega  = parVals(1).*isoRef(1);
             beta   = parVals(2).*isoRef(2);
@@ -370,6 +372,28 @@ if ~flagFixQsat
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2];
             parameters(isnan(parameters))=0;
+
+            model.ssfun = @generateMLEDSL;
+            params = {
+                    {'qsl', parameters(1)./isoRef(1), lb(1), ub(1)}
+                    {'b01', parameters(2)./isoRef(2), lb(2), ub(2)}
+                    {'delU1', parameters(3)./isoRef(3), lb(3), ub(3)}
+                    {'qs2', parameters(4)./isoRef(4), lb(4), ub(4)}
+                    {'b02', parameters(5)./isoRef(5), lb(5), ub(5)}
+                    {'delU2', parameters(6)./isoRef(6), lb(6), ub(6)}
+                    };
+
+            options2.nsimu = 30e3;
+            data.x = x;
+            data.y = y;
+            data.z = z;
+            data.isothermModel = isothermModel;
+            data.isoRef = isoRef;
+            data.par = parameters;
+
+            [results, chain] = mcmcrun(model, data,params,options2);
+            mcmcplot(chain,[],results,'hist',30,'normal')
+            chainstats(chain,results)
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
@@ -2542,4 +2566,11 @@ varargout{1} = isothermData;
 if strcmp(currentDir(end),'ERASE')
     cd ..
 end
+end
+
+function ss = generateMLEDSL(theta,data)
+nbatch = length(data);
+ss = generateMLEfun(data.x, data.y, data.z, 1, data.isothermModel, data.isoRef, theta(1), theta(2), theta(3), ...
+                            theta(4), theta(5), theta(6));
+ss = exp(ss*2/length(data.x));
 end
