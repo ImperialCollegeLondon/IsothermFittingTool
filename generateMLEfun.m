@@ -71,7 +71,7 @@ switch isothermModel
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
         
-        omega = varargin{1}.*isoRef(1);
+        omega = round(varargin{1}).*isoRef(1);
         beta = varargin{2}.*isoRef(2);
         b01 = varargin{3}.*isoRef(3);
         delU1 = varargin{4}.*isoRef(4);

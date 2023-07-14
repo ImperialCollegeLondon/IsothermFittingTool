@@ -5,7 +5,8 @@ b = b01.*exp(delU1./(8.314.*T));
 isothermNumerator = 0;
 isothermDenominator = 0;
 
-for jj = 1:omega+1
+% for jj = 2:round(omega)
+for jj = 2:vc./beta
     if jj*beta < vc
         isothermNumerator = isothermNumerator + (b.*P).^jj./(factorial(jj-1)).* ...
             ((1-jj*beta./vc)).^jj;
@@ -15,5 +16,5 @@ for jj = 1:omega+1
         break
     end
 end
-qa = isothermNumerator./(1+isothermDenominator);
+qa = (b.*P+isothermNumerator)./(1+b.*P+isothermDenominator);
 end

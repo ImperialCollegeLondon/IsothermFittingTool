@@ -82,7 +82,7 @@ switch isothermModel
                     hh=hh+1;
                     % Determine values for each parameter within it's
                     % respective bounds
-                    omega_unc = omega;
+                    omega_unc = omega+conRange95(1)*lhsMat(hh,1);
                     beta_unc = beta+conRange95(2)*lhsMat(hh,2);
                     b01_unc = b01+conRange95(3)*lhsMat(hh,3);
                     delU1_unc = delU1+conRange95(4)*lhsMat(hh,4);
@@ -271,12 +271,12 @@ switch isothermModel
                     hh=hh+1;
                     % Determine values for each parameter within it's
                     % respective bounds
-                    qs1_unc = qs1+conRange95(1)*lhsMat(hh,1);
-                    qs2_unc = qs2+conRange95(2)*lhsMat(hh,2);
-                    b01_unc = b01+conRange95(3)*lhsMat(hh,3);
-                    b02_unc = b02+conRange95(4)*lhsMat(hh,4);
-                    delU1_unc = delU1+conRange95(5)*lhsMat(hh,5);
-                    delU2_unc = delU2+conRange95(6)*lhsMat(hh,6);
+                    qs1_unc = max(qs1+conRange95(1)*lhsMat(hh,1),0);
+                    qs2_unc = max(qs2+conRange95(2)*lhsMat(hh,2),0);
+                    b01_unc = max(b01+conRange95(3)*lhsMat(hh,3),0);
+                    b02_unc = max(b02+conRange95(4)*lhsMat(hh,4),0);
+                    delU1_unc = max(delU1+conRange95(5)*lhsMat(hh,5),0);
+                    delU2_unc = max(delU2+conRange95(6)*lhsMat(hh,6),0);
                     % Obtain P and T values corresponding to this data
                     % point
                     P = qeqUnc(1,kk,mm);
