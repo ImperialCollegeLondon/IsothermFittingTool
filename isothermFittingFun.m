@@ -48,7 +48,7 @@ x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-refValsP = [10,10,1e-3,1e-3,10e4,10e4];
+refValsP = [20,20,1e-3,1e-3,10e4,10e4];
 refValsC = [20,20,1e-4,1e-4,5e4,5e4];
 switch isothermModel
     case 'DSL'
@@ -136,9 +136,9 @@ switch isothermModel
             isoRef = [refValsP refValsP([1 3 5])];
         end
     case  'STATZ'
-        isoRef = [1 100 1e-2 4e4];
+        isoRef = [1 80 1e-2 6e4];
     case  'STATZGATE'
-        isoRef = [1 100 1e-2 4e4 100 100 1];
+        isoRef = [1 80 1e-2 6e4 100 100 1];
 end
 % for concentration units, convert pressure to concentration
 if ~flagFixQsat
@@ -148,7 +148,7 @@ if ~flagFixQsat
     rng default % For reproducibility
     rng(1,'twister') % for reproducibility
     % Create gs, a GlobalSearch solver with its properties set to the defaults.
-    gs = GlobalSearch('NumTrialPoints',4000,'NumStageOnePoints',500,'Display','iter');
+    gs = GlobalSearch('NumTrialPoints',3000,'NumStageOnePoints',700,'Display','iter','DistanceThresholdFactor',0.5); % ,'PlotFcn',@gsplotbestf
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'STATZ'
@@ -169,20 +169,23 @@ if ~flagFixQsat
             definput = {'0','hsv'};
             vc = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
 
-            %             prompt = {'Enter supercages per unit cell (8 for X and Y Zeolites)'};
-            %             dlgtitle = 'Supercages per unit cell';
-            %             dims = [1 35];
-            %             definput = {'0','hsv'};
-            %             nsc = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
+            prompt = {['Enter Van der Waals co-volume [',char(197),char(179),']']};
+            dlgtitle = 'Van der Waals co-volume';
+            dims = [1 35];
+            definput = {'0','hsv'};
+            betaVdW = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
+            
+            omega = ceil(vc./betaVdW);
+%             vc = 958.2;
             nsc = 1; % This is cancelled out/not needed
             z = ((vc.*Na)./(vm)).*z;
 
-            optfunc = @(par) generateMLEfun(x, y, z, nbins, 'STATZ', isoRef, par(1), par(2), par(3),par(4), vc, vm);
+            optfunc = @(par) generateMLEfun(x, y, z, nbins, 'STATZ', isoRef, omega, par(1), par(2),par(3), vc, vm);
 
             % Initial conditions, lower bounds, and upper bounds for parameters
-            x0 = [1,0.5,0.5,0.5];
-            lb = [1,0.0625,0,0];
-            ub = [50,1,1,1];
+            x0 = [0.6,0.5,0.5];
+            lb = [0,0,0];
+            ub = [1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             intcon = 1;
@@ -203,10 +206,12 @@ if ~flagFixQsat
             [parVals, fval]= run(gs,problem);
 
             % Set fitted parameter values for isotherm model calculation
-            omega  = round(parVals(1)).*isoRef(1);
-            beta   = parVals(2).*isoRef(2);
-            b01    = parVals(3).*isoRef(3);
-            delU1  = parVals(4).*isoRef(4);
+%             omega  = round(parVals(1)).*isoRef(1);
+            beta   = parVals(1).*isoRef(2);
+%             omega = round(vc./beta);
+%             omega = 15;
+            b01    = parVals(2).*isoRef(3);
+            delU1  = parVals(3).*isoRef(4);
             % Calculate fitted isotherm loadings for conditions (P,T)
             % corresponding to experimental data
             qfit  = computeStatZLoading(x,y,b01,delU1,beta,omega,vc);
@@ -216,43 +221,44 @@ if ~flagFixQsat
             parameters(isnan(parameters))=0;
 
            
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-            model.ssfun = @generateMLESTAT;
-            params = {
-                    {'omega', parameters(1)./isoRef(1), lb(1), ub(1)}
-                    {'beta', parameters(2)./isoRef(2), lb(2), ub(2)}
-                    {'b01', parameters(3)./isoRef(3), lb(3), ub(3)}
-                    {'delU1', parameters(4)./isoRef(4), lb(4), ub(4)}
-                    };
-
-            options2.nsimu = 30e3;
-            data.x = x;
-            data.y = y;
-            data.z = z;
-            data.isothermModel = isothermModel;
-            data.isoRef = isoRef;
-            data.par = parameters;
-            data.vc = vc;
-            data.vm = vm;
-
-            [results, chain] = mcmcrun(model, data,params,options2);
-            figure(99)
-            mcmcplot(chain,[],results,'hist',100,'normal')
-            figure(98)
-            mcmcplot(chain,[],results,'pairs')
-            chainstats(chain,results)
-            paramUnc = sqrt(chi2inv(0.95,4)./(diag(inv(results.cov)))).*isoRef';
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%             model.ssfun = @generateMLESTAT;
+%             params = {
+%                     {'omega', parameters(1)./isoRef(1), lb(1), ub(1)}
+%                     {'beta', parameters(2)./isoRef(2), lb(2), ub(2)}
+%                     {'b01', parameters(3)./isoRef(3), lb(3), ub(3)}
+%                     {'delU1', parameters(4)./isoRef(4), lb(4), ub(4)}
+%                     };
+% 
+%             options2.nsimu = 30e3;
+%             data.x = x;
+%             data.y = y;
+%             data.z = z;
+%             data.isothermModel = isothermModel;
+%             data.isoRef = isoRef;
+%             data.par = parameters;
+%             data.vc = vc;
+%             data.vm = vm;
+% 
+%             [results, chain] = mcmcrun(model, data,params,options2);
+%             figure
+%             mcmcplot(chain,[],results,'hist',30,'normal')
+%             figure
+%             mcmcplot(chain,[],results,'pairs')
+%             chainstats(chain,results)
+%             paramUnc = sqrt(chi2inv(0.95,6)./(diag(inv(results.cov)))).*isoRef';
+%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'STATZ', omega, beta, b01, delU1, vc, vm);
             conRange95(isnan(conRange95))=0;
+            conRange95 = real(conRange95);
             % Convert confidence intervals to percentage error
-            conRange95(1) = paramUnc(1);
-            conRange95(2) = paramUnc(2);
-            conRange95(3) = paramUnc(3);
-            conRange95(4) = paramUnc(4);
+%             conRange95(1) = paramUnc(1);
+%             conRange95(2) = paramUnc(2);
+%             conRange95(3) = paramUnc(3);
+%             conRange95(4) = paramUnc(4);
             fprintf('Isotherm model: %s \n', isothermModel);
             parNames = ["omega" "beta" "b01" "delU1"];
             units = ["molecules/supercage" "A3" "1/bar" "J/mol"];
@@ -423,47 +429,47 @@ if ~flagFixQsat
             parameters = [qs1, qs2, b01, b02, delU1, delU2];
             parameters(isnan(parameters))=0;
             
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-            model.ssfun = @generateMLEDSL;
-            params = {
-                    {'qsl', parameters(1)./isoRef(1), lb(1), ub(1)}
-                    {'qs2', parameters(2)./isoRef(2), lb(2), ub(2)}
-                    {'b01', parameters(3)./isoRef(3), lb(3), ub(3)}
-                    {'b02', parameters(4)./isoRef(4), lb(4), ub(4)}
-                    {'delU1', parameters(5)./isoRef(5), lb(5), ub(5)}
-                    {'delU2', parameters(6)./isoRef(6), lb(6), ub(6)}
-                    };
-
-            options2.nsimu = 50e3;
-            data.x = x;
-            data.y = y;
-            data.z = z;
-            data.isothermModel = isothermModel;
-            data.isoRef = isoRef;
-            data.par = parameters;
-
-            [results, chain] = mcmcrun(model, data,params,options2);
-            figure
-            mcmcplot(chain,[],results,'hist',100)
+%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%             model.ssfun = @generateMLEDSL;
+%             params = {
+%                     {'qsl', parameters(1)./isoRef(1), lb(1), ub(1)}
+%                     {'qs2', parameters(2)./isoRef(2), lb(2), ub(2)}
+%                     {'b01', parameters(3)./isoRef(3), lb(3), ub(3)}
+%                     {'b02', parameters(4)./isoRef(4), lb(4), ub(4)}
+%                     {'delU1', parameters(5)./isoRef(5), lb(5), ub(5)}
+%                     {'delU2', parameters(6)./isoRef(6), lb(6), ub(6)}
+%                     };
+% 
+%             options2.nsimu = 50e3;
+%             data.x = x;
+%             data.y = y;
+%             data.z = z;
+%             data.isothermModel = isothermModel;
+%             data.isoRef = isoRef;
+%             data.par = parameters;
+% 
+%             [results, chain] = mcmcrun(model, data,params,options2);
 %             figure
-%             mcmcplot(chain,[],results,'dens')
-            figure
-            mcmcplot(chain,[],results,'pairs')
-            chainstats(chain,results)
-            paramUnc = sqrt(chi2inv(0.95,6)./(diag(inv(results.cov)))).*isoRef';
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%             mcmcplot(chain,[],results,'hist',100)
+%             figure
+%             mcmcplot(chain,[],results,'dens',100)
+%             figure
+%             mcmcplot(chain,[],results,'pairs')
+%             chainstats(chain,results)
+%             paramUnc = sqrt(chi2inv(0.95,6)./(diag(inv(results.cov)))).*isoRef';
+%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             %             percentageError = conRange95./parameters' *100;
-            conRange95(1) = paramUnc(1);
-            conRange95(2) = paramUnc(2);
-            conRange95(3) = paramUnc(3);
-            conRange95(4) = paramUnc(4);
-            conRange95(5) = paramUnc(5);
-            conRange95(6) = paramUnc(6);
+%             conRange95(1) = paramUnc(1);
+%             conRange95(2) = paramUnc(2);
+%             conRange95(3) = paramUnc(3);
+%             conRange95(4) = paramUnc(4);
+%             conRange95(5) = paramUnc(5);
+%             conRange95(6) = paramUnc(6);
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
@@ -626,7 +632,7 @@ if ~flagFixQsat
                 lb = [0,0];
                 ub = [1,1];
             else
-                x0 = [0.5,0.5,0.5];
+                x0 = [0.1,0.5,0.5];
                 lb = [0,0,0];
                 ub = [1,1,1];
             end

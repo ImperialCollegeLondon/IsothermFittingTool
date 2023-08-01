@@ -4,9 +4,7 @@ b = b01.*exp(delU1./(8.314.*T));
 
 isothermNumerator = 0;
 isothermDenominator = 0;
-
-% for jj = 2:round(omega)
-for jj = 2:vc./beta
+for jj = 2:omega
     if jj*beta < vc
         isothermNumerator = isothermNumerator + (b.*P).^jj./(factorial(jj-1)).* ...
             ((1-jj*beta./vc)).^jj;
