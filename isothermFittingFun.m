@@ -148,7 +148,7 @@ if ~flagFixQsat
     rng default % For reproducibility
     rng(1,'twister') % for reproducibility
     % Create gs, a GlobalSearch solver with its properties set to the defaults.
-    gs = GlobalSearch('NumTrialPoints',3000,'NumStageOnePoints',700,'Display','iter','DistanceThresholdFactor',0.5); % ,'PlotFcn',@gsplotbestf
+    gs = GlobalSearch('NumTrialPoints',4000,'NumStageOnePoints',700,'Display','iter','DistanceThresholdFactor',0.5); % ,'PlotFcn',@gsplotbestf
     % Set fitting procedure based on isotherm model
     switch isothermModel
         case 'STATZ'
@@ -1762,7 +1762,96 @@ if ~flagFixQsat
                     fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
                 end
             end
+
+        case 'UNIV6'
+            % Reference isotherm parameters for non-dimensionalisation [qs a1 a2 a3 e01 e02 e03 e04 m1 m2 m3 m4]
+            refValsP = [30,1,1,1,2e4,2e4,2e4,2e4,5e3,5e3,5e3,5e3];
+            isoRef = refValsP;
+            % Set objective function based on fitting method
+            switch fittingMethod
+                case 'MLE'
+                    % Number of bins is automatically set to 1 for MLE as
+                    % weights cannot be assigned in MLE
+                    nbins =1;
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'UNIV6', isoRef, par(1), par(2), ...
+                        par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12));
+                case 'WSS'
+                    % Generate objective function for WSS method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'UNIV6', isoRef, par(1), par(2), ...
+                        par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12));
+            end
+%             % Initial conditions, lower bounds, and upper bounds for parameters
+            % in DSL isotherm model
+            x0 = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5];
+            lb = [0,0,0,0,0,0,0,0,0,0,0,0];
+            ub = [1,1,1,1,1,1,1,1,1,1,1,1];
+            % Create global optimisation problem with solver 'fmincon' and
+            % other bounds
+            popSize = length(x0)*200;
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+            Aineq = [0,1,1,1,0,0,0,0,0,0,0,0];
+            bineq = 1;
+            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub,'Aineq',Aineq,'bineq',bineq);
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+            gs = GlobalSearch('NumTrialPoints',5000,'NumStageOnePoints',1000,'Display','iter','DistanceThresholdFactor',0.5,'BasinRadiusFactor',0.1); % ,'PlotFcn',@gsplotbestf
+            [parVals, fval]= run(gs,problem);
+            %             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
+            %             % Solve the optimisation problem to obtain the isotherm parameters
+            %             % for the fit
+            %             [parVals, fval]= run(gs,problem);
+            % Set fitted parameter values for isotherm model calculation
+            qs = parVals(1).*isoRef(1);
+            a1 = parVals(2).*isoRef(2);
+            a2 = parVals(3).*isoRef(3);
+            a3 = parVals(4).*isoRef(4);
+            e01 = parVals(5).*isoRef(5);
+            e02 = parVals(6).*isoRef(6);
+            e03 = parVals(7).*isoRef(7);
+            e04 = parVals(8).*isoRef(8);
+            m1 = parVals(9).*isoRef(9);
+            m2 = parVals(10).*isoRef(10);
+            m3 = parVals(11).*isoRef(11);
+            m4 = parVals(12).*isoRef(12);
+
+            parameters = [qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4];
+            parameters(isnan(parameters))=0;
+            parameters = real(parameters);
+            % Calculate fitted isotherm loadings for conditions (P,T)
+            % corresponding to experimental data
+            expData = [x,z,y];
+            x = expData(:,1);
+            z = expData(:,2);
+            y = expData(:,3);
+            qfit = zeros(1,length(x));
+            for kk = 1:length(x)
+                qfit(kk)  = computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4);
+            end
+            % Calculate ellipsoidal confidence intervals (delta parameter) for
+            % fitted parameters
+            [conRange95] = conrangeEllipse(x, y, z, qfit, fittingMethod,isoRef, 'UNIV6', qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4);
+            conRange95(isnan(conRange95))=0;
+            conRange95 = real(conRange95);
+            % Convert confidence intervals to percentage error
+            %             percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
+            parNames = ["qs" "a1" "a2" "a3" "e01" "e02" "e03" "e04" "m1" "m2" "m3" "m4"];
+            units = ["mol/kg" "-" "-" "-"  "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol"];
+            parsDisp = parameters;
+            conRange95Disp = conRange95;
+            for ii = 1:length(parameters)
+                if parsDisp(ii) == 0
+                else
+                    fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
+                end
+            end
     end
+    
 
 else
     if flagConcUnits
@@ -2219,6 +2308,8 @@ switch isothermModel
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'VIRIAL2',parameters,conRange95);
     case 'GAB'
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'GAB',parameters,conRange95);
+    case 'UNIV6'
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'UNIV6',parameters,conRange95);
 end
 switch isothermModel
     case {'VIRIAL','VIRIAL2'}
@@ -2452,7 +2543,7 @@ switch isothermModel
         set(gcf,'units','inch','position',[0,0,10,4],'WindowState','maximized')
     otherwise
         % plot of experimental data and fitted data (q vs P)
-        Pvals = linspace(0,max(x)*1.5,9000);
+        Pvals = linspace(0,max(x)*1.5,11000);
         Tvals = unique(y);
         qvals = zeros(length(Pvals),length(Tvals));
         for jj = 1:length(Pvals)
@@ -2505,6 +2596,8 @@ switch isothermModel
                             + exp(-EaC/(8.314.*T))*qsC.*b0C.*P.*exp(delUC./(8.314.*T))./(1+b0C.*P.*exp(delUC./(8.314.*T)));
                     case 'GAB'
                         qvals(jj,kk) = computeGABLoading(P,T,qs1,parC,parD,parF,parG);
+                    case 'UNIV6'
+                        qvals(jj,kk) = computeUNIV6Loading(P,T, qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4);
                 end
             end
         end
@@ -2524,6 +2617,8 @@ switch isothermModel
             plot(x,z,'ob');
             switch isothermModel
                 case 'GAB'
+                    xlabel('Relative Humidity [-]');
+                case 'UNIV6'
                     xlabel('Relative Humidity [-]');
                 otherwise
                     xlabel('Pressure [bar]');

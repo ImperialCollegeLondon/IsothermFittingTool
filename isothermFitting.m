@@ -61,11 +61,12 @@ uiopen
 % VIRIAL = Virial Equation (4a, 2b). VIRIAL2 = Virial Equation (4a, 4b)
 % Henry-DSL = HDSL. Henry-SSL = HSSL, Statistical Zeolite Model = STATZ,
 % Statistical Zeolite Model for flexible frameworks= STATZGATE
-isothermModel = 'STATZ';
+% Universal Isotherm Model for Type VI = UNIV6
+isothermModel = 'UNIV6';
 %% Flag for fitting parameters in concentration units (NOT for virial)
 flagConcUnits = 0;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)
-saveFlag = 1;
+saveFlag = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

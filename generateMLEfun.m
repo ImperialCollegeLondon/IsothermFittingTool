@@ -37,7 +37,64 @@
 function objfun = generateMLEfun(x,y,z, nbins, isothermModel, isoRef, varargin)
 % Calculate error based on isotherm model
 switch isothermModel
-    % Calculate error for Statistical isotherm model for zeolites
+    % Calculate error for Universal isotherm model for Type VI
+    case 'UNIV6'
+        % Discretize the data range into 'nbins' evenly spaced bins of pressure
+        % ranges ('nbins = 1' for MLE')
+        [bins] = discretize(x,nbins);
+        % Create vector for storing sum of error for each bin
+        err = zeros(nbins,1);
+        % Number of data points
+        Nt = length(bins);
+        
+        expData = [x,z,y];
+        expData = sortrows(expData,3);
+        
+        x = expData(:,1);
+        z = expData(:,2);
+        y = expData(:,3);
+        
+        temperatureValues = unique(y);
+        qRefIndexTemp = zeros(length(temperatureValues),1);
+        for ii = 1:length(temperatureValues)
+            qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
+            qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
+        end
+        
+        % Find qref for the experimental data
+        qRefMax = max(z(qRefIndexTemp(:,2)));
+        qRefTemp = z(qRefIndexTemp(:,2));
+        normalizationFactorTemp = qRefMax./qRefTemp;
+        normalizationFactor = zeros(length(x),1);
+        
+        for ii = 1:length(temperatureValues)
+            normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
+        end
+        % [qs a1 a2 a3 e01 e02 e03 e04 m1 m2 m3 m4]
+        qs =  varargin{1}.*isoRef(1);
+        a1 =  varargin{2}.*isoRef(2);
+        a2 =  varargin{3}.*isoRef(3);
+        a3 =  varargin{4}.*isoRef(4);
+        e01 = varargin{5}.*isoRef(5);
+        e02 = varargin{6}.*isoRef(6);
+        e03 = varargin{7}.*isoRef(7);
+        e04 = varargin{8}.*isoRef(8);
+        m1 =  varargin{9}.*isoRef(9);
+        m2 = varargin{10}.*isoRef(10);
+        m3 = varargin{11}.*isoRef(11);
+        m4 = varargin{12}.*isoRef(12);
+
+        for jj = 1:length(err)
+            for kk = 1:length(bins)
+                qfun = computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4);
+                if bins(kk) == jj
+                    err(jj) = (err(jj) + (normalizationFactor(kk).*(z(kk) - qfun))^2);
+                end
+            end
+        end
+            err(jj) = err(jj);
+        
+        % Calculate error for Statistical isotherm model for zeolites
     case 'STATZ'
         % Discretize the data range into 'nbins' evenly spaced bins of pressure
         % ranges ('nbins = 1' for MLE')

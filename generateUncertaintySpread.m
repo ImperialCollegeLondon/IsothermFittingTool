@@ -232,6 +232,81 @@ switch isothermModel
         outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
         % Transpose of the output
         outScatter=outScatter';
+    case 'UNIV6'
+        % Obtain a vector of the temperatures present in the input data
+        Tvals = unique(y);
+        uncBounds = [];
+        uncBounds(:,1) = repmat(Pvals',length(Tvals),1);
+        
+        % obtain optimal parameter values from the input
+        qs = parVals(1);
+        a1 = parVals(2);
+        a2 = parVals(3);
+        a3 = parVals(4);
+        e01 = parVals(5);
+        e02 = parVals(6);
+        e03 = parVals(7);
+        e04 = parVals(8);
+        m1 = parVals(9);
+        m2 = parVals(10);
+        m3 = parVals(11);
+        m4 = parVals(12);
+        
+        % create 3 dimensional array for the output data
+        qeqUnc=zeros(3,nPoints*length(Pvals),length(Tvals));
+        % populate the first and second rows of the output array with the
+        % temperature and pressure range
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj+1))
+                    qeqUnc(1,kk,mm) = Pvals(jj);
+                    qeqUnc(2,kk,mm) = Tvals(mm);
+                end
+            end
+        end
+        % Generate a random set of numbers between -1 and 1 using
+        % latin-hypercube sampling in a matrix with nPoints rows and a
+        % column for each variable
+        lhsMat = 2*lhsdesign(nPoints,12)-1;
+        % Populate the third row of the output array with the q values
+        % calculated using the the values of parameters within their
+        % respective uncertainty bounds
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                hh = 0;
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj))
+                    hh=hh+1;
+                    % Determine values for each parameter within it's
+                    % respective bounds
+                    qs_unc = qs+conRange95(1)*lhsMat(hh,1);
+                    a1_unc = a1+conRange95(2)*lhsMat(hh,2);
+                    a2_unc = a2+conRange95(3)*lhsMat(hh,3);
+                    a3_unc = a3+conRange95(4)*lhsMat(hh,4);
+                    e01_unc = e01+conRange95(5)*lhsMat(hh,5);
+                    e02_unc = e02+conRange95(6)*lhsMat(hh,6);
+                    e03_unc = e03+conRange95(7)*lhsMat(hh,7);
+                    e04_unc = e04+conRange95(8)*lhsMat(hh,8);
+                    m1_unc = m1+conRange95(9)*lhsMat(hh,9);
+                    m2_unc = m2+conRange95(10)*lhsMat(hh,10);
+                    m3_unc = m3+conRange95(11)*lhsMat(hh,11);
+                    m4_unc = m4+conRange95(12)*lhsMat(hh,12);
+                    % Obtain P and T values corresponding to this data
+                    % point
+                    P = qeqUnc(1,kk,mm);
+                    T = qeqUnc(2,kk,mm);
+                    % Calculate q corresponding to the parameter values
+                    % obtained above
+                    qeqUnc(3,kk,mm) = computeUNIV6Loading(P,T, qs_unc, a1_unc, a2_unc, a3_unc, e01_unc, e02_unc, e03_unc, e04_unc, m1_unc, m2_unc, m3_unc, m4_unc);
+                end
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,2)= min(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,3)= max(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,4)= Tvals(mm);
+            end
+        end
+        % Obtain the output in a matrix [nPoints*length(Pvals) x 3]
+        outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
+        % Transpose of the output
+        outScatter=outScatter';
     case 'DSL'
         % Obtain a vector of the temperatures present in the input data
         Tvals = unique(y);
