@@ -174,9 +174,9 @@ if ~flagFixQsat
             dims = [1 35];
             definput = {'0','hsv'};
             betaVdW = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
-            
+
             omega = ceil(vc./betaVdW);
-%             vc = 958.2;
+            %             vc = 958.2;
             nsc = 1; % This is cancelled out/not needed
             z = ((vc.*Na)./(vm)).*z;
 
@@ -196,8 +196,8 @@ if ~flagFixQsat
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-%             options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.3,'MaxGenerations',length(x0)*200,'SelectionFcn',{'selectiontournament',2});
-%             [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],1,options);
+            %             options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.3,'MaxGenerations',length(x0)*200,'SelectionFcn',{'selectiontournament',2});
+            %             [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],1,options);
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -206,10 +206,10 @@ if ~flagFixQsat
             [parVals, fval]= run(gs,problem);
 
             % Set fitted parameter values for isotherm model calculation
-%             omega  = round(parVals(1)).*isoRef(1);
+            %             omega  = round(parVals(1)).*isoRef(1);
             beta   = parVals(1).*isoRef(2);
-%             omega = round(vc./beta);
-%             omega = 15;
+            %             omega = round(vc./beta);
+            %             omega = 15;
             b01    = parVals(2).*isoRef(3);
             delU1  = parVals(3).*isoRef(4);
             % Calculate fitted isotherm loadings for conditions (P,T)
@@ -220,45 +220,45 @@ if ~flagFixQsat
             parameters = [omega, beta, b01, delU1];
             parameters(isnan(parameters))=0;
 
-           
-%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-%             model.ssfun = @generateMLESTAT;
-%             params = {
-%                     {'omega', parameters(1)./isoRef(1), lb(1), ub(1)}
-%                     {'beta', parameters(2)./isoRef(2), lb(2), ub(2)}
-%                     {'b01', parameters(3)./isoRef(3), lb(3), ub(3)}
-%                     {'delU1', parameters(4)./isoRef(4), lb(4), ub(4)}
-%                     };
-% 
-%             options2.nsimu = 30e3;
-%             data.x = x;
-%             data.y = y;
-%             data.z = z;
-%             data.isothermModel = isothermModel;
-%             data.isoRef = isoRef;
-%             data.par = parameters;
-%             data.vc = vc;
-%             data.vm = vm;
-% 
-%             [results, chain] = mcmcrun(model, data,params,options2);
-%             figure
-%             mcmcplot(chain,[],results,'hist',30,'normal')
-%             figure
-%             mcmcplot(chain,[],results,'pairs')
-%             chainstats(chain,results)
-%             paramUnc = sqrt(chi2inv(0.95,6)./(diag(inv(results.cov)))).*isoRef';
-%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+            %             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %
+            %             model.ssfun = @generateMLESTAT;
+            %             params = {
+            %                     {'omega', parameters(1)./isoRef(1), lb(1), ub(1)}
+            %                     {'beta', parameters(2)./isoRef(2), lb(2), ub(2)}
+            %                     {'b01', parameters(3)./isoRef(3), lb(3), ub(3)}
+            %                     {'delU1', parameters(4)./isoRef(4), lb(4), ub(4)}
+            %                     };
+            %
+            %             options2.nsimu = 30e3;
+            %             data.x = x;
+            %             data.y = y;
+            %             data.z = z;
+            %             data.isothermModel = isothermModel;
+            %             data.isoRef = isoRef;
+            %             data.par = parameters;
+            %             data.vc = vc;
+            %             data.vm = vm;
+            %
+            %             [results, chain] = mcmcrun(model, data,params,options2);
+            %             figure
+            %             mcmcplot(chain,[],results,'hist',30,'normal')
+            %             figure
+            %             mcmcplot(chain,[],results,'pairs')
+            %             chainstats(chain,results)
+            %             paramUnc = sqrt(chi2inv(0.95,6)./(diag(inv(results.cov)))).*isoRef';
+            %             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'STATZ', omega, beta, b01, delU1, vc, vm);
             conRange95(isnan(conRange95))=0;
             conRange95 = real(conRange95);
             % Convert confidence intervals to percentage error
-%             conRange95(1) = paramUnc(1);
-%             conRange95(2) = paramUnc(2);
-%             conRange95(3) = paramUnc(3);
-%             conRange95(4) = paramUnc(4);
+            %             conRange95(1) = paramUnc(1);
+            %             conRange95(2) = paramUnc(2);
+            %             conRange95(3) = paramUnc(3);
+            %             conRange95(4) = paramUnc(4);
             fprintf('Isotherm model: %s \n', isothermModel);
             parNames = ["omega" "beta" "b01" "delU1"];
             units = ["molecules/supercage" "A3" "1/bar" "J/mol"];
@@ -317,8 +317,8 @@ if ~flagFixQsat
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-%             options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PlotFcn', @gaplotbestf,'PopulationSize',popSize,'CrossoverFraction',0.2,'MaxGenerations',250,'SelectionFcn',{'selectiontournament',2});
-%             [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],1,options);
+            %             options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PlotFcn', @gaplotbestf,'PopulationSize',popSize,'CrossoverFraction',0.2,'MaxGenerations',250,'SelectionFcn',{'selectiontournament',2});
+            %             [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],1,options);
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -428,48 +428,48 @@ if ~flagFixQsat
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2];
             parameters(isnan(parameters))=0;
-            
-%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-%             model.ssfun = @generateMLEDSL;
-%             params = {
-%                     {'qsl', parameters(1)./isoRef(1), lb(1), ub(1)}
-%                     {'qs2', parameters(2)./isoRef(2), lb(2), ub(2)}
-%                     {'b01', parameters(3)./isoRef(3), lb(3), ub(3)}
-%                     {'b02', parameters(4)./isoRef(4), lb(4), ub(4)}
-%                     {'delU1', parameters(5)./isoRef(5), lb(5), ub(5)}
-%                     {'delU2', parameters(6)./isoRef(6), lb(6), ub(6)}
-%                     };
-% 
-%             options2.nsimu = 50e3;
-%             data.x = x;
-%             data.y = y;
-%             data.z = z;
-%             data.isothermModel = isothermModel;
-%             data.isoRef = isoRef;
-%             data.par = parameters;
-% 
-%             [results, chain] = mcmcrun(model, data,params,options2);
-%             figure
-%             mcmcplot(chain,[],results,'hist',100)
-%             figure
-%             mcmcplot(chain,[],results,'dens',100)
-%             figure
-%             mcmcplot(chain,[],results,'pairs')
-%             chainstats(chain,results)
-%             paramUnc = sqrt(chi2inv(0.95,6)./(diag(inv(results.cov)))).*isoRef';
-%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+            %             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %
+            %             model.ssfun = @generateMLEDSL;
+            %             params = {
+            %                     {'qsl', parameters(1)./isoRef(1), lb(1), ub(1)}
+            %                     {'qs2', parameters(2)./isoRef(2), lb(2), ub(2)}
+            %                     {'b01', parameters(3)./isoRef(3), lb(3), ub(3)}
+            %                     {'b02', parameters(4)./isoRef(4), lb(4), ub(4)}
+            %                     {'delU1', parameters(5)./isoRef(5), lb(5), ub(5)}
+            %                     {'delU2', parameters(6)./isoRef(6), lb(6), ub(6)}
+            %                     };
+            %
+            %             options2.nsimu = 50e3;
+            %             data.x = x;
+            %             data.y = y;
+            %             data.z = z;
+            %             data.isothermModel = isothermModel;
+            %             data.isoRef = isoRef;
+            %             data.par = parameters;
+            %
+            %             [results, chain] = mcmcrun(model, data,params,options2);
+            %             figure
+            %             mcmcplot(chain,[],results,'hist',100)
+            %             figure
+            %             mcmcplot(chain,[],results,'dens',100)
+            %             figure
+            %             mcmcplot(chain,[],results,'pairs')
+            %             chainstats(chain,results)
+            %             paramUnc = sqrt(chi2inv(0.95,6)./(diag(inv(results.cov)))).*isoRef';
+            %             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             conRange95(isnan(conRange95))=0;
             % Convert confidence intervals to percentage error
             %             percentageError = conRange95./parameters' *100;
-%             conRange95(1) = paramUnc(1);
-%             conRange95(2) = paramUnc(2);
-%             conRange95(3) = paramUnc(3);
-%             conRange95(4) = paramUnc(4);
-%             conRange95(5) = paramUnc(5);
-%             conRange95(6) = paramUnc(6);
+            %             conRange95(1) = paramUnc(1);
+            %             conRange95(2) = paramUnc(2);
+            %             conRange95(3) = paramUnc(3);
+            %             conRange95(4) = paramUnc(4);
+            %             conRange95(5) = paramUnc(5);
+            %             conRange95(6) = paramUnc(6);
             fprintf('Isotherm model: %s \n', isothermModel);
             if ~flagConcUnits
                 parNames = ["qs1" "qs2" "b01" "b02" "delU1" "delU2"];
@@ -667,39 +667,39 @@ if ~flagFixQsat
             % fitted parameters
             parameters = [qs1, qs2, b01, b02, delU1, delU2];
             parameters(isnan(parameters))=0;
-            
+
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
-%             model.ssfun = @generateMLESSL;
-%             params = {
-%                     {'qsl', parameters(1)./isoRef(1), lb(1), ub(1)}
-%                     {'b01', parameters(2)./isoRef(3), lb(2), ub(2)}
-%                     {'delU1', parameters(3)./isoRef(5), lb(3), ub(3)}
-%                     };
-% 
-%             options2.nsimu = 50e3;
-%             data.x = x;
-%             data.y = y;
-%             data.z = z;
-%             data.isothermModel = 'DSL';
-%             data.isoRef = isoRef;
-%             data.par = parameters;
-% 
-%             [results, chain] = mcmcrun(model, data,params,options2);
-%             figure
-%             mcmcplot(chain,[],results,'hist',30,'normal')
-%             figure
-%             mcmcplot(chain,[],results,'pairs')
-%             chainstats(chain,results)
-%             paramUnc = sqrt(chi2inv(0.95,3)./(diag(inv(results.cov)))).*isoRef([1 3 5])';
+            %
+            %             model.ssfun = @generateMLESSL;
+            %             params = {
+            %                     {'qsl', parameters(1)./isoRef(1), lb(1), ub(1)}
+            %                     {'b01', parameters(2)./isoRef(3), lb(2), ub(2)}
+            %                     {'delU1', parameters(3)./isoRef(5), lb(3), ub(3)}
+            %                     };
+            %
+            %             options2.nsimu = 50e3;
+            %             data.x = x;
+            %             data.y = y;
+            %             data.z = z;
+            %             data.isothermModel = 'DSL';
+            %             data.isoRef = isoRef;
+            %             data.par = parameters;
+            %
+            %             [results, chain] = mcmcrun(model, data,params,options2);
+            %             figure
+            %             mcmcplot(chain,[],results,'hist',30,'normal')
+            %             figure
+            %             mcmcplot(chain,[],results,'pairs')
+            %             chainstats(chain,results)
+            %             paramUnc = sqrt(chi2inv(0.95,3)./(diag(inv(results.cov)))).*isoRef([1 3 5])';
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            
+
             [conRange95] = conrangeEllipse(x, y, z, qfit,fittingMethod,isoRef, 'DSL', qs1, qs2, b01, b02, delU1, delU2);
             %             conRange95 = [conRange95(1); 0; conRange95(2); 0; conRange95(3); 0];
             conRange95(isnan(conRange95))=0;
-%             conRange95(1) = paramUnc(1);
-%             conRange95(3) = paramUnc(2);
-%             conRange95(5) = paramUnc(3);
+            %             conRange95(1) = paramUnc(1);
+            %             conRange95(3) = paramUnc(2);
+            %             conRange95(5) = paramUnc(3);
             % Convert confidence intervals to percentage error
             %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
@@ -1462,8 +1462,8 @@ if ~flagFixQsat
             initPop = net(p,popSize).*(ub-lb)+lb; initPop = lhsdesign(popSize,length(x0)).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-%             options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PlotFcn', @gaplotbestf,'PopulationSize',popSize,'CrossoverFraction',0.2,'MaxGenerations',length(x0)*400,'SelectionFcn',{'selectiontournament',2});
-%             [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
+            %             options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PlotFcn', @gaplotbestf,'PopulationSize',popSize,'CrossoverFraction',0.2,'MaxGenerations',length(x0)*400,'SelectionFcn',{'selectiontournament',2});
+            %             [parVals, fval]= ga(optfunc,length(x0),[],[],[],[],lb,ub,[],[],options);
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
@@ -1703,7 +1703,7 @@ if ~flagFixQsat
                     optfunc = @(par) generateMLEfun(x, y, z, nbins, 'GAB', isoRef, par(1), par(2), ...
                         par(3), par(4), par(5));
             end
-%             % Initial conditions, lower bounds, and upper bounds for parameters
+            %             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
             x0 = [0.5,0.5,0.5,0.5,0.5];
             lb = [0,0,0,0,0];
@@ -1765,7 +1765,7 @@ if ~flagFixQsat
 
         case 'UNIV6'
             % Reference isotherm parameters for non-dimensionalisation [qs a1 a2 a3 e01 e02 e03 e04 m1 m2 m3 m4]
-            refValsP = [30,1,1,1,2e4,2e4,2e4,2e4,5e3,5e3,5e3,5e3];
+            refValsP = [120,1,1,1,13,13,13,13,1e4,1e4,1e4,1e4,15];
             isoRef = refValsP;
             % Set objective function based on fitting method
             switch fittingMethod
@@ -1775,37 +1775,59 @@ if ~flagFixQsat
                     nbins =1;
                     % Generate objective function for MLE method
                     optfunc = @(par) generateMLEfun(x, y, z, nbins, 'UNIV6', isoRef, par(1), par(2), ...
-                        par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12));
+                        par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12), par(13));
                 case 'WSS'
                     % Generate objective function for WSS method
                     optfunc = @(par) generateMLEfun(x, y, z, nbins, 'UNIV6', isoRef, par(1), par(2), ...
-                        par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12));
+                        par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12), par(13));
             end
-%             % Initial conditions, lower bounds, and upper bounds for parameters
+            %             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
-            x0 = [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5];
-            lb = [0,0,0,0,0,0,0,0,0,0,0,0];
-            ub = [1,1,1,1,1,1,1,1,1,1,1,1];
+            x0 = [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1];
+            lb = [0,0,0,0,0,0,0,0,0,0,0,0,0];
+            ub = [1,1,1,1,1,1,1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*200;
+            popSize = length(x0)*50;
             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
             p = scramble(p,'MatousekAffineOwen');
             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            Aineq = [0,1,1,1,0,0,0,0,0,0,0,0];
+            Aineq = [0,1,1,1,0,0,0,0,0,0,0,0,0];
             bineq = 1;
-            problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub,'Aineq',Aineq,'bineq',bineq);
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
-            gs = GlobalSearch('NumTrialPoints',5000,'NumStageOnePoints',1000,'Display','iter','DistanceThresholdFactor',0.5,'BasinRadiusFactor',0.1); % ,'PlotFcn',@gsplotbestf
-            [parVals, fval]= run(gs,problem);
-            %             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
-            %             % Solve the optimisation problem to obtain the isotherm parameters
-            %             % for the fit
-            %             [parVals, fval]= run(gs,problem);
-            % Set fitted parameter values for isotherm model calculation
+
+            opts = optimoptions(@fmincon,'Algorithm','interior-point');
+            fval_diff = 100;
+            fval_prev = 1e3;
+            n_count = 0;
+            x0_new = x0;
+            lb_new = lb; 
+            ub_new = ub;
+            n_stall = 0;
+            while n_stall < 3 && n_count < 15
+                n_count = n_count+1;
+
+                gs = GlobalSearch('NumTrialPoints',1000,'NumStageOnePoints',800,'Display','iter','PenaltyThresholdFactor',0.5,'BasinRadiusFactor',0.5); % ,'PlotFcn',@gsplotbestf
+                problem = createOptimProblem('fmincon','x0',x0_new,'objective',optfunc,'lb',lb_new,'ub',ub_new,'Aineq',Aineq,'bineq',bineq,'options',opts);
+                [parVals, fval] = run(gs,problem);
+                
+                x0_new = parVals;
+                lb_new = lb; lb_new([1, 5:13])= 0.5.*x0_new([1, 5:13]);
+                ub_new = ub; ub_new([1, 5:13])= 1.5.*x0_new([1, 5:13]);
+                
+                fval_diff = fval_prev - fval;
+                if abs(fval_diff) == 0
+                    n_stall = n_stall+1;
+                else
+                    n_stall = 0;
+                end
+
+                fval_prev = fval;
+            end
+
             qs = parVals(1).*isoRef(1);
             a1 = parVals(2).*isoRef(2);
             a2 = parVals(3).*isoRef(3);
@@ -1818,8 +1840,9 @@ if ~flagFixQsat
             m2 = parVals(10).*isoRef(10);
             m3 = parVals(11).*isoRef(11);
             m4 = parVals(12).*isoRef(12);
+            ps = parVals(13).*isoRef(13);
 
-            parameters = [qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4];
+            parameters = [qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps];
             parameters(isnan(parameters))=0;
             parameters = real(parameters);
             % Calculate fitted isotherm loadings for conditions (P,T)
@@ -1830,28 +1853,29 @@ if ~flagFixQsat
             y = expData(:,3);
             qfit = zeros(1,length(x));
             for kk = 1:length(x)
-                qfit(kk)  = computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4);
+                qfit(kk)  = computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps);
             end
             % Calculate ellipsoidal confidence intervals (delta parameter) for
             % fitted parameters
-            [conRange95] = conrangeEllipse(x, y, z, qfit, fittingMethod,isoRef, 'UNIV6', qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4);
+            [conRange95] = conrangeEllipse(x, y, z, qfit, fittingMethod,isoRef, 'UNIV6', qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps);
             conRange95(isnan(conRange95))=0;
             conRange95 = real(conRange95);
             % Convert confidence intervals to percentage error
             %             percentageError = conRange95./parameters' *100;
             fprintf('Isotherm model: %s \n', isothermModel);
-            parNames = ["qs" "a1" "a2" "a3" "e01" "e02" "e03" "e04" "m1" "m2" "m3" "m4"];
-            units = ["mol/kg" "-" "-" "-"  "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol"];
+            parNames = ["qs" "a1" "a2" "a3" "e01" "e02" "e03" "e04" "m1" "m2" "m3" "m4" "ps"];
+            units = ["mol/kg" "-" "-" "-"  "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "kPa"];
             parsDisp = parameters;
+            parsDisp(5:8) = exp(parsDisp(5:8))-1;
+            parsDisp(13) = exp(parsDisp(13))-1;
             conRange95Disp = conRange95;
+            conRange95Disp(5:8) = exp(parameters(5:8)+conRange95Disp(5:8)')-1-parsDisp(5:8);
+            conRange95Disp(13) = exp(parameters(13)+conRange95Disp(13)')-1-parsDisp(13);
             for ii = 1:length(parameters)
-                if parsDisp(ii) == 0
-                else
-                    fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
-                end
+                fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
             end
     end
-    
+
 
 else
     if flagConcUnits
@@ -2597,7 +2621,7 @@ switch isothermModel
                     case 'GAB'
                         qvals(jj,kk) = computeGABLoading(P,T,qs1,parC,parD,parF,parG);
                     case 'UNIV6'
-                        qvals(jj,kk) = computeUNIV6Loading(P,T, qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4);
+                        qvals(jj,kk) = computeUNIV6Loading(P,T, qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps);
                 end
             end
         end
@@ -2619,7 +2643,7 @@ switch isothermModel
                 case 'GAB'
                     xlabel('Relative Humidity [-]');
                 case 'UNIV6'
-                    xlabel('Relative Humidity [-]');
+                    xlabel('Pressure [kPa]');
                 otherwise
                     xlabel('Pressure [bar]');
             end
@@ -2768,21 +2792,21 @@ end
 function ss = generateMLEDSL(theta,data)
 nbatch = length(data);
 ss = generateMLEfun(data.x, data.y, data.z, 1, data.isothermModel, data.isoRef, theta(1), theta(2), theta(3), ...
-                            theta(4), theta(5), theta(6));
+    theta(4), theta(5), theta(6));
 % ss = exp(ss*2/length(data.x));
 end
 
 function ss = generateMLESSL(theta,data)
 nbatch = length(data);
 ss = generateMLEfun(data.x, data.y, data.z, 1, data.isothermModel, data.isoRef, theta(1), 0, theta(2), ...
-                            0, theta(3), 0);
+    0, theta(3), 0);
 % ss = exp(ss*2/length(data.x));
 end
 
 function ss = generateMLESTAT(theta,data)
 nbatch = length(data);
 ss = generateMLEfun(data.x, data.y, data.z, 1, data.isothermModel, data.isoRef, theta(1), theta(2), theta(3), ...
-                            theta(4), data.vc, data.vm);
+    theta(4), data.vc, data.vm);
 
 % ss = exp(ss*2/length(data.x));
 end

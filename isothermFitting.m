@@ -63,7 +63,7 @@ uiopen
 % Statistical Zeolite Model for flexible frameworks= STATZGATE
 % Universal Isotherm Model for Type VI = UNIV6
 isothermModel = 'UNIV6';
-%% Flag for fitting parameters in concentration units (NOT for virial)
+%% Flag for fitting parameters in concentration units (NOT for virial) 
 flagConcUnits = 0;
 %% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)
 saveFlag = 0;

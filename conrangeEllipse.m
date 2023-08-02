@@ -114,7 +114,7 @@ switch isothermModel
         conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
     case 'UNIV6'
         % Calculate standard deviation of the data (not needed)
-        Np =12;
+        Np =13;
         stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
         qs =  varargin{1};
         a1 =  varargin{2};
@@ -128,16 +128,17 @@ switch isothermModel
         m2 = varargin{10};
         m3 = varargin{11};
         m4 = varargin{12};
-        
+        ps = varargin{13};
+
         dlogMLE = [];
         d2logMLE = [];
         deltaplus1mat = eye(Np).*(del);
         deltamat = eye(Np).*(del);
         partemp = [qs./isoRef(1), a1./isoRef(2), a2./isoRef(3), a3./isoRef(4), ...
             e01./isoRef(5), e02./isoRef(6), e03./isoRef(7), e04./isoRef(8), ...
-            m1./isoRef(9), m2./isoRef(10), m3./isoRef(11), m4./isoRef(12) ];
+            m1./isoRef(9), m2./isoRef(10), m3./isoRef(11), m4./isoRef(12) , ps./isoRef(13) ];
         logMLE = @(par) -generateMLEfun(x, y, z, 1, 'UNIV6', isoRef, par(1), par(2), ...
-                        par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12));
+                        par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12), par(13));
         
         for jj = 1:Np
             for kk = 1:Np

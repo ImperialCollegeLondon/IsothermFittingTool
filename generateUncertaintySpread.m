@@ -36,7 +36,7 @@ function [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,isothermModel,pa
 % Decide number of samplint points for q at each pressure point
 nPoints = 100;
 % Decide the range of pressure for the uncertainty spread calculation
-Pvals = linspace(0,max(x)*1.5,500);
+Pvals = linspace(0,max(x)*1.5,2000);
 % Decide the range of loading for the uncertainty spread calculation
 % (virial only)
 qvals = linspace(0,max(z)*1.5,8000);
@@ -251,6 +251,7 @@ switch isothermModel
         m2 = parVals(10);
         m3 = parVals(11);
         m4 = parVals(12);
+        ps = parVals(13);
         
         % create 3 dimensional array for the output data
         qeqUnc=zeros(3,nPoints*length(Pvals),length(Tvals));
@@ -267,7 +268,7 @@ switch isothermModel
         % Generate a random set of numbers between -1 and 1 using
         % latin-hypercube sampling in a matrix with nPoints rows and a
         % column for each variable
-        lhsMat = 2*lhsdesign(nPoints,12)-1;
+        lhsMat = 2*lhsdesign(nPoints,13)-1;
         % Populate the third row of the output array with the q values
         % calculated using the the values of parameters within their
         % respective uncertainty bounds
@@ -290,13 +291,14 @@ switch isothermModel
                     m2_unc = m2+conRange95(10)*lhsMat(hh,10);
                     m3_unc = m3+conRange95(11)*lhsMat(hh,11);
                     m4_unc = m4+conRange95(12)*lhsMat(hh,12);
+                    ps_unc = ps+conRange95(13)*lhsMat(hh,13);
                     % Obtain P and T values corresponding to this data
                     % point
                     P = qeqUnc(1,kk,mm);
                     T = qeqUnc(2,kk,mm);
                     % Calculate q corresponding to the parameter values
                     % obtained above
-                    qeqUnc(3,kk,mm) = computeUNIV6Loading(P,T, qs_unc, a1_unc, a2_unc, a3_unc, e01_unc, e02_unc, e03_unc, e04_unc, m1_unc, m2_unc, m3_unc, m4_unc);
+                    qeqUnc(3,kk,mm) = computeUNIV6Loading(P,T, qs_unc, a1_unc, a2_unc, a3_unc, e01_unc, e02_unc, e03_unc, e04_unc, m1_unc, m2_unc, m3_unc, m4_unc, ps_unc);
                 end
                 uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,2)= min(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
                 uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,3)= max(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));

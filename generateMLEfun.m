@@ -46,27 +46,27 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
@@ -83,17 +83,21 @@ switch isothermModel
         m2 = varargin{10}.*isoRef(10);
         m3 = varargin{11}.*isoRef(11);
         m4 = varargin{12}.*isoRef(12);
+        ps = varargin{13}.*isoRef(13);
 
         for jj = 1:length(err)
             for kk = 1:length(bins)
-                qfun = computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4);
+                if a1 + a2 + a3 > 1
+                    qfun = 0;
+                else
+                    qfun = computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps);
+                end
                 if bins(kk) == jj
                     err(jj) = (err(jj) + (normalizationFactor(kk).*(z(kk) - qfun))^2);
                 end
             end
         end
-            err(jj) = err(jj);
-        
+
         % Calculate error for Statistical isotherm model for zeolites
     case 'STATZ'
         % Discretize the data range into 'nbins' evenly spaced bins of pressure
@@ -103,31 +107,31 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         omega = round(varargin{1}).*isoRef(1);
         beta = varargin{2}.*isoRef(2);
         b01 = varargin{3}.*isoRef(3);
@@ -147,7 +151,7 @@ switch isothermModel
                 end
             end
         end
-     % Calculate error for Statistical isotherm model for zeolites
+        % Calculate error for Statistical isotherm model for zeolites
     case 'STATZGATE'
         % Discretize the data range into 'nbins' evenly spaced bins of pressure
         % ranges ('nbins = 1' for MLE')
@@ -156,27 +160,27 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
@@ -203,8 +207,8 @@ switch isothermModel
                 end
             end
         end
-           
-    % Calculate error for DSL model
+
+        % Calculate error for DSL model
     case 'DSL'
         % Discretize the data range into 'nbins' evenly spaced bins of pressure
         % ranges ('nbins = 1' for MLE')
@@ -213,38 +217,38 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         qs1 = varargin{1}.*isoRef(1);
         qs2 = varargin{2}.*isoRef(2);
         b01 = varargin{3}.*isoRef(3);
         b02 = varargin{4}.*isoRef(4);
         delU1 = varargin{5}.*isoRef(5);
         delU2 = varargin{6}.*isoRef(6);
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
@@ -256,7 +260,7 @@ switch isothermModel
             end
             err(jj) = err(jj);
         end
-        case 'DSL2'
+    case 'DSL2'
         % Discretize the data range into 'nbins' evenly spaced bins of pressure
         % ranges ('nbins = 1' for MLE')
         [bins] = discretize(x,nbins);
@@ -264,31 +268,31 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         qs1a = varargin{1}.*isoRef(1);
         qs2a = varargin{2}.*isoRef(2);
         qs1b = varargin{3}.*isoRef(3);
@@ -297,7 +301,7 @@ switch isothermModel
         b02 = varargin{6}.*isoRef(6);
         delU1 = varargin{7}.*isoRef(7);
         delU2 = varargin{8}.*isoRef(8);
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
@@ -320,31 +324,31 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         qs1   = varargin{1}.*isoRef(1);
         qs2   = varargin{2}.*isoRef(2);
         b01   = varargin{3}.*isoRef(3);
@@ -354,7 +358,7 @@ switch isothermModel
         qsH   = varargin{7}.*isoRef(7);
         b0H   = varargin{8}.*isoRef(8);
         delUH = varargin{9}.*isoRef(9);
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
@@ -375,31 +379,31 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         qs1   = varargin{1}.*isoRef(1);
         qs2   = varargin{2}.*isoRef(2);
         b01   = varargin{3}.*isoRef(3);
@@ -409,7 +413,7 @@ switch isothermModel
         qs3   = varargin{7}.*isoRef(7);
         b03   = varargin{8}.*isoRef(8);
         delU3 = varargin{9}.*isoRef(9);
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
@@ -431,31 +435,31 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         qs1 = varargin{1}.*isoRef(1);
         qs2 = varargin{2}.*isoRef(2);
         b01 = varargin{3}.*isoRef(3);
@@ -463,7 +467,7 @@ switch isothermModel
         delU1 = varargin{5}.*isoRef(5);
         delU2 = varargin{6}.*isoRef(6);
         gamma = varargin{7}.*isoRef(7);
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
@@ -483,36 +487,36 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         qs1 = varargin{1}.*isoRef(1);
         b01 = varargin{3}.*isoRef(3);
         delU1 = varargin{5}.*isoRef(5);
         toth = varargin{7}.*isoRef(7);
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
@@ -531,37 +535,37 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         qs1 = varargin{1}.*isoRef(1);
         b01 = varargin{3}.*isoRef(3);
         delU1 = varargin{5}.*isoRef(5);
         toth0 = varargin{7}.*isoRef(7);
         totha = varargin{8}.*isoRef(8);
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
@@ -581,38 +585,38 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         qs10 = varargin{1}.*isoRef(1);
         b01 = varargin{3}.*isoRef(3);
         delU1 = varargin{5}.*isoRef(5);
         toth0 = varargin{7}.*isoRef(7);
         totha = varargin{8}.*isoRef(8);
         chi = varargin{9}.*isoRef(9);
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
@@ -633,31 +637,31 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         qs10 = varargin{1}.*isoRef(1);
         b01 = exp(varargin{3}.*isoRef(3));
         delU1 = varargin{5}.*isoRef(5);
@@ -668,7 +672,7 @@ switch isothermModel
         b0C = exp(varargin{11}.*isoRef(11));
         delUC = varargin{12}.*isoRef(12);
         EaC = varargin{13}.*isoRef(13);
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
@@ -690,37 +694,37 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         expData = [x,z,y];
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         qRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         qRefMax = max(z(qRefIndexTemp(:,2)));
         qRefTemp = z(qRefIndexTemp(:,2));
         normalizationFactorTemp = qRefMax./qRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         qs1  = varargin{1}.*isoRef(1);
         parC = varargin{2}.*isoRef(2);
         parD = varargin{3}.*isoRef(3);
         parF = varargin{4}.*isoRef(4);
         parG = varargin{5}.*isoRef(5);
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
@@ -737,28 +741,28 @@ switch isothermModel
         expData = sortrows(expData,1);
         expData = expData(length(unique(y))+1:end,:);
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         lnPRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             lnPRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             lnPRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         lnPRefMax = max(log(x(lnPRefIndexTemp(:,2))));
         lnPRefTemp = log(x(lnPRefIndexTemp(:,2)));
         normalizationFactorTemp = lnPRefMax./lnPRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(lnPRefIndexTemp(ii,1):lnPRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         % Discretize the data range into 'nbins' evenly spaced bins of pressure
         % ranges ('nbins = 1' for MLE')
         [bins] = discretize(x,nbins);
@@ -766,7 +770,7 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         a0 = varargin{1}.*isoRef(1);
         a1 = varargin{2}.*isoRef(2);
         a2 = varargin{3}.*isoRef(3);
@@ -775,9 +779,9 @@ switch isothermModel
         b1 = varargin{6}.*isoRef(6);
         b2 = 0;
         b3 = 0;
-        
+
         parameters = [a0, a1, a2, a3, b0, b1, b2, b3];
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
@@ -795,28 +799,28 @@ switch isothermModel
         expData = sortrows(expData,1);
         expData = expData(length(unique(y))+1:end,:);
         expData = sortrows(expData,3);
-        
+
         x = expData(:,1);
         z = expData(:,2);
         y = expData(:,3);
-        
+
         temperatureValues = unique(y);
         lnPRefIndexTemp = zeros(length(temperatureValues),1);
         for ii = 1:length(temperatureValues)
             lnPRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
             lnPRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
         end
-        
+
         % Find qref for the experimental data
         lnPRefMax = max(log(x(lnPRefIndexTemp(:,2))));
         lnPRefTemp = log(x(lnPRefIndexTemp(:,2)));
         normalizationFactorTemp = lnPRefMax./lnPRefTemp;
         normalizationFactor = zeros(length(x),1);
-        
+
         for ii = 1:length(temperatureValues)
             normalizationFactor(lnPRefIndexTemp(ii,1):lnPRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
         end
-        
+
         % Discretize the data range into 'nbins' evenly spaced bins of pressure
         % ranges ('nbins = 1' for MLE')
         [bins] = discretize(x,nbins);
@@ -824,7 +828,7 @@ switch isothermModel
         err = zeros(nbins,1);
         % Number of data points
         Nt = length(bins);
-        
+
         a0 = varargin{1}.*isoRef(1);
         a1 = varargin{2}.*isoRef(2);
         a2 = varargin{3}.*isoRef(3);
@@ -833,9 +837,9 @@ switch isothermModel
         b1 = varargin{6}.*isoRef(6);
         b2 = varargin{7}.*isoRef(7);
         b3 = varargin{8}.*isoRef(8);
-        
+
         parameters = [a0, a1, a2, a3, b0, b1, b2, b3];
-        
+
         % Loop for calculating the sum of errors for each bin
         for jj = 1:length(err)
             for kk = 1:length(bins)
