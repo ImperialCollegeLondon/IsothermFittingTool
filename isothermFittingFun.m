@@ -1765,7 +1765,7 @@ if ~flagFixQsat
 
         case 'UNIV6'
             % Reference isotherm parameters for non-dimensionalisation [qs a1 a2 a3 e01 e02 e03 e04 m1 m2 m3 m4]
-            refValsP = [120,1,1,1,13,13,13,13,1e4,1e4,1e4,1e4,15];
+            refValsP = [120,1,1,1,13,13,13,13,1e4,1e4,1e4,1e4,16];
             isoRef = refValsP;
             % Set objective function based on fitting method
             switch fittingMethod
@@ -1806,6 +1806,7 @@ if ~flagFixQsat
             x0_new = x0;
             lb_new = lb; 
             ub_new = ub;
+            
             n_stall = 0;
             while n_stall < 3 && n_count < 15
                 n_count = n_count+1;

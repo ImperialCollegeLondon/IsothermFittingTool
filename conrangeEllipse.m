@@ -115,7 +115,7 @@ switch isothermModel
     case 'UNIV6'
         % Calculate standard deviation of the data (not needed)
         Np =13;
-        stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
+        stDevData = sqrt(1/(length(x)-Np).* sum((z-fitVals').^2));
         qs =  varargin{1};
         a1 =  varargin{2};
         a2 =  varargin{3};
@@ -129,31 +129,72 @@ switch isothermModel
         m3 = varargin{11};
         m4 = varargin{12};
         ps = varargin{13};
-
-        dlogMLE = [];
-        d2logMLE = [];
-        deltaplus1mat = eye(Np).*(del);
-        deltamat = eye(Np).*(del);
-        partemp = [qs./isoRef(1), a1./isoRef(2), a2./isoRef(3), a3./isoRef(4), ...
-            e01./isoRef(5), e02./isoRef(6), e03./isoRef(7), e04./isoRef(8), ...
-            m1./isoRef(9), m2./isoRef(10), m3./isoRef(11), m4./isoRef(12) , ps./isoRef(13) ];
-        logMLE = @(par) -generateMLEfun(x, y, z, 1, 'UNIV6', isoRef, par(1), par(2), ...
-                        par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12), par(13));
         
+        %         Create empty sensitivity matrix
+        sensitivityMatrix = zeros(length(x),Np);
+        del = 1e-3;
+        % Calculate sensitivity at every data point for each parameter
         for jj = 1:Np
-            for kk = 1:Np
-                partempnumj = partemp.*(1+deltaplus1mat(jj,:));
-                partempdenj = partemp.*deltamat(jj,:);
-                partempnumk = partemp.*(1+deltaplus1mat(kk,:));
-                partempdenk = partemp.*deltamat(kk,:);
-                partempnumjk = partemp.*(1+deltaplus1mat(jj,:) + deltaplus1mat(kk,:));
-                % Compute second derivative of logL for jj and kk
-                d2logMLE(jj,kk) = ((logMLE(partempnumjk)-logMLE(partempnumk))-(logMLE(partempnumj)-logMLE(partemp)))./(partempdenj(jj).*isoRef(jj).*partempdenk(kk).*isoRef(kk));
+            for kk = 1:length(x)
+                if jj == 1
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), (1+del).*qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps) - fitVals(kk))/(del*qs);
+                elseif jj == 2
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, (1+del).*a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps) - fitVals(kk))/(del*a1);
+                elseif jj == 3
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, a1, (1+del).*a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps) - fitVals(kk))/(del*a2);
+                elseif jj == 4
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, (1+del).*a3, e01, e02, e03, e04, m1, m2, m3, m4, ps) - fitVals(kk))/(del*a3);
+                elseif jj == 5
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, (1+del).*e01, e02, e03, e04, m1, m2, m3, m4, ps) - fitVals(kk))/(del*e01);
+                elseif jj == 6
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, (1+del).*e02, e03, e04, m1, m2, m3, m4, ps) - fitVals(kk))/(del*e02);
+                elseif jj == 7
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, (1+del).*e03, e04, m1, m2, m3, m4, ps) - fitVals(kk))/(del*e03);
+                elseif jj == 8
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, (1+del).*e04, m1, m2, m3, m4, ps) - fitVals(kk))/(del*e04);
+                elseif jj == 9
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, (1+del).*m1, m2, m3, m4, ps) - fitVals(kk))/(del*m1);
+                elseif jj == 10
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, (1+del).*m2, m3, m4, ps) - fitVals(kk))/(del*m2);
+                elseif jj == 11
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, (1+del).*m3, m4, ps) - fitVals(kk))/(del*m3);
+                elseif jj == 12
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, (1+del).*m4, ps) - fitVals(kk))/(del*m4);
+                else
+                    sensitivityMatrix(kk,jj) = (computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, (1+del).*ps) - fitVals(kk))/(del*ps);
+                end
             end
         end
         % estimated Hessian Matrix for the data set (Non-linear parameter estimation
-        % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
-        hessianMatrix =  -d2logMLE;
+        % by Yonathan Bard (1974) pg. 178
+        hessianMatrix = 1/stDevData.^2*transpose(sensitivityMatrix)*sensitivityMatrix;
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%         dlogMLE = [];
+%         d2logMLE = [];
+%         deltaplus1mat = eye(Np).*(del);
+%         deltamat = eye(Np).*(del);
+%         partemp = [qs./isoRef(1), a1./isoRef(2), a2./isoRef(3), a3./isoRef(4), ...
+%             e01./isoRef(5), e02./isoRef(6), e03./isoRef(7), e04./isoRef(8), ...
+%             m1./isoRef(9), m2./isoRef(10), m3./isoRef(11), m4./isoRef(12) , ps./isoRef(13) ];
+%         logMLE = @(par) -generateMLEfun(x, y, z, 1, 'UNIV6', isoRef, par(1), par(2), ...
+%                         par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12), par(13));
+%         
+%         for jj = 1:Np
+%             for kk = 1:Np
+%                 partempnumj = partemp.*(1+deltaplus1mat(jj,:));
+%                 partempdenj = partemp.*deltamat(jj,:);
+%                 partempnumk = partemp.*(1+deltaplus1mat(kk,:));
+%                 partempdenk = partemp.*deltamat(kk,:);
+%                 partempnumjk = partemp.*(1+deltaplus1mat(jj,:) + deltaplus1mat(kk,:));
+%                 % Compute second derivative of logL for jj and kk
+%                 d2logMLE(jj,kk) = ((logMLE(partempnumjk)-logMLE(partempnumk))-(logMLE(partempnumj)-logMLE(partemp)))./(partempdenj(jj).*isoRef(jj).*partempdenk(kk).*isoRef(kk));
+%             end
+%         end
+%         % estimated Hessian Matrix for the data set (Non-linear parameter estimation
+%         % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
+%         hessianMatrix =  -d2logMLE;
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
 
         % Calculate error for Statistical isotherm model for zeolites
@@ -173,6 +214,7 @@ switch isothermModel
         vm = varargin{10};
         
         Nt = length(x);
+        
         dlogMLE = [];
         d2logMLE = [];
         deltaplus1mat = eye(Np).*(del);
