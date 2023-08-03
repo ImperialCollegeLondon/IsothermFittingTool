@@ -97,7 +97,7 @@ switch isothermModel
                 end
             end
         end
-
+        err;
         % Calculate error for Statistical isotherm model for zeolites
     case 'STATZ'
         % Discretize the data range into 'nbins' evenly spaced bins of pressure

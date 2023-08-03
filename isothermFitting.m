@@ -40,7 +40,7 @@
 % Input arguments:
 %
 % Output arguments:
-%
+% 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% INITIALISATION and INPUTS
 % Clear command window and workspace
@@ -61,7 +61,8 @@ uiopen
 % VIRIAL = Virial Equation (4a, 2b). VIRIAL2 = Virial Equation (4a, 4b)
 % Henry-DSL = HDSL. Henry-SSL = HSSL, Statistical Zeolite Model = STATZ,
 % Statistical Zeolite Model for flexible frameworks= STATZGATE
-% Universal Isotherm Model for Type VI = UNIV6
+% Universal Isotherm Model for Type VI (4 site) = UNIV6
+% Universal Isotherm Model for Type VI (3 site) = UNIV4
 isothermModel = 'UNIV6';
 %% Flag for fitting parameters in concentration units (NOT for virial) 
 flagConcUnits = 0;

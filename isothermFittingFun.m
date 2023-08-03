@@ -1765,7 +1765,7 @@ if ~flagFixQsat
 
         case 'UNIV6'
             % Reference isotherm parameters for non-dimensionalisation [qs a1 a2 a3 e01 e02 e03 e04 m1 m2 m3 m4]
-            refValsP = [120,1,1,1,13,13,13,13,1e4,1e4,1e4,1e4,16];
+            refValsP = [100,1,1,1,11.5129,11.5129,11.5129,11.5129,1e3,1e3,1e3,1e3,15];
             isoRef = refValsP;
             % Set objective function based on fitting method
             switch fittingMethod
@@ -1783,9 +1783,9 @@ if ~flagFixQsat
             end
             %             % Initial conditions, lower bounds, and upper bounds for parameters
             % in DSL isotherm model
-            x0 = [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1];
-            lb = [0,0,0,0,0,0,0,0,0,0,0,0,0];
-            ub = [1,1,1,1,1,1,1,1,1,1,1,1,1];
+            x0 = [max(z)./isoRef(1),0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1];
+            lb = [0.5.*max(z)./isoRef(1),0,0,0,0,0,0,0,0,0,0,0,0];
+            ub = [1.5.*max(z)./isoRef(1),1,1,1,1,1,1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
             popSize = length(x0)*50;
@@ -1806,9 +1806,9 @@ if ~flagFixQsat
             x0_new = x0;
             lb_new = lb; 
             ub_new = ub;
-            
+
             n_stall = 0;
-            while n_stall < 3 && n_count < 15
+            while n_stall < 5 && n_count < 20
                 n_count = n_count+1;
 
                 gs = GlobalSearch('NumTrialPoints',1000,'NumStageOnePoints',800,'Display','iter','PenaltyThresholdFactor',0.5,'BasinRadiusFactor',0.5); % ,'PlotFcn',@gsplotbestf
@@ -1816,8 +1816,8 @@ if ~flagFixQsat
                 [parVals, fval] = run(gs,problem);
                 
                 x0_new = parVals;
-                lb_new = lb; lb_new([1, 5:13])= 0.5.*x0_new([1, 5:13]);
-                ub_new = ub; ub_new([1, 5:13])= 1.5.*x0_new([1, 5:13]);
+                lb_new = lb; lb_new([5:13])= 0.5.*x0_new([5:13]);
+                ub_new = ub; ub_new([5:13])= 1.5.*x0_new([5:13]);
                 
                 fval_diff = fval_prev - fval;
                 if abs(fval_diff) == 0
@@ -1828,6 +1828,13 @@ if ~flagFixQsat
 
                 fval_prev = fval;
             end
+            
+            x0_new = parVals;
+            lb_new = lb; lb_new([5:13])= 0.1.*x0_new([5:13]);
+            ub_new = ub; ub_new([5:13])= 1.9.*x0_new([5:13]);
+            gs = GlobalSearch('NumTrialPoints',1000,'NumStageOnePoints',800,'Display','iter','PenaltyThresholdFactor',0.5,'BasinRadiusFactor',0.5); % ,'PlotFcn',@gsplotbestf
+            problem = createOptimProblem('fmincon','x0',x0_new,'objective',optfunc,'lb',lb_new,'ub',ub_new,'Aineq',Aineq,'bineq',bineq,'options',opts);
+            [parVals, fval] = run(gs,problem);
 
             qs = parVals(1).*isoRef(1);
             a1 = parVals(2).*isoRef(2);
@@ -1856,6 +1863,176 @@ if ~flagFixQsat
             for kk = 1:length(x)
                 qfit(kk)  = computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps);
             end
+
+            % Calculate energy distribution function
+            prompt = {'Enter heat of vaporization (43988 for H20 at 298 K) [J/mol]:'};
+            dlgtitle = 'hfg';
+            dims = [1 35];
+            definput = {'0','hsv'};
+            hfg = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
+
+            epsilonVals = linspace(0,hfg+1.5.*exp(max([e01, e02, e03, e04])),10000);
+            [chiVals] = computeUNIV6EDF(epsilonVals, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, hfg);
+            figure
+            plot(epsilonVals,chiVals(1,:),':r','LineWidth',1); hold on;
+            plot(epsilonVals,chiVals(2,:),':r','LineWidth',1); 
+            plot(epsilonVals,chiVals(3,:),':r','LineWidth',1); 
+            plot(epsilonVals,chiVals(4,:),':r','LineWidth',1); 
+            plot(epsilonVals,chiVals(1,:)+chiVals(2,:)+chiVals(3,:)+chiVals(4,:),'--k','LineWidth',1);
+            xlabel('Adsorption site energy, e [J/mol]');
+            ylabel('Energy distribution function, X(e)');
+            xlim([0.5.*hfg max(epsilonVals)])
+            box on
+            set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+            grid on; axis square
+            
+            % Calculate ellipsoidal confidence intervals (delta parameter) for
+            % fitted parameters
+            [conRange95] = conrangeEllipse(x, y, z, qfit, fittingMethod,isoRef, 'UNIV6', qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps);
+            conRange95(isnan(conRange95))=0;
+            conRange95 = real(conRange95);
+            % Convert confidence intervals to percentage error
+            %             percentageError = conRange95./parameters' *100;
+            fprintf('Isotherm model: %s \n', isothermModel);
+            parNames = ["qs" "a1" "a2" "a3" "e01" "e02" "e03" "e04" "m1" "m2" "m3" "m4" "ps"];
+            units = ["mol/kg" "-" "-" "-"  "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "J/mol" "kPa"];
+            parsDisp = parameters;
+            parsDisp(5:8) = exp(parsDisp(5:8))-1;
+            parsDisp(13) = exp(parsDisp(13))-1;
+            conRange95Disp = conRange95;
+            conRange95Disp(5:8) = exp(parameters(5:8)+conRange95Disp(5:8)')-1-parsDisp(5:8);
+            conRange95Disp(13) = exp(parameters(13)+conRange95Disp(13)')-1-parsDisp(13);
+            for ii = 1:length(parameters)
+                fprintf('%s = %5.4e ± %5.4e %s \n',parNames(ii),parsDisp(ii),conRange95Disp(ii),units(ii));
+            end
+
+        case 'UNIV4'
+            % Reference isotherm parameters for non-dimensionalisation [qs a1 a2 a3 e01 e02 e03 e04 m1 m2 m3 m4]
+            refValsP = [100,1,1,1,11.5129,11.5129,11.5129,11.5129,1e3,1e3,1e3,1e3,15];
+            isoRef = refValsP;
+            % Set objective function based on fitting method
+            switch fittingMethod
+                case 'MLE'
+                    % Number of bins is automatically set to 1 for MLE as
+                    % weights cannot be assigned in MLE
+                    nbins =1;
+                    % Generate objective function for MLE method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'UNIV6', isoRef, par(1), par(2), ...
+                        par(3), par(4), par(5), par(6), par(7), 0, par(8), par(9), par(10), 0, par(11));
+                case 'WSS'
+                    % Generate objective function for WSS method
+                    optfunc = @(par) generateMLEfun(x, y, z, nbins, 'UNIV6', isoRef, par(1), par(2), ...
+                        par(3), par(4), par(5), par(6), par(7), 0, par(8), par(9), par(10), 0, par(11));
+            end
+            %             % Initial conditions, lower bounds, and upper bounds for parameters
+            % in DSL isotherm model
+            x0 = [max(z)./isoRef(1),0.3,0.3,0.4,0.1,0.1,0.1,0.1,0.1,0.1,0.1];
+            lb = [0.5.*max(z)./isoRef(1),0,0,0,0,0,0,0,0,0,0];
+            ub = [1.5.*max(z)./isoRef(1),1,1,1,1,1,1,1,1,1,1];
+            % Create global optimisation problem with solver 'fmincon' and
+            % other bounds
+            popSize = length(x0)*50;
+            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+            p = scramble(p,'MatousekAffineOwen');
+            initPop = net(p,popSize).*(ub-lb)+lb;
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+            Aineq = [0,1,1,1,0,0,0,0,0,0,0];
+            bineq = 1;
+            % Solve the optimisation problem to obtain the isotherm parameters
+            % for the fit
+
+            opts = optimoptions(@fmincon,'Algorithm','interior-point');
+            fval_diff = 100;
+            fval_prev = 1e3;
+            n_count = 0;
+            x0_new = x0;
+            lb_new = lb; 
+            ub_new = ub;
+
+            n_stall = 0;
+            while n_stall < 5 && n_count < 20
+                n_count = n_count+1;
+
+                gs = GlobalSearch('NumTrialPoints',1000,'NumStageOnePoints',800,'Display','iter','PenaltyThresholdFactor',0.5,'BasinRadiusFactor',0.5); % ,'PlotFcn',@gsplotbestf
+                problem = createOptimProblem('fmincon','x0',x0_new,'objective',optfunc,'lb',lb_new,'ub',ub_new,'Aeq',Aineq,'beq',bineq,'options',opts);
+                [parVals, fval] = run(gs,problem);
+                
+                x0_new = parVals;
+                lb_new = lb; lb_new([5:11])= 0.5.*x0_new([5:11]);
+                ub_new = ub; ub_new([5:11])= 1.5.*x0_new([5:11]);
+                
+                fval_diff = fval_prev - fval;
+                if abs(fval_diff) == 0
+                    n_stall = n_stall+1;
+                else
+                    n_stall = 0;
+                end
+
+                fval_prev = fval;
+            end
+            
+            x0_new = parVals;
+            lb_new = lb; lb_new([5:11])= 0.1.*x0_new([5:11]);
+            ub_new = ub; ub_new([5:11])= 1.9.*x0_new([5:11]);
+            gs = GlobalSearch('NumTrialPoints',1000,'NumStageOnePoints',800,'Display','iter','PenaltyThresholdFactor',0.5,'BasinRadiusFactor',0.5); % ,'PlotFcn',@gsplotbestf
+            problem = createOptimProblem('fmincon','x0',x0_new,'objective',optfunc,'lb',lb_new,'ub',ub_new,'Aeq',Aineq,'beq',bineq,'options',opts);
+            [parVals, fval] = run(gs,problem);
+
+            qs = parVals(1).*isoRef(1);
+            a1 = parVals(2).*isoRef(2);
+            a2 = parVals(3).*isoRef(3);
+            a3 = parVals(4).*isoRef(4);
+            e01 = parVals(5).*isoRef(5);
+            e02 = parVals(6).*isoRef(6);
+            e03 = parVals(7).*isoRef(7);
+            e04 = 0;
+            m1 = parVals(8).*isoRef(9);
+            m2 = parVals(9).*isoRef(10);
+            m3 = parVals(10).*isoRef(11);
+            m4 = 0;
+            ps = parVals(11).*isoRef(13);
+
+            parameters = [qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps];
+            parameters(isnan(parameters))=0;
+            parameters = real(parameters);
+            % Calculate fitted isotherm loadings for conditions (P,T)
+            % corresponding to experimental data
+            expData = [x,z,y];
+            x = expData(:,1);
+            z = expData(:,2);
+            y = expData(:,3);
+            qfit = zeros(1,length(x));
+            for kk = 1:length(x)
+                qfit(kk)  = computeUNIV6Loading(x(kk),y(kk), qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps);
+            end
+
+            % Calculate energy distribution function
+            prompt = {'Enter heat of vaporization (43988 for H20 at 298 K) [J/mol]:'};
+            dlgtitle = 'hfg';
+            dims = [1 35];
+            definput = {'0','hsv'};
+            hfg = str2double(cell2mat(inputdlg(prompt,dlgtitle,dims,definput)));
+
+            epsilonVals = linspace(0,hfg+1.5.*exp(max([e01, e02, e03, e04])),10000);
+            [chiVals] = computeUNIV6EDF(epsilonVals, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, hfg);
+            figure
+            plot(epsilonVals,chiVals(1,:),':r','LineWidth',1); hold on;
+            plot(epsilonVals,chiVals(2,:),':r','LineWidth',1);
+            plot(epsilonVals,chiVals(3,:),':r','LineWidth',1);
+            if e04 == 0
+                plot(epsilonVals,chiVals(1,:)+chiVals(2,:)+chiVals(3,:),'--k','LineWidth',1);
+            else
+                plot(epsilonVals,chiVals(4,:),':r','LineWidth',1);
+                plot(epsilonVals,chiVals(1,:)+chiVals(2,:)+chiVals(3,:)+chiVals(4,:),'--k','LineWidth',1);
+            end
+            xlabel('Adsorption site energy, e [J/mol]');
+            ylabel('Energy distribution function, X(e)');
+            xlim([0.5.*hfg max(epsilonVals)])
+            box on
+            set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+            grid on; axis square
+            
             % Calculate ellipsoidal confidence intervals (delta parameter) for
             % fitted parameters
             [conRange95] = conrangeEllipse(x, y, z, qfit, fittingMethod,isoRef, 'UNIV6', qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps);
@@ -2335,6 +2512,8 @@ switch isothermModel
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'GAB',parameters,conRange95);
     case 'UNIV6'
         [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'UNIV6',parameters,conRange95);
+    case 'UNIV4'
+        [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,'UNIV6',parameters,conRange95);
 end
 switch isothermModel
     case {'VIRIAL','VIRIAL2'}
@@ -2623,6 +2802,8 @@ switch isothermModel
                         qvals(jj,kk) = computeGABLoading(P,T,qs1,parC,parD,parF,parG);
                     case 'UNIV6'
                         qvals(jj,kk) = computeUNIV6Loading(P,T, qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps);
+                    case 'UNIV4'
+                        qvals(jj,kk) = computeUNIV6Loading(P,T, qs, a1, a2, a3, e01, e02, e03, e04, m1, m2, m3, m4, ps);
                 end
             end
         end
@@ -2644,6 +2825,8 @@ switch isothermModel
                 case 'GAB'
                     xlabel('Relative Humidity [-]');
                 case 'UNIV6'
+                    xlabel('Pressure [kPa]');
+                case 'UNIV4'
                     xlabel('Pressure [kPa]');
                 otherwise
                     xlabel('Pressure [bar]');
@@ -2732,10 +2915,11 @@ switch isothermModel
         isothermData.CageVolume1 = vc1;
         isothermData.CageVolume2 = vc2;
         isothermData.MicroporeVolume = vm;
-        isothermData.SupercagePerUnitCell = nsc;
+    isothermData.SupercagePerUnitCell = nsc;
+    case {'UNIV6','UNIV4'}
+            isothermData.EDF = [epsilonVals'  chiVals'];
     otherwise
         if flagConcUnits
-            isothermData.isothermFit = [];
             isothermData.isothermFit = [(Pvals')./(1e5./(8.314.*uncBounds((x==max(max(x))),4))) qvals];
             isothermData.confidenceBounds = [uncBounds(:,1)./(1e5./(8.314.*uncBounds((x==max(max(x))),4))) uncBounds(:,2) uncBounds(:,3) uncBounds(:,4)];
             outScatter(:,1) = outScatter(:,1)./(1e5./(8.314.*outScatter(:,3)));
