@@ -48,7 +48,7 @@ x = fitData(:,1);
 z = fitData(:,2);
 y = fitData(:,3);
 % Reference isotherm parameters for non-dimensionalisation [qs1 qs2 b01 b02 delU1 delU2]
-refValsP = [20,20,1e-3,1e-3,10e4,10e4];
+refValsP = [30,30,1e-3,1e-3,10e4,10e4];
 refValsC = [20,20,1e-4,1e-4,5e4,5e4];
 switch isothermModel
     case 'DSL'
@@ -188,12 +188,12 @@ if ~flagFixQsat
             ub = [1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            intcon = 1;
-            popSize = length(x0)*100;
-            popSize = 250;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             intcon = 1;
+%             popSize = length(x0)*100;
+%             popSize = 250;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             %             options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PopulationSize',popSize,'CrossoverFraction',0.3,'MaxGenerations',length(x0)*200,'SelectionFcn',{'selectiontournament',2});
@@ -309,12 +309,12 @@ if ~flagFixQsat
             ub = [60,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            intcon = 1;
-            popSize = length(x0)*100;
-            popSize = 250;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             intcon = 1;
+%             popSize = length(x0)*100;
+%             popSize = 250;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             %             options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PlotFcn', @gaplotbestf,'PopulationSize',popSize,'CrossoverFraction',0.2,'MaxGenerations',250,'SelectionFcn',{'selectiontournament',2});
@@ -398,10 +398,10 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -535,10 +535,10 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -638,10 +638,10 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -767,10 +767,10 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -874,10 +874,10 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -981,10 +981,10 @@ if ~flagFixQsat
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -1069,10 +1069,10 @@ if ~flagFixQsat
             ub = [1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -1145,10 +1145,10 @@ if ~flagFixQsat
             ub = [1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -1222,10 +1222,10 @@ if ~flagFixQsat
             ub = [1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -1298,10 +1298,10 @@ if ~flagFixQsat
             ub = [1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -1376,10 +1376,10 @@ if ~flagFixQsat
             ub = [1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -1456,10 +1456,10 @@ if ~flagFixQsat
             ub = [1,20,1   ,1,1,1,1,20,1   ,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds\
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb; initPop = lhsdesign(popSize,length(x0)).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb; initPop = lhsdesign(popSize,length(x0)).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             %             options = optimoptions('ga','Display','iter','InitialPopulationMatrix',initPop,'PlotFcn', @gaplotbestf,'PopulationSize',popSize,'CrossoverFraction',0.2,'MaxGenerations',length(x0)*400,'SelectionFcn',{'selectiontournament',2});
@@ -1549,10 +1549,10 @@ if ~flagFixQsat
             ub = [1,1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -1631,10 +1631,10 @@ if ~flagFixQsat
             ub = [1,1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -1710,10 +1710,10 @@ if ~flagFixQsat
             ub = [1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*150;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*150;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -1788,10 +1788,10 @@ if ~flagFixQsat
             ub = [1.5.*max(z)./isoRef(1),1,1,1,1,1,1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*50;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*50;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             Aineq = [0,1,1,1,0,0,0,0,0,0,0,0,0];
@@ -1800,7 +1800,7 @@ if ~flagFixQsat
             % for the fit
 
             opts = optimoptions(@fmincon,'Algorithm','interior-point');
-            fval_diff = 100;
+%             fval_diff = 100;
             fval_prev = 1e3;
             n_count = 0;
             x0_new = x0;
@@ -1816,8 +1816,8 @@ if ~flagFixQsat
                 [parVals, fval] = run(gs,problem);
                 
                 x0_new = parVals;
-                lb_new = lb; lb_new([5:13])= 0.5.*x0_new([5:13]);
-                ub_new = ub; ub_new([5:13])= 1.5.*x0_new([5:13]);
+                lb_new = lb; lb_new(5:13)= 0.5.*x0_new(5:13);
+                ub_new = ub; ub_new(5:13)= 1.5.*x0_new(5:13);
                 
                 fval_diff = fval_prev - fval;
                 if abs(fval_diff) == 0
@@ -1830,8 +1830,8 @@ if ~flagFixQsat
             end
             
             x0_new = parVals;
-            lb_new = lb; lb_new([5:13])= 0.1.*x0_new([5:13]);
-            ub_new = ub; ub_new([5:13])= 1.9.*x0_new([5:13]);
+            lb_new = lb; lb_new(5:13)= 0.1.*x0_new(5:13);
+            ub_new = ub; ub_new(5:13)= 1.9.*x0_new(5:13);
             gs = GlobalSearch('NumTrialPoints',1000,'NumStageOnePoints',800,'Display','iter','PenaltyThresholdFactor',0.5,'BasinRadiusFactor',0.5); % ,'PlotFcn',@gsplotbestf
             problem = createOptimProblem('fmincon','x0',x0_new,'objective',optfunc,'lb',lb_new,'ub',ub_new,'Aineq',Aineq,'bineq',bineq,'options',opts);
             [parVals, fval] = run(gs,problem);
@@ -1931,10 +1931,10 @@ if ~flagFixQsat
             ub = [1.5.*max(z)./isoRef(1),1,1,1,1,1,1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*50;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*50;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             Aineq = [0,1,1,1,0,0,0,0,0,0,0];
@@ -1943,7 +1943,7 @@ if ~flagFixQsat
             % for the fit
 
             opts = optimoptions(@fmincon,'Algorithm','interior-point');
-            fval_diff = 100;
+%             fval_diff = 100;
             fval_prev = 1e3;
             n_count = 0;
             x0_new = x0;
@@ -1959,8 +1959,8 @@ if ~flagFixQsat
                 [parVals, fval] = run(gs,problem);
                 
                 x0_new = parVals;
-                lb_new = lb; lb_new([5:11])= 0.5.*x0_new([5:11]);
-                ub_new = ub; ub_new([5:11])= 1.5.*x0_new([5:11]);
+                lb_new = lb; lb_new(5:11)= 0.5.*x0_new(5:11);
+                ub_new = ub; ub_new(5:11)= 1.5.*x0_new(5:11);
                 
                 fval_diff = fval_prev - fval;
                 if abs(fval_diff) == 0
@@ -1973,8 +1973,8 @@ if ~flagFixQsat
             end
             
             x0_new = parVals;
-            lb_new = lb; lb_new([5:11])= 0.1.*x0_new([5:11]);
-            ub_new = ub; ub_new([5:11])= 1.9.*x0_new([5:11]);
+            lb_new = lb; lb_new(5:11)= 0.1.*x0_new(5:11);
+            ub_new = ub; ub_new(5:11)= 1.9.*x0_new(5:11);
             gs = GlobalSearch('NumTrialPoints',1000,'NumStageOnePoints',800,'Display','iter','PenaltyThresholdFactor',0.5,'BasinRadiusFactor',0.5); % ,'PlotFcn',@gsplotbestf
             problem = createOptimProblem('fmincon','x0',x0_new,'objective',optfunc,'lb',lb_new,'ub',ub_new,'Aeq',Aineq,'beq',bineq,'options',opts);
             [parVals, fval] = run(gs,problem);
@@ -2105,10 +2105,10 @@ else
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -2201,10 +2201,10 @@ else
             end
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -2278,10 +2278,10 @@ else
             ub = [1,1,1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -2351,10 +2351,10 @@ else
             ub = [1,1,1];
             % Create global optimisation problem with solver 'fmincon' and
             % other bounds
-            popSize = length(x0)*100;
-            p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
-            p = scramble(p,'MatousekAffineOwen');
-            initPop = net(p,popSize).*(ub-lb)+lb;
+%             popSize = length(x0)*100;
+%             p = sobolset(length(x0),'Skip',1e2,'Leap',1e3);
+%             p = scramble(p,'MatousekAffineOwen');
+%             initPop = net(p,popSize).*(ub-lb)+lb;
             % Solve the optimisation problem to obtain the isotherm parameters
             % for the fit
             problem = createOptimProblem('fmincon','x0',x0,'objective',optfunc,'lb',lb,'ub',ub);
@@ -2973,25 +2973,22 @@ if strcmp(currentDir(end),'ERASE')
     cd ..
 end
 end
-
-function ss = generateMLEDSL(theta,data)
-nbatch = length(data);
-ss = generateMLEfun(data.x, data.y, data.z, 1, data.isothermModel, data.isoRef, theta(1), theta(2), theta(3), ...
-    theta(4), theta(5), theta(6));
-% ss = exp(ss*2/length(data.x));
-end
-
-function ss = generateMLESSL(theta,data)
-nbatch = length(data);
-ss = generateMLEfun(data.x, data.y, data.z, 1, data.isothermModel, data.isoRef, theta(1), 0, theta(2), ...
-    0, theta(3), 0);
-% ss = exp(ss*2/length(data.x));
-end
-
-function ss = generateMLESTAT(theta,data)
-nbatch = length(data);
-ss = generateMLEfun(data.x, data.y, data.z, 1, data.isothermModel, data.isoRef, theta(1), theta(2), theta(3), ...
-    theta(4), data.vc, data.vm);
-
-% ss = exp(ss*2/length(data.x));
-end
+% 
+% function ss = generateMLEDSL(theta,data)
+% ss = generateMLEfun(data.x, data.y, data.z, 1, data.isothermModel, data.isoRef, theta(1), theta(2), theta(3), ...
+%     theta(4), theta(5), theta(6));
+% % ss = exp(ss*2/length(data.x));
+% end
+% 
+% function ss = generateMLESSL(theta,data)
+% ss = generateMLEfun(data.x, data.y, data.z, 1, data.isothermModel, data.isoRef, theta(1), 0, theta(2), ...
+%     0, theta(3), 0);
+% % ss = exp(ss*2/length(data.x));
+% end
+% 
+% function ss = generateMLESTAT(theta,data)
+% ss = generateMLEfun(data.x, data.y, data.z, 1, data.isothermModel, data.isoRef, theta(1), theta(2), theta(3), ...
+%     theta(4), data.vc, data.vm);
+% 
+% % ss = exp(ss*2/length(data.x));
+% end
