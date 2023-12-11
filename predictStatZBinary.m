@@ -38,14 +38,17 @@ betaB = isothermDataB.isothermParameters(2,1);
 b01B = isothermDataB.isothermParameters(3,1);
 delU1B = isothermDataB.isothermParameters(4,1);
 vc = isothermData.CageVolume;
-P = 25;
-T = 308.15;
-% P = 1;
-% T = 298.15;
+vm =  isothermData.MicroporeVolume;
+Na = 6.022e20; % Avogadros constant [molecules/mmol];
+
+P = 5;
+T = 333.15;
 yA = linspace(0,1,500);
 % yA = 0.25;
 % yA = 0.15;
 [qA, qB, qT]  = computeStatZLoadingBinary(P,T,b01A,delU1A,betaA,omegaA,b01B,delU1B,betaB,omegaB,vc,yA);
+qAmolkg = qA.*vm./(vc.*Na);
+qBmolkg = qB.*vm./(vc.*Na);
 % [qA, qB, qT]  = computeStatZLoadingBinary(P,T,b01A,delU1A,betaA,omegaA,b01A,delU1A,betaA,omegaA,vc,yA);
 % [qA, qB, qT]  = computeStatZLoadingBinary(P,T,6*0.75e-4,5.1*4200,64.5,12,3.5*0.75e-4,5*4200,77,10,776,yA);
 % [qA, qB, qT] = computeStatZLoadingBinary(P,T,6e-7,5.1*4184,64.5,12,3.5e-7,5*4184,77,10,776,yA);
@@ -58,7 +61,7 @@ scatter(yA,qA,5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdge
 hold on
 scatter(yA,qB,5,'filled','MarkerFaceColor','b','MarkerFaceAlpha',0.1,'MarkerEdgeColor','b','LineWidth',0.8,'DisplayName','Gas B')
 scatter(yA,qT,5,'filled','MarkerFaceColor','k','MarkerFaceAlpha',0.1,'MarkerEdgeColor','k','LineWidth',0.8,'DisplayName','Gas A+B')
-xlabel('y_{A} [-]');
+xlabel('$$y_{A}$$ [-]');
 ylabel('Amount adsorbed [molecules/supercage]');
 xlim([0 1])
 box on
@@ -84,8 +87,8 @@ figure
 scatter(yA,qA./(qT),5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8)
 hold on
 plot([0 1],[0 1],'k','LineStyle','--','LineWidth',1)
-xlabel('y_{A} [-]');
-ylabel('x_{A} [-]');
+xlabel('$$y_{A}$$ [-]');
+ylabel('$$x_{A}$$ [-]');
 xlim([0 1])
 box on
 % legend('Location','best')
@@ -97,8 +100,8 @@ figure
 selectivityA = qA./qB.*(1-yA')./yA';
 scatter(yA,selectivityA,5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8)
 hold on
-ylabel('\alpha_{A} [-]');
-xlabel('y_{A} [-]');
+ylabel('$$\alpha_{A}$$ [-]');
+xlabel('$$y_{A}$$ [-]');
 xlim([0 1])
 box on
 % legend('Location','best')
@@ -114,7 +117,7 @@ yangFOM = selectivityA.*(WCA./WCB);
 scatter(yA,yangFOM,5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8)
 hold on
 ylabel('YANG [-]');
-xlabel('y_{A} [-]');
+xlabel('$$y_{A}$$ [-]');
 xlim([0 1])
 box on
 % legend('Location','best')
