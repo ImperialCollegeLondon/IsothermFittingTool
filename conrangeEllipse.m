@@ -55,14 +55,14 @@ switch isothermModel
         vc = varargin{5};
         vm = varargin{6};
         Nt = length(x);
-        
+
         dlogMLE = [];
         d2logMLE = [];
         deltaplus1mat = eye(Np).*(del);
         deltamat = eye(Np).*(del);
         partemp = [omega./isoRef(1), beta./isoRef(2),b01./isoRef(3),delU1./isoRef(4)];
         logMLE = @(par) -generateMLEfun(x, y, z, 1, 'STATZ', isoRef, par(1), par(2), par(3), par(4), vc, vm);
-        
+
         for jj = 1:Np
             for kk = 1:Np
                 partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -89,14 +89,14 @@ switch isothermModel
         parF = varargin{4};
         parG = varargin{5};
         Nt = length(x);
-        
+
         dlogMLE = [];
         d2logMLE = [];
         deltaplus1mat = eye(Np).*(del);
         deltamat = eye(Np).*(del);
         partemp = [qs1./isoRef(1), parC./isoRef(2),parD./isoRef(3),parF./isoRef(4),parG./isoRef(5)];
         logMLE = @(par) -generateMLEfun(x, y, z, 1, 'GAB', isoRef, par(1), par(2), par(3), par(4), par(5));
-        
+
         for jj = 1:Np
             for kk = 1:Np
                 partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -129,7 +129,7 @@ switch isothermModel
         m3 = varargin{11};
         m4 = varargin{12};
         ps = varargin{13};
-        
+
         %         Create empty sensitivity matrix
         sensitivityMatrix = zeros(length(x),Np);
         del = 1e-3;
@@ -170,30 +170,30 @@ switch isothermModel
         hessianMatrix = 1/stDevData.^2*transpose(sensitivityMatrix)*sensitivityMatrix;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%         dlogMLE = [];
-%         d2logMLE = [];
-%         deltaplus1mat = eye(Np).*(del);
-%         deltamat = eye(Np).*(del);
-%         partemp = [qs./isoRef(1), a1./isoRef(2), a2./isoRef(3), a3./isoRef(4), ...
-%             e01./isoRef(5), e02./isoRef(6), e03./isoRef(7), e04./isoRef(8), ...
-%             m1./isoRef(9), m2./isoRef(10), m3./isoRef(11), m4./isoRef(12) , ps./isoRef(13) ];
-%         logMLE = @(par) -generateMLEfun(x, y, z, 1, 'UNIV6', isoRef, par(1), par(2), ...
-%                         par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12), par(13));
-%         
-%         for jj = 1:Np
-%             for kk = 1:Np
-%                 partempnumj = partemp.*(1+deltaplus1mat(jj,:));
-%                 partempdenj = partemp.*deltamat(jj,:);
-%                 partempnumk = partemp.*(1+deltaplus1mat(kk,:));
-%                 partempdenk = partemp.*deltamat(kk,:);
-%                 partempnumjk = partemp.*(1+deltaplus1mat(jj,:) + deltaplus1mat(kk,:));
-%                 % Compute second derivative of logL for jj and kk
-%                 d2logMLE(jj,kk) = ((logMLE(partempnumjk)-logMLE(partempnumk))-(logMLE(partempnumj)-logMLE(partemp)))./(partempdenj(jj).*isoRef(jj).*partempdenk(kk).*isoRef(kk));
-%             end
-%         end
-%         % estimated Hessian Matrix for the data set (Non-linear parameter estimation
-%         % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
-%         hessianMatrix =  -d2logMLE;
+        %         dlogMLE = [];
+        %         d2logMLE = [];
+        %         deltaplus1mat = eye(Np).*(del);
+        %         deltamat = eye(Np).*(del);
+        %         partemp = [qs./isoRef(1), a1./isoRef(2), a2./isoRef(3), a3./isoRef(4), ...
+        %             e01./isoRef(5), e02./isoRef(6), e03./isoRef(7), e04./isoRef(8), ...
+        %             m1./isoRef(9), m2./isoRef(10), m3./isoRef(11), m4./isoRef(12) , ps./isoRef(13) ];
+        %         logMLE = @(par) -generateMLEfun(x, y, z, 1, 'UNIV6', isoRef, par(1), par(2), ...
+        %                         par(3), par(4), par(5), par(6), par(7), par(8), par(9), par(10), par(11), par(12), par(13));
+        %
+        %         for jj = 1:Np
+        %             for kk = 1:Np
+        %                 partempnumj = partemp.*(1+deltaplus1mat(jj,:));
+        %                 partempdenj = partemp.*deltamat(jj,:);
+        %                 partempnumk = partemp.*(1+deltaplus1mat(kk,:));
+        %                 partempdenk = partemp.*deltamat(kk,:);
+        %                 partempnumjk = partemp.*(1+deltaplus1mat(jj,:) + deltaplus1mat(kk,:));
+        %                 % Compute second derivative of logL for jj and kk
+        %                 d2logMLE(jj,kk) = ((logMLE(partempnumjk)-logMLE(partempnumk))-(logMLE(partempnumj)-logMLE(partemp)))./(partempdenj(jj).*isoRef(jj).*partempdenk(kk).*isoRef(kk));
+        %             end
+        %         end
+        %         % estimated Hessian Matrix for the data set (Non-linear parameter estimation
+        %         % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
+        %         hessianMatrix =  -d2logMLE;
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
 
@@ -212,9 +212,9 @@ switch isothermModel
         vc1 = varargin{8};
         vc2 = varargin{9};
         vm = varargin{10};
-        
+
         Nt = length(x);
-        
+
         dlogMLE = [];
         d2logMLE = [];
         deltaplus1mat = eye(Np).*(del);
@@ -236,36 +236,36 @@ switch isothermModel
         % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
         hessianMatrix =  -d2logMLE;
         conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
-%         For DSL model
-%         Create empty sensitivity matrix
-%         sensitivityMatrix = zeros(length(x),Np);
-%         del = 1e-6;
-%         % Calculate sensitivity at every data point for each parameter
-%         for jj = 1:Np
-%             for kk = 1:length(x)
-%                 if jj == 1
-%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,beta,(1+del)*omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*omega);
-%                 elseif jj == 2
-%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,(1+del)*beta,omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*beta);
-%                 elseif jj == 3
-%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),(1+del)*b01,delU1,beta,omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*b01);
-%                 elseif jj == 4
-%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,(1+del)*delU1,beta,omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*delU1);
-%                 elseif jj == 5
-%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,beta,omega,kgate,(1+del)*cgate,gamma,vc1,vc2) - fitVals(kk))/(del*cgate);
-%                 else
-%                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,beta,omega,kgate,cgate,(1+del)*gamma,vc1,vc2) - fitVals(kk))/(del*gamma);
-%                 end
-%             end
-%         end
-%         % estimated Hessian Matrix for the data set (Non-linear parameter estimation
-%         % by Yonathan Bard (1974) pg. 178
-%         hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
-%         % Confidence range given by chi squared distribution at Np degrees
-%         % of freedom (independent parameter conf intervals)
-%         conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
+        %                 chi2inv95 = chi2inv(0.95,Np);
+        %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+        %         For DSL model
+        %         Create empty sensitivity matrix
+        %         sensitivityMatrix = zeros(length(x),Np);
+        %         del = 1e-6;
+        %         % Calculate sensitivity at every data point for each parameter
+        %         for jj = 1:Np
+        %             for kk = 1:length(x)
+        %                 if jj == 1
+        %                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,beta,(1+del)*omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*omega);
+        %                 elseif jj == 2
+        %                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,(1+del)*beta,omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*beta);
+        %                 elseif jj == 3
+        %                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),(1+del)*b01,delU1,beta,omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*b01);
+        %                 elseif jj == 4
+        %                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,(1+del)*delU1,beta,omega,kgate,cgate,gamma,vc1,vc2) - fitVals(kk))/(del*delU1);
+        %                 elseif jj == 5
+        %                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,beta,omega,kgate,(1+del)*cgate,gamma,vc1,vc2) - fitVals(kk))/(del*cgate);
+        %                 else
+        %                     sensitivityMatrix(kk,jj) = (computeStatZGATELoading(x(kk),y(kk),b01,delU1,beta,omega,kgate,cgate,(1+del)*gamma,vc1,vc2) - fitVals(kk))/(del*gamma);
+        %                 end
+        %             end
+        %         end
+        %         % estimated Hessian Matrix for the data set (Non-linear parameter estimation
+        %         % by Yonathan Bard (1974) pg. 178
+        %         hessianMatrix = 1/stDevData^2*transpose(sensitivityMatrix)*sensitivityMatrix;
+        %         % Confidence range given by chi squared distribution at Np degrees
+        %         % of freedom (independent parameter conf intervals)
+        %         conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
     case 'DSL'
         % Number of parameters
         Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
@@ -279,7 +279,7 @@ switch isothermModel
         b02 = varargin{4};
         delU1 = varargin{5};
         delU2 = varargin{6};
-        
+
         switch fittingMethod
             case 'WSS'
                 % Create empty sensitivity matrix
@@ -324,7 +324,7 @@ switch isothermModel
                 partemp = [qs1./isoRef(1), qs2./isoRef(2),b01./isoRef(3),b02./isoRef(4),delU1./isoRef(5),delU2./isoRef(6)];
                 logMLE = @(par) -generateMLEfun(x, y, z, 1, 'DSL', isoRef, par(1), par(2), par(3), ...
                     par(4), par(5), par(6));
-                
+
                 for jj = 1:Np
                     for kk = 1:Np
                         partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -340,14 +340,14 @@ switch isothermModel
                 % by Yonathan Bard (1974) pg. 178 (Eqn 7-5-17)
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
-%                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 6
-%                 else
-%                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5);
-%                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5);
-%                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5)];
-%                 end
-%                     conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
+                %                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 6
+                %                 else
+                %                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5);
+                %                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5);
+                %                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5)];
+                %                 end
+                %                     conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
     case 'DSL2'
         % Number of parameters
@@ -364,7 +364,7 @@ switch isothermModel
         b02 = varargin{6};
         delU1 = varargin{7};
         delU2 = varargin{8};
-        
+
         switch fittingMethod
             case 'MLE'
                 % Create empty sensitivity matrix
@@ -405,8 +405,8 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,Np);
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
             case 'WSS'
                 Np = 8;
                 Nt = length(x);
@@ -417,7 +417,7 @@ switch isothermModel
                 partemp = [qs1a./isoRef(1), qs2a./isoRef(2),qs1b./isoRef(3), qs2b./isoRef(4),b01./isoRef(5),b02./isoRef(6),delU1./isoRef(7),delU2./isoRef(8)];
                 logMLE = @(par) -generateMLEfun(x, y, z, 1, 'DSL2', isoRef, par(1), par(2), par(3), ...
                     par(4), par(5), par(6), par(7), par(8));
-                
+
                 for jj = 1:Np
                     for kk = 1:Np
                         partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -514,7 +514,7 @@ switch isothermModel
                     qsH./isoRef(7),b0H./isoRef(8),delUH./isoRef(9)];
                 logMLE = @(par) -generateMLEfun(x, y, z, 1, 'HDSL', isoRef, par(1), par(2), par(3), ...
                     par(4), par(5), par(6), par(7), par(8), par(9));
-                
+
                 for jj = 1:Np
                     for kk = 1:Np
                         partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -527,8 +527,8 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,Np);
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
     case 'TSL'
         % Number of parameters
@@ -608,7 +608,7 @@ switch isothermModel
                     qs3./isoRef(7),b03./isoRef(8),delU3./isoRef(9)];
                 logMLE = @(par) -generateMLEfun(x, y, z, 1, 'TSL', isoRef, par(1), par(2), par(3), ...
                     par(4), par(5), par(6), par(7), par(8), par(9));
-                
+
                 for jj = 1:Np
                     for kk = 1:Np
                         partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -621,8 +621,8 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,Np);
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
         % for DSS model
     case 'DSS'
@@ -687,7 +687,7 @@ switch isothermModel
                     gamma./isoRef(7)];
                 logMLE = @(par) -generateMLEfun(x, y, z, 1, 'DSS', isoRef, par(1), par(2), par(3), ...
                     par(4), par(5), par(6), par(7));
-                
+
                 for jj = 1:Np
                     for kk = 1:Np
                         partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -700,16 +700,64 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
-%                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 7
-%                 else
-%                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7);
-%                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7);
-%                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7);
-%                                      hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7)];
-%                 end
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
+                %                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 7
+                %                 else
+                %                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7);
+                %                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7);
+                %                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7);
+                %                                      hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7)];
+                %                 end
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
+    case 'DSS2'
+        % Number of parameters
+        Np = length(cell2mat(varargin(cell2mat(varargin)~=0)));
+        % Calculate standard deviation of the data (not needed)
+        stDevData = sqrt(1/(length(x)-Np) * sum((z-fitVals).^2));
+        % Generate and solve global optimisation problem for confidence regions
+        % based on isotherm model
+        qs1 = varargin{1};
+        qs2 = varargin{2};
+        b01 = varargin{3};
+        b02 = varargin{4};
+        delU1 = varargin{5};
+        delU2 = varargin{6};
+        gamma = varargin{7};
+
+        Np = 7;
+        Nt = length(x);
+        dlogMLE = [];
+        d2logMLE = [];
+        deltaplus1mat = eye(Np).*(del);
+        deltamat = eye(Np).*(del);
+        partemp = [qs1./isoRef(1), qs2./isoRef(2),b01./isoRef(3),b02./isoRef(4),delU1./isoRef(5),delU2./isoRef(6),...
+            gamma./isoRef(7)];
+        logMLE = @(par) -generateMLEfun(x, y, z, 1, 'DSS2', isoRef, par(1), par(2), par(3), ...
+            par(4), par(5), par(6), par(7));
+
+        for jj = 1:Np
+            for kk = 1:Np
+                partempnumj = partemp.*(1+deltaplus1mat(jj,:));
+                partempdenj = partemp.*deltamat(jj,:);
+                partempnumk = partemp.*(1+deltaplus1mat(kk,:));
+                partempdenk = partemp.*deltamat(kk,:);
+                partempnumjk = partemp.*(1+deltaplus1mat(jj,:) + deltaplus1mat(kk,:));
+                d2logMLE(jj,kk) = ((logMLE(partempnumjk)-logMLE(partempnumk))-(logMLE(partempnumj)-logMLE(partemp)))./(partempdenj(jj).*isoRef(jj).*partempdenk(kk).*isoRef(kk));
+            end
+        end
+        hessianMatrix =  -d2logMLE;
+        conRange95 = sqrt(chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
+        %                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
+        %                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 7
+        %                 else
+        %                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7);
+        %                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7);
+        %                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7);
+        %                                      hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7)];
+        %                 end
+        %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+
         % for DSS model
     case 'TOTH'
         % Number of parameters
@@ -762,15 +810,15 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
-%                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 7
-%                 else
-%                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7);
-%                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7);
-%                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7);
-%                                      hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7)];
-%                 end
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
+                %                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 7
+                %                 else
+                %                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7);
+                %                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7);
+                %                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7);
+                %                                      hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7)];
+                %                 end
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
             case 'MLE'
                 Np = 7;
                 Nt = length(x);
@@ -781,7 +829,7 @@ switch isothermModel
                 partemp = [qs1./isoRef(1), 0, b01./isoRef(3), 0, delU1./isoRef(5), 0, toth./isoRef(7)];
                 logMLE = @(par) -generateMLEfun(x, y, z, 1, 'TOTH', isoRef, par(1), par(2), par(3), ...
                     par(4), par(5), par(6), par(7));
-                
+
                 for jj = 1:Np
                     for kk = 1:Np
                         partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -794,15 +842,15 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95, length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
-%                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 7
-%                 else
-%                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7);
-%                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7);
-%                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7);
-%                                      hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7)];
-%                 end
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,length(cell2mat(varargin(cell2mat(varargin)~=0))));
+                %                 if length(cell2mat(varargin(cell2mat(varargin)~=0))) == 7
+                %                 else
+                %                     hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7);
+                %                                      hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7);
+                %                                      hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7);
+                %                                      hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7)];
+                %                 end
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
     case 'TOTH2'
         % Number of parameters
@@ -859,13 +907,13 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%                 hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7) hessianMatrix(1,8);
-%                     hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7) hessianMatrix(3,8);
-%                     hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7) hessianMatrix(5,8);
-%                     hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7) hessianMatrix(7,8);
-%                     hessianMatrix(8,1) hessianMatrix(8,3) hessianMatrix(8,5) hessianMatrix(8,7) hessianMatrix(8,8)];
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 hessianMatrix = [hessianMatrix(1,1) hessianMatrix(1,3) hessianMatrix(1,5) hessianMatrix(1,7) hessianMatrix(1,8);
+                %                     hessianMatrix(3,1) hessianMatrix(3,3) hessianMatrix(3,5) hessianMatrix(3,7) hessianMatrix(3,8);
+                %                     hessianMatrix(5,1) hessianMatrix(5,3) hessianMatrix(5,5) hessianMatrix(5,7) hessianMatrix(5,8);
+                %                     hessianMatrix(7,1) hessianMatrix(7,3) hessianMatrix(7,5) hessianMatrix(7,7) hessianMatrix(7,8);
+                %                     hessianMatrix(8,1) hessianMatrix(8,3) hessianMatrix(8,5) hessianMatrix(8,7) hessianMatrix(8,8)];
+                %                 chi2inv95 = chi2inv(0.95,Np);
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
             case 'WSS'
                 Np = 8;
                 Nt = length(x);
@@ -876,7 +924,7 @@ switch isothermModel
                 partemp = [qs1./isoRef(1), b01./isoRef(3), delU1./isoRef(5), toth./isoRef(7)];
                 logMLE = @(par) -generateMLEfun(x, y, z, 1, 'TOTH', isoRef, par(1), 0, par(2), ...
                     0, par(3), 0, par(4));
-                
+
                 for jj = 1:Np
                     for kk = 1:Np
                         partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -889,8 +937,8 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95, length(cell2mat(varargin(cell2mat(varargin)~=0))))./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,Np);
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
     case 'TOTH3'
         % Number of parameters
@@ -942,8 +990,8 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,Np);
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
             case 'WSS'
                 Np = 7;
                 Nt = length(x);
@@ -954,7 +1002,7 @@ switch isothermModel
                 partemp = [qs1./isoRef(1), b01./isoRef(3), delU1./isoRef(5), toth./isoRef(7)];
                 logMLE = @(par) -generateMLEfun(x, y, z, 1, 'TOTH', isoRef, par(1), 0, par(2), ...
                     0, par(3), 0, par(4));
-                
+
                 for jj = 1:Np
                     for kk = 1:Np
                         partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -1046,8 +1094,8 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2))
+                %                 chi2inv95 = chi2inv(0.95,Np);
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2))
         end
         % for Virial model
     case 'VIRIAL'
@@ -1065,7 +1113,7 @@ switch isothermModel
         b1 = varargin{6};
         b2 = varargin{7};
         b3 = varargin{8};
-        
+
         parameters = [a0, a1, a2, a3, b0, b1, b2, b3];
         switch fittingMethod
             case 'MLE'
@@ -1127,7 +1175,7 @@ switch isothermModel
                 partemp = [a0./isoRef(1), a1./isoRef(2),a2./isoRef(3),a3./isoRef(4),b0./isoRef(5),b1./isoRef(6)];
                 logMLE = @(par) -generateMLEfun(x, y, z, 1, 'VIRIAL', isoRef, par(1), par(2), par(3), ...
                     par(4), par(5), par(6), 0, 0);
-                
+
                 for jj = 1:Np
                     for kk = 1:Np
                         partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -1140,8 +1188,8 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,Np);
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
     case 'VIRIAL2'
         % Number of parameters
@@ -1158,7 +1206,7 @@ switch isothermModel
         b1 = varargin{6};
         b2 = varargin{7};
         b3 = varargin{8};
-        
+
         parameters = [a0, a1, a2, a3, b0, b1, b2, b3];
         switch fittingMethod
             case 'MLE'
@@ -1208,8 +1256,8 @@ switch isothermModel
                 % Confidence range given by chi squared distribution at Np degrees
                 % of freedom (independent parameter conf intervals)
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,Np);
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
             case 'WSS'
                 Nt = length(x);
                 dlogMLE = [];
@@ -1219,7 +1267,7 @@ switch isothermModel
                 partemp = [a0./isoRef(1), a1./isoRef(2),a2./isoRef(3),a3./isoRef(4),b0./isoRef(5),b1./isoRef(6),b2./isoRef(7),b3./isoRef(8)];
                 logMLE = @(par) -generateMLEfun(x, y, z, 1, 'VIRIAL2', isoRef, par(1), par(2), par(3), ...
                     par(4), par(5), par(6), par(7), par(8));
-                
+
                 for jj = 1:Np
                     for kk = 1:Np
                         partempnumj = partemp.*(1+deltaplus1mat(jj,:));
@@ -1232,8 +1280,8 @@ switch isothermModel
                 end
                 hessianMatrix =  -d2logMLE;
                 conRange95 = sqrt(chi2inv(0.95,Np)./diag(hessianMatrix));
-%                 chi2inv95 = chi2inv(0.95,Np);
-%                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
+                %                 chi2inv95 = chi2inv(0.95,Np);
+                %                 conRange95 = sqrt(sqrt(diag(inv(chi2inv95*hessianMatrix)).^2));
         end
 end
 end
