@@ -152,6 +152,60 @@ switch isothermModel
             end
         end
         % Calculate error for Statistical isotherm model for zeolites
+    case 'STATZSips'
+        % Discretize the data range into 'nbins' evenly spaced bins of pressure
+        % ranges ('nbins = 1' for MLE')
+        [bins] = discretize(x,nbins);
+        % Create vector for storing sum of error for each bin
+        err = zeros(nbins,1);
+        % Number of data points
+        Nt = length(bins);
+
+        expData = [x,z,y];
+        expData = sortrows(expData,3);
+
+        x = expData(:,1);
+        z = expData(:,2);
+        y = expData(:,3);
+
+        temperatureValues = unique(y);
+        qRefIndexTemp = zeros(length(temperatureValues),1);
+        for ii = 1:length(temperatureValues)
+            qRefIndexTemp(ii,1) = find(y == temperatureValues(ii),1,'first');
+            qRefIndexTemp(ii,2) = find(y == temperatureValues(ii),1,'last');
+        end
+
+        % Find qref for the experimental data
+        qRefMax = max(z(qRefIndexTemp(:,2)));
+        qRefTemp = z(qRefIndexTemp(:,2));
+        normalizationFactorTemp = qRefMax./qRefTemp;
+        normalizationFactor = zeros(length(x),1);
+
+        for ii = 1:length(temperatureValues)
+            normalizationFactor(qRefIndexTemp(ii,1):qRefIndexTemp(ii,2),1) = normalizationFactorTemp(ii);
+        end
+
+        omega = round(varargin{1}).*isoRef(1);
+        beta = varargin{2}.*isoRef(2);
+        b01 = varargin{3}.*isoRef(3);
+        delU1 = varargin{4}.*isoRef(4);
+        gamma = varargin{5}.*isoRef(5);
+        vc = varargin{6};
+        vm = varargin{7};
+        Na = 6.022e20; % Avogadros constant [molecules/mmol]
+        for jj = 1:length(err)
+            for kk = 1:length(bins)
+                if omega > vc/beta
+                    qfun = 0;
+                else
+                    qfun = computeStatZSipsLoading(x(kk),y(kk),b01,delU1,beta,omega,gamma,vc);
+                end
+                if bins(kk) == jj
+                    err(jj) = (err(jj) + (normalizationFactor(kk).*(vm./(vc.*Na)).*(z(kk) - qfun))^2);
+                end
+            end
+        end
+        % Calculate error for Statistical isotherm model for zeolites
     case 'STATZGATE'
         % Discretize the data range into 'nbins' evenly spaced bins of pressure
         % ranges ('nbins = 1' for MLE')

@@ -41,14 +41,15 @@ vc = isothermData.CageVolume;
 vm =  isothermData.MicroporeVolume;
 Na = 6.022e20; % Avogadros constant [molecules/mmol];
 
-P = 5;
-T = 333.15;
+P = 3.2;
+T = 298.15;
 yA = linspace(0,1,500);
 % yA = 0.25;
 % yA = 0.15;
 [qA, qB, qT]  = computeStatZLoadingBinary(P,T,b01A,delU1A,betaA,omegaA,b01B,delU1B,betaB,omegaB,vc,yA);
 qAmolkg = qA.*vm./(vc.*Na);
 qBmolkg = qB.*vm./(vc.*Na);
+qTmolkg = qAmolkg+qBmolkg;
 % [qA, qB, qT]  = computeStatZLoadingBinary(P,T,b01A,delU1A,betaA,omegaA,b01A,delU1A,betaA,omegaA,vc,yA);
 % [qA, qB, qT]  = computeStatZLoadingBinary(P,T,6*0.75e-4,5.1*4200,64.5,12,3.5*0.75e-4,5*4200,77,10,776,yA);
 % [qA, qB, qT] = computeStatZLoadingBinary(P,T,6e-7,5.1*4184,64.5,12,3.5e-7,5*4184,77,10,776,yA);
@@ -57,70 +58,70 @@ qc = computeStatZLoading(linspace(0,P,length(yA)),T,b01A,delU1A,betaA,omegaA,vc)
 % qd = qc;
 
 figure
-scatter(yA,qA,5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8,'DisplayName','Gas A')
+plot(yA,qAmolkg,'r','MarkerFaceColor','none','MarkerEdgeColor','none','LineWidth',2,'DisplayName','Gas A')
 hold on
-scatter(yA,qB,5,'filled','MarkerFaceColor','b','MarkerFaceAlpha',0.1,'MarkerEdgeColor','b','LineWidth',0.8,'DisplayName','Gas B')
-scatter(yA,qT,5,'filled','MarkerFaceColor','k','MarkerFaceAlpha',0.1,'MarkerEdgeColor','k','LineWidth',0.8,'DisplayName','Gas A+B')
+plot(yA,qBmolkg,'b','MarkerFaceColor','none','MarkerEdgeColor','none','LineWidth',2,'DisplayName','Gas A')
+plot(yA,qTmolkg,'k','MarkerFaceColor','none','MarkerEdgeColor','none','LineWidth',2,'DisplayName','Gas A')
 xlabel('$$y_{A}$$ [-]');
-ylabel('Amount adsorbed [molecules/supercage]');
+ylabel('Amount adsorbed [mol/kg]');
 xlim([0 1])
 box on
 legend('Location','best')
 set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
 grid on; axis square
 set(gcf,'units','inch','position',[0,5,5,5])
-
-figure
-scatter(linspace(0,P,length(yA)),qc,5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8,'DisplayName','Gas A')
-hold on
-scatter(linspace(0,P,length(yA)),qd,6,'filled','MarkerFaceColor','b','MarkerFaceAlpha',0.1,'MarkerEdgeColor','b','LineWidth',0.8,'DisplayName','Gas B')
-xlabel('P [bar]');
-ylabel('Amount adsorbed [molecules/supercage]');
-xlim([0 P])
-box on
-legend('Location','best')
-set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
-grid on; axis square
-set(gcf,'units','inch','position',[5,5,5,5])
-
-figure
-scatter(yA,qA./(qT),5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8)
-hold on
-plot([0 1],[0 1],'k','LineStyle','--','LineWidth',1)
-xlabel('$$y_{A}$$ [-]');
-ylabel('$$x_{A}$$ [-]');
-xlim([0 1])
-box on
+% 
+% figure
+% scatter(linspace(0,P,length(yA)),qc,5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8,'DisplayName','Gas A')
+% hold on
+% scatter(linspace(0,P,length(yA)),qd,6,'filled','MarkerFaceColor','b','MarkerFaceAlpha',0.1,'MarkerEdgeColor','b','LineWidth',0.8,'DisplayName','Gas B')
+% xlabel('P [bar]');
+% ylabel('Amount adsorbed [molecules/supercage]');
+% xlim([0 P])
+% box on
 % legend('Location','best')
-set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
-grid on; axis square
-set(gcf,'units','inch','position',[10,0,5,5])
-
-figure
-selectivityA = qA./qB.*(1-yA')./yA';
-scatter(yA,selectivityA,5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8)
-hold on
-ylabel('$$\alpha_{A}$$ [-]');
-xlabel('$$y_{A}$$ [-]');
-xlim([0 1])
-box on
-% legend('Location','best')
-set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
-grid on; axis square
-set(gcf,'units','inch','position',[10,0,5,5])
-
-figure
-[qADES, qBDES, qTDES]  = computeStatZLoadingBinary(1,T,b01A,delU1A,betaA,omegaA,b01B,delU1B,betaB,omegaB,vc,yA);
-WCA = qA-qADES;
-WCB = qB-qBDES;
-yangFOM = selectivityA.*(WCA./WCB);
-scatter(yA,yangFOM,5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8)
-hold on
-ylabel('YANG [-]');
-xlabel('$$y_{A}$$ [-]');
-xlim([0 1])
-box on
-% legend('Location','best')
-set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
-grid on; axis square
-set(gcf,'units','inch','position',[10,0,5,5])
+% set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+% grid on; axis square
+% set(gcf,'units','inch','position',[5,5,5,5])
+% 
+% figure
+% scatter(yA,qA./(qT),5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8)
+% hold on
+% plot([0 1],[0 1],'k','LineStyle','--','LineWidth',1)
+% xlabel('$$y_{A}$$ [-]');
+% ylabel('$$x_{A}$$ [-]');
+% xlim([0 1])
+% box on
+% % legend('Location','best')
+% set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+% grid on; axis square
+% set(gcf,'units','inch','position',[10,0,5,5])
+% 
+% figure
+% selectivityA = qA./qB.*(1-yA')./yA';
+% scatter(yA,selectivityA,5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8)
+% hold on
+% ylabel('$$\alpha_{A}$$ [-]');
+% xlabel('$$y_{A}$$ [-]');
+% xlim([0 1])
+% box on
+% % legend('Location','best')
+% set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+% grid on; axis square
+% set(gcf,'units','inch','position',[10,0,5,5])
+% 
+% figure
+% [qADES, qBDES, qTDES]  = computeStatZLoadingBinary(1,T,b01A,delU1A,betaA,omegaA,b01B,delU1B,betaB,omegaB,vc,yA);
+% WCA = qA-qADES;
+% WCB = qB-qBDES;
+% yangFOM = selectivityA.*(WCA./WCB);
+% scatter(yA,yangFOM,5,'filled','MarkerFaceColor','r','MarkerFaceAlpha',0.1,'MarkerEdgeColor','r','LineWidth',0.8)
+% hold on
+% ylabel('YANG [-]');
+% xlabel('$$y_{A}$$ [-]');
+% xlim([0 1])
+% box on
+% % legend('Location','best')
+% set(gca,'YScale','linear','XScale','linear','FontSize',15,'LineWidth',1)
+% grid on; axis square
+% set(gcf,'units','inch','position',[10,0,5,5])

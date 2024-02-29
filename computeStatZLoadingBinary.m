@@ -10,8 +10,8 @@ isothermNumeratorB = 0;
 isothermDenominator = 0;
 
 % evaluate double summation of over integers for i (jj) and j (kk)
-for kk = 0:100
-    for jj = 0:100
+for kk = 0:1000
+    for jj = 0:1000
         % subject to constraints
         if (jj*betaA + kk*betaB) <= vc && kk+jj >= 2
             if     kk == 0
