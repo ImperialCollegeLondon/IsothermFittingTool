@@ -2404,12 +2404,12 @@ if ~flagFixQsat
                 fval_prev = fval;
             end
             
-            x0_new = parVals;
-            lb_new = lb; lb_new(5:13)= 0.1.*x0_new(5:13);
-            ub_new = ub; ub_new([1,5:13])= 1.9.*x0_new([1,5:13]);
-            gs = GlobalSearch('NumTrialPoints',1500,'NumStageOnePoints',800,'Display','iter','PenaltyThresholdFactor',0.5,'BasinRadiusFactor',0.5); % ,'PlotFcn',@gsplotbestf
-            problem = createOptimProblem('fmincon','x0',x0_new,'objective',optfunc,'lb',lb_new,'ub',ub_new,'Aineq',Aineq,'bineq',bineq,'options',opts);
-            [parVals, fval] = run(gs,problem);
+%             x0_new = parVals;
+%             lb_new = lb; lb_new(5:13)= 0.1.*x0_new(5:13);
+%             ub_new = ub; ub_new([1,5:13])= 1.9.*x0_new([1,5:13]);
+%             gs = GlobalSearch('NumTrialPoints',1500,'NumStageOnePoints',800,'Display','iter','PenaltyThresholdFactor',0.5,'BasinRadiusFactor',0.5); % ,'PlotFcn',@gsplotbestf
+%             problem = createOptimProblem('fmincon','x0',x0_new,'objective',optfunc,'lb',lb_new,'ub',ub_new,'Aineq',Aineq,'bineq',bineq,'options',opts);
+%             [parVals, fval] = run(gs,problem);
             
             lb_disp = lb_new.*isoRef;
             lb_disp(5:8) = exp(lb_disp(5:8))-1;
