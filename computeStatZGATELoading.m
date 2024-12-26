@@ -1,7 +1,7 @@
 function qa = computeStatZGATELoading(P,T,b01,delU1,beta,omega,kgate,cgate,gamma,vc1,vc2)
 
 b = b01.*exp(delU1./(8.314.*T));
-vc = (vc1+vc2)./2 + (vc2-vc1)./2.*tanh(kgate.*P - cgate);
+vc = (vc1+vc2)./2 + (vc2-vc1)./2.*tanh(kgate.*P - cgate*(exp(-10000./(8.314.*T))));
 isothermNumerator = 0;
 isothermDenominator =0;
 

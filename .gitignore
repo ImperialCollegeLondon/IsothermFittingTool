@@ -12,5 +12,6 @@
 *.bib
 *.xlsx
 *.txt
+*.csv
 *.mat
 *.asv

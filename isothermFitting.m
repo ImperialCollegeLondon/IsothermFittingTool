@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Imperial College London, United Kingdom
 % Multifunctional Nanomaterials Laboratory / Complex Porous Media
@@ -6,7 +6,7 @@
 %
 % Project:  PhD
 % Year:     2021
-% MATLAB:   R2020a
+% MATLAB:   R2020a  
 % Authors:  Hassan Azzan (HA)
 %
 % Purpose:
@@ -63,10 +63,16 @@ uiopen
 % Statistical Zeolite Model for flexible frameworks= STATZGATE
 % Universal Isotherm Model for Type VI (4 site) = UNIV6
 % Universal Isotherm Model for Type VI (3 site) = UNIV4
-isothermModel = 'UNIV6';
+% isothermModel = 'STATSTA2';
+isothermModel = 'STATSTAgamma';
+% isothermModel = 'STATZE';
+% isothermModel = 'STATZ';
+% isothermModel = 'STATSTAB';
+
 %% Flag for fitting parameters in concentration units (NOT for virial) 
 flagConcUnits = 0;
-%% Flag for saving output in a matfile (IF TRUE, ENTER FILENAME WHEN PROMPTED IN COMMAND WINDOW)
+%% Flag for saving output in a matfile (IF TRUE, ENTER
+% FILENAME WHEN PROMPTED IN COMMAND WINDOW)
 saveFlag = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                       INPUTS COMPLETE. IGNORE THE REST OF THE CODE.                    %
@@ -75,9 +81,9 @@ saveFlag = 0;
 %            dP             `                                              oo   dP
 %            88                                                                 88       
 %   88d888b. 88 .d8888b. .d8888b. .d8888b. .d8888b.    dP  dP  dP .d8888b. dP d8888P
-%   88'  `88 88 88ooood8 88'  `88 Y8ooooo. 88ooood8    88  88  88 88'  `88 88   88
+%   88'  `88 88 88ooood8 88'  `88 Y8ooooo. 88ooood8`    88  88  88 88'  `88 88   88
 %   88.  .88 88 88.  ... 88.  .88       88 88.  ...    88.88b.88' 88.  .88 88   88
-%   88Y888P' dP `88888P' `88888P8 `88888P' `88888P'    8888P Y8P  `88888P8 dP   dP
+%   88Y888P' dP `88888P' `88888P8 `88888P' `8w8888P'    8888P Y8P  `88888P8 dP   dP
 %   88
 %   dP
 %
@@ -87,3 +93,6 @@ saveFlag = 0;
 tic
 isothermData = isothermFittingFun(isothermModel, flagConcUnits, saveFlag, fitData);
 toc
+
+
+

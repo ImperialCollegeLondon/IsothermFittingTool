@@ -34,9 +34,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [outScatter,uncBounds]=generateUncertaintySpread(x,y,z,isothermModel,parVals,conRange95,varargin)
 % Decide number of samplint points for q at each pressure point
-nPoints = 800;
+nPoints = 600;
 % Decide the range of pressure for the uncertainty spread calculation
-Pvals = linspace(0,max(x)*1.5,2000);
+Pvals = linspace(0,max(x)*1.5,100);
 % Decide the range of loading for the uncertainty spread calculation
 % (virial only)
 qvals = linspace(0,max(z)*1.5,800);
@@ -103,6 +103,351 @@ switch isothermModel
         outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
         % Transpose of the output
         outScatter=outScatter';
+    case 'STATZE'
+        % Obtain a vector of the temperatures present in the input data
+        Tvals = unique(y);
+        uncBounds = [];
+        uncBounds(:,1) = repmat(Pvals',length(Tvals),1);
+        
+        % obtain optimal parameter values from the input
+        omega = parVals(1);
+        beta = parVals(2);
+        b01 = parVals(3);
+        delU1 = parVals(4);
+        ebyk = parVals(5);
+        vc = varargin{1};
+        
+        % create 3 dimensional array for the output data
+        qeqUnc=zeros(3,nPoints*length(Pvals),length(Tvals));
+        % populate the first and second rows of the output array with the
+        % temperature and pressure range
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj+1))
+                    qeqUnc(1,kk,mm) = Pvals(jj);
+                    qeqUnc(2,kk,mm) = Tvals(mm);
+                end
+            end
+        end
+        % Generate a random set of numbers between -1 and 1 using
+        % latin-hypercube sampling in a matrix with nPoints rows and a
+        % column for each variable
+        lhsMat = 2*lhsdesign(nPoints,5)-1;
+        % Populate the third row of the output array with the q values
+        % calculated using the the values of parameters within their
+        % respective uncertainty bounds
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                hh = 0;
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj))
+                    hh=hh+1;
+                    % Determine values for each parameter within it's
+                    % respective bounds
+                    omega_unc = omega+conRange95(1)*lhsMat(hh,1);
+                    beta_unc = beta+conRange95(2)*lhsMat(hh,2);
+                    b01_unc = b01+conRange95(3)*lhsMat(hh,3);
+                    delU1_unc = delU1+conRange95(4)*lhsMat(hh,4);
+                    ebyk_unc = ebyk+conRange95(5)*lhsMat(hh,5);
+                    % Obtain P and T values corresponding to this data
+                    % point
+                    P = qeqUnc(1,kk,mm);
+                    T = qeqUnc(2,kk,mm);
+                    % Calculate q corresponding to the parameter values
+                    % obtained above
+                    qeqUnc(3,kk,mm) = computeStatZELoading(P,T,b01_unc,delU1_unc,beta_unc,omega_unc,ebyk_unc,vc);
+                end
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,2)= min(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,3)= max(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,4)= Tvals(mm);
+            end
+        end
+        % Obtain the output in a matrix [nPoints*length(Pvals) x 3]
+        outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
+        % Transpose of the output
+        outScatter=outScatter';
+    case 'STATZGO'
+        % Obtain a vector of the temperatures present in the input data
+        Tvals = unique(y);
+        uncBounds = [];
+        uncBounds(:,1) = repmat(Pvals',length(Tvals),1);
+        
+        % obtain optimal parameter values from the input
+        omega = parVals(1);
+        beta = parVals(2);
+        b01 = parVals(3);
+        delU1 = parVals(4);
+        delU2 = parVals(5);
+        kgate = parVals(6);
+        cgate = parVals(7);
+        vc = varargin{1};
+        
+        % create 3 dimensional array for the output data
+        qeqUnc=zeros(3,nPoints*length(Pvals),length(Tvals));
+        % populate the first and second rows of the output array with the
+        % temperature and pressure range
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj+1))
+                    qeqUnc(1,kk,mm) = Pvals(jj);
+                    qeqUnc(2,kk,mm) = Tvals(mm);
+                end
+            end
+        end
+        % Generate a random set of numbers between -1 and 1 using
+        % latin-hypercube sampling in a matrix with nPoints rows and a
+        % column for each variable
+        lhsMat = 2*lhsdesign(nPoints,7)-1;
+        % Populate the third row of the output array with the q values
+        % calculated using the the values of parameters within their
+        % respective uncertainty bounds
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                hh = 0;
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj))
+                    hh=hh+1;
+                    % Determine values for each parameter within it's
+                    % respective bounds
+                    omega_unc = omega+conRange95(1)*lhsMat(hh,1);
+                    beta_unc = beta+conRange95(2)*lhsMat(hh,2);
+                    b01_unc = b01+conRange95(3)*lhsMat(hh,3);
+                    delU1_unc = delU1+conRange95(4)*lhsMat(hh,4);
+                    delU2_unc = delU2+conRange95(5)*lhsMat(hh,5);
+                    kgate_unc = kgate+conRange95(6)*lhsMat(hh,6);
+                    cgate_unc = cgate+conRange95(7)*lhsMat(hh,7);
+                    % Obtain P and T values corresponding to this data
+                    % point
+                    P = qeqUnc(1,kk,mm);
+                    T = qeqUnc(2,kk,mm);
+                    % Calculate q corresponding to the parameter values
+                    % obtained above
+                    qeqUnc(3,kk,mm) = computeStatZGATELoading2(P,T,b01_unc,delU1_unc,delU2_unc,beta_unc,kgate_unc,cgate_unc,omega_unc,vc);
+                end
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,2)= min(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,3)= max(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,4)= Tvals(mm);
+            end
+        end
+        % Obtain the output in a matrix [nPoints*length(Pvals) x 3]
+        outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
+        % Transpose of the output
+        outScatter=outScatter';
+    case 'SSLSTA'
+        % Obtain a vector of the temperatures present in the input data
+        Tvals = unique(y);
+        uncBounds = [];
+        uncBounds(:,1) = repmat(Pvals',length(Tvals),1);
+        
+        % obtain optimal parameter values from the input
+        qsNP =    parVals(1);
+        b01NP =   parVals(2);
+        delU1NP = parVals(3);
+        qsLP =    parVals(4);
+        b01LP =   parVals(5);
+        delU1LP = parVals(6);
+        kgate =   parVals(7);
+        cgate =   parVals(8);
+        sval =    parVals(9);
+        
+        % create 3 dimensional array for the output data
+        qeqUnc=zeros(3,nPoints*length(Pvals),length(Tvals));
+        % populate the first and second rows of the output array with the
+        % temperature and pressure range
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj+1))
+                    qeqUnc(1,kk,mm) = Pvals(jj);
+                    qeqUnc(2,kk,mm) = Tvals(mm);
+                end
+            end
+        end
+        % Generate a random set of numbers between -1 and 1 using
+        % latin-hypercube sampling in a matrix with nPoints rows and a
+        % column for each variable
+        lhsMat = 2*lhsdesign(nPoints,9)-1;
+        % Populate the third row of the output array with the q values
+        % calculated using the the values of parameters within their
+        % respective uncertainty bounds
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                hh = 0;
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj))
+                    hh=hh+1;
+                    % Determine values for each parameter within it's
+                    % respective bounds
+                    qsNP_unc = qsNP+conRange95(1)*lhsMat(hh,1);
+                    b01NP_unc = b01NP+conRange95(2)*lhsMat(hh,2);
+                    delU1NP_unc = delU1NP+conRange95(3)*lhsMat(hh,3);
+                    qsLP_unc = qsLP+conRange95(4)*lhsMat(hh,4);
+                    b01LP_unc = b01LP+conRange95(5)*lhsMat(hh,5);
+                    delU1LP_unc = delU1LP+conRange95(6)*lhsMat(hh,6);
+                    kgate_unc = kgate+conRange95(7)*lhsMat(hh,7);
+                    cgate_unc = cgate+conRange95(8)*lhsMat(hh,8);
+                    sval_unc = sval+conRange95(9)*lhsMat(hh,9);
+                    % Obtain P and T values corresponding to this data
+                    % point
+                    P = qeqUnc(1,kk,mm);
+                    T = qeqUnc(2,kk,mm);
+                    % Calculate q corresponding to the parameter values
+                    % obtained above
+                    yval = ((1+(b01LP_unc.*P.*exp(delU1LP_unc./(8.314.*T)))).^qsLP_unc)./((1+(b01NP_unc.*P.*exp(delU1NP_unc./(8.314.*T)))).^qsNP_unc).* ...
+                        exp(-(kgate_unc-T.*cgate_unc)./(8.314.*T));
+                    sigmaval = yval.^sval_unc./(1+yval.^sval_unc);
+                    qeqUnc(3,kk,mm) = (1-sigmaval).*qsNP_unc.*(b01NP_unc.*P.*exp(delU1NP_unc./(8.314.*T)))./(1+(b01NP_unc.*P.*exp(delU1NP_unc./(8.314.*T)))) + ...
+                        sigmaval.*qsLP_unc.*(b01LP_unc.*P.*exp(delU1LP_unc./(8.314.*T)))./(1+(b01LP_unc.*P.*exp(delU1LP_unc./(8.314.*T))));
+
+                end
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,2)= min(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,3)= max(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,4)= Tvals(mm);
+            end
+        end
+        % Obtain the output in a matrix [nPoints*length(Pvals) x 3]
+        outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
+        % Transpose of the output
+        outScatter=outScatter';
+    case 'STATSTA2'
+        % Obtain a vector of the temperatures present in the input data
+        Tvals = unique(y);
+        uncBounds = [];
+        uncBounds(:,1) = repmat(Pvals',length(Tvals),1);
+        
+        % obtain optimal parameter values from the input
+        omega = parVals(1);
+        beta = parVals(2);
+        b01 = parVals(3);
+        b02 = parVals(4);
+        delU1 = parVals(5);
+        delU2 = parVals(6);
+        kgate = parVals(7);
+        cgate = parVals(8);
+        vc = varargin{1};
+        delvc = parVals(9);
+        
+        % create 3 dimensional array for the output data
+        qeqUnc=zeros(3,nPoints*length(Pvals),length(Tvals));
+        % populate the first and second rows of the output array with the
+        % temperature and pressure range
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj+1))
+                    qeqUnc(1,kk,mm) = Pvals(jj);
+                    qeqUnc(2,kk,mm) = Tvals(mm);
+                end
+            end
+        end
+        % Generate a random set of numbers between -1 and 1 using
+        % latin-hypercube sampling in a matrix with nPoints rows and a
+        % column for each variable
+        lhsMat = 2*lhsdesign(nPoints,9)-1;
+        % Populate the third row of the output array with the q values
+        % calculated using the the values of parameters within their
+        % respective uncertainty bounds
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                hh = 0;
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj))
+                    hh=hh+1;
+                    % Determine values for each parameter within it's
+                    % respective bounds
+                    omega_unc = round(omega+conRange95(1)*lhsMat(hh,1));
+                    beta_unc = beta+conRange95(2)*lhsMat(hh,2);
+                    b01_unc = b01+conRange95(3)*lhsMat(hh,3);
+                    b02_unc = b02+conRange95(4)*lhsMat(hh,4);
+                    delU1_unc = delU1+conRange95(5)*lhsMat(hh,5);
+                    delU2_unc = delU2+conRange95(6)*lhsMat(hh,6);
+                    kgate_unc = kgate+conRange95(7)*lhsMat(hh,7);
+                    cgate_unc = cgate+conRange95(8)*lhsMat(hh,8);
+                    delvc_unc = delvc;
+                    % Obtain P and T values corresponding to this data
+                    % point
+                    P = qeqUnc(1,kk,mm);
+                    T = qeqUnc(2,kk,mm);
+                    % Calculate q corresponding to the parameter values
+                    % obtained above
+                    qeqUnc(3,kk,mm) = computeStatSTALoading2(P,T,b01_unc,b02_unc,delU1_unc,delU2_unc,beta_unc,kgate_unc,cgate_unc,delvc_unc,omega_unc,vc);
+                end
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,2)= min(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,3)= max(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,4)= Tvals(mm);
+            end
+        end
+        % Obtain the output in a matrix [nPoints*length(Pvals) x 3]
+        outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
+        % Transpose of the output
+        outScatter=outScatter';
+    case 'STATSTAgamma'
+        % Obtain a vector of the temperatures present in the input data
+        Tvals = unique(y);
+        uncBounds = [];
+        uncBounds(:,1) = repmat(Pvals',length(Tvals),1);
+        
+        % obtain optimal parameter values from the input
+        omega = parVals(1);
+        beta = parVals(2);
+        b01 = parVals(3);
+        b02 = parVals(4);
+        delU1 = parVals(5);
+        delU2 = parVals(6);
+        kgate = parVals(7);
+        cgate = parVals(8);
+        vc = varargin{1};
+        delvc = parVals(9);
+        gamma = parVals(10);
+        
+        % create 3 dimensional array for the output data
+        qeqUnc=zeros(3,nPoints*length(Pvals),length(Tvals));
+        % populate the first and second rows of the output array with the
+        % temperature and pressure range
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj+1))
+                    qeqUnc(1,kk,mm) = Pvals(jj);
+                    qeqUnc(2,kk,mm) = Tvals(mm);
+                end
+            end
+        end
+        % Generate a random set of numbers between -1 and 1 using
+        % latin-hypercube sampling in a matrix with nPoints rows and a
+        % column for each variable
+        lhsMat = 2*lhsdesign(nPoints,10)-1;
+        % Populate the third row of the output array with the q values
+        % calculated using the the values of parameters within their
+        % respective uncertainty bounds
+        for mm = 1:length(Tvals)
+            for jj = 1:length(Pvals)
+                hh = 0;
+                for kk = (nPoints*(jj-1)+1):(nPoints*(jj))
+                    hh=hh+1;
+                    % Determine values for each parameter within it's
+                    % respective bounds
+                    omega_unc = round(omega+conRange95(1)*lhsMat(hh,1));
+                    beta_unc = beta+conRange95(2)*lhsMat(hh,2);
+                    b01_unc = b01+conRange95(3)*lhsMat(hh,3);
+                    b02_unc = b02+conRange95(4)*lhsMat(hh,4);
+                    delU1_unc = delU1+conRange95(5)*lhsMat(hh,5);
+                    delU2_unc = delU2+conRange95(6)*lhsMat(hh,6);
+                    kgate_unc = kgate+conRange95(7)*lhsMat(hh,7);
+                    cgate_unc = cgate+conRange95(8)*lhsMat(hh,8);
+                    delvc_unc = delvc;
+                    gamma_unc = gamma++conRange95(8)*lhsMat(hh,10);
+                    % Obtain P and T values corresponding to this data
+                    % point
+                    P = qeqUnc(1,kk,mm);
+                    T = qeqUnc(2,kk,mm);
+                    % Calculate q corresponding to the parameter values
+                    % obtained above
+                    qeqUnc(3,kk,mm) = computeStatSTALoading2(P,T,b01_unc,b02_unc,delU1_unc,delU2_unc,beta_unc,kgate_unc,cgate_unc,delvc_unc,omega_unc,vc,gamma_unc);
+                end
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,2)= min(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,3)= max(qeqUnc(3,(nPoints*(jj-1)+1):(nPoints*(jj)),mm));
+                uncBounds(length(Pvals)*(mm-1)+(jj-1)+1,4)= Tvals(mm);
+            end
+        end
+        % Obtain the output in a matrix [nPoints*length(Pvals) x 3]
+        outScatter=[qeqUnc(1,:);qeqUnc(3,:); qeqUnc(2,:)];
+        % Transpose of the output
+        outScatter=outScatter';
+    
     case 'STATZSips'
         % Obtain a vector of the temperatures present in the input data
         Tvals = unique(y);
